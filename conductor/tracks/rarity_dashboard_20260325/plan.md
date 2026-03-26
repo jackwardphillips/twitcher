@@ -14,7 +14,7 @@ Initial project setup and configuration for both frontend and backend.
 - [x] **Task: Set up SQLite with Prisma ORM** (3458574)
     - [ ] Initialize Prisma with SQLite
     - [ ] Define the initial `Sighting` model and run migrations
-- [ ] **Task: Conductor - User Manual Verification 'Project Scaffolding' (Protocol in workflow.md)**
+- [~] **Task: Conductor - User Manual Verification 'Project Scaffolding' (Protocol in workflow.md)**
 
 ## Phase 2: eBird Alert Ingestion
 Building the logic to parse and store rare bird sightings from eBird emails.
