@@ -5,7 +5,7 @@ This plan outlines the steps for building the MVP of the Rare Bird Dashboard, fo
 ## Phase 1: Project Scaffolding
 Initial project setup and configuration for both frontend and backend.
 
-- [ ] **Task: Initialize React Frontend with Vite**
+- [x] **Task: Initialize React Frontend with Vite** (0031434)
     - [ ] Set up a new Vite project with React and TypeScript
     - [ ] Configure Vanilla CSS for styling
 - [ ] **Task: Initialize Node.js Backend with Express and TypeScript**
