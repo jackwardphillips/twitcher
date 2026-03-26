@@ -8,7 +8,7 @@ Initial project setup and configuration for both frontend and backend.
 - [x] **Task: Initialize React Frontend with Vite** (0031434)
     - [ ] Set up a new Vite project with React and TypeScript
     - [ ] Configure Vanilla CSS for styling
-- [ ] **Task: Initialize Node.js Backend with Express and TypeScript**
+- [x] **Task: Initialize Node.js Backend with Express and TypeScript** (39e0c1c)
     - [ ] Set up a basic Express server with TypeScript
     - [ ] Configure initial API routes and environment variables
 - [ ] **Task: Set up SQLite with Prisma ORM**
