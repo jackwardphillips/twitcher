@@ -11,7 +11,7 @@ Initial project setup and configuration for both frontend and backend.
 - [x] **Task: Initialize Node.js Backend with Express and TypeScript** (39e0c1c)
     - [ ] Set up a basic Express server with TypeScript
     - [ ] Configure initial API routes and environment variables
-- [ ] **Task: Set up SQLite with Prisma ORM**
+- [x] **Task: Set up SQLite with Prisma ORM** (3458574)
     - [ ] Initialize Prisma with SQLite
     - [ ] Define the initial `Sighting` model and run migrations
 - [ ] **Task: Conductor - User Manual Verification 'Project Scaffolding' (Protocol in workflow.md)**
