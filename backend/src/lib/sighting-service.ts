@@ -1,5 +1,5 @@
-import { Sighting } from './ebird-parser';
-import prisma from './db';
+import type { Sighting } from './ebird-parser.js';
+import prisma from './db.js';
 
 export async function saveSightings(sightings: Sighting[]): Promise<void> {
   for (const sighting of sightings) {
