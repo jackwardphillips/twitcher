@@ -33,7 +33,7 @@ Creating the user interface to display and interact with the rarity data.
 - [x] **Task: Create basic dashboard UI (TDD)** (9943ee2)
     - [x] Write failing tests for rendering a list of sightings in the frontend (Red)
     - [x] Implement the dashboard component to fetch and display sightings from the API (Green)
-- [ ] **Task: Implement sighting details view with Discord links (TDD)**
-    - [ ] Write failing tests for generating and displaying Discord links for a specific sighting (Red)
-    - [ ] Implement the details view and link generation logic to pass the tests (Green)
+- [x] **Task: Implement sighting details view with Discord links (TDD)** (17d3f03)
+    - [x] Write failing tests for generating and displaying Discord links for a specific sighting (Red)
+    - [x] Implement the details view and link generation logic to pass the tests (Green)
 - [ ] **Task: Conductor - User Manual Verification 'Dashboard Development' (Protocol in workflow.md)**
