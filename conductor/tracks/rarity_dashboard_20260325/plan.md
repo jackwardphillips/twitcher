@@ -22,9 +22,9 @@ Building the logic to parse and store rare bird sightings from eBird emails.
 - [x] **Task: Implement eBird email parsing logic (TDD)** (d5b1712)
     - [x] Write failing tests for parsing sample eBird email content (Red)
     - [x] Implement the parsing logic to successfully extract bird, location, date, and observer (Green)
-- [ ] **Task: Implement sighting data storage (TDD)**
-    - [ ] Write failing tests for saving parsed sightings into the SQLite database (Red)
-    - [ ] Implement the storage logic using Prisma to persist sightings (Green)
+- [x] **Task: Implement sighting data storage (TDD)** (5360fd3)
+    - [x] Write failing tests for saving parsed sightings into the SQLite database (Red)
+    - [x] Implement the storage logic using Prisma to persist sightings (Green)
 - [ ] **Task: Conductor - User Manual Verification 'eBird Alert Ingestion' (Protocol in workflow.md)**
 
 ## Phase 3: Dashboard Development
