@@ -11,4 +11,10 @@ describe('API Server', () => {
       message: 'Rare Bird Dashboard API is running',
     });
   });
+
+  it('should return a list of sightings', async () => {
+    const response = await request(app).get('/api/sightings');
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
 });

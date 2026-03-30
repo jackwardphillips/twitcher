@@ -1,10 +1,19 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import App from './App'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('App', () => {
-  it('renders the Get started header', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    }));
+  });
+
+  it('renders the Rare Bird Dashboard header', async () => {
     render(<App />)
-    expect(screen.getByText(/Get started/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/Rare Bird Dashboard/i)).toBeInTheDocument()
+    });
   })
 })
