@@ -30,9 +30,9 @@ Building the logic to parse and store rare bird sightings from eBird emails.
 ## Phase 3: Dashboard Development
 Creating the user interface to display and interact with the rarity data.
 
-- [ ] **Task: Create basic dashboard UI (TDD)**
-    - [ ] Write failing tests for rendering a list of sightings in the frontend (Red)
-    - [ ] Implement the dashboard component to fetch and display sightings from the API (Green)
+- [x] **Task: Create basic dashboard UI (TDD)** (9943ee2)
+    - [x] Write failing tests for rendering a list of sightings in the frontend (Red)
+    - [x] Implement the dashboard component to fetch and display sightings from the API (Green)
 - [ ] **Task: Implement sighting details view with Discord links (TDD)**
     - [ ] Write failing tests for generating and displaying Discord links for a specific sighting (Red)
     - [ ] Implement the details view and link generation logic to pass the tests (Green)
