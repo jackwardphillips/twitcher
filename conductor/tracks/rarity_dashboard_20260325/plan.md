@@ -2,7 +2,7 @@
 
 This plan outlines the steps for building the MVP of the Rare Bird Dashboard, focusing on eBird alert ingestion and a basic dashboard interface.
 
-## Phase 1: Project Scaffolding
+## Phase 1: Project Scaffolding [checkpoint: 35d5e20]
 Initial project setup and configuration for both frontend and backend.
 
 - [x] **Task: Initialize React Frontend with Vite** (0031434)
@@ -14,7 +14,7 @@ Initial project setup and configuration for both frontend and backend.
 - [x] **Task: Set up SQLite with Prisma ORM** (3458574)
     - [ ] Initialize Prisma with SQLite
     - [ ] Define the initial `Sighting` model and run migrations
-- [~] **Task: Conductor - User Manual Verification 'Project Scaffolding' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Project Scaffolding' (Protocol in workflow.md)** (35d5e20)
 
 ## Phase 2: eBird Alert Ingestion
 Building the logic to parse and store rare bird sightings from eBird emails.
