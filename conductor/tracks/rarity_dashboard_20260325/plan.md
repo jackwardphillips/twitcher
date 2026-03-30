@@ -36,4 +36,4 @@ Creating the user interface to display and interact with the rarity data.
 - [x] **Task: Implement sighting details view with Discord links (TDD)** (17d3f03)
     - [x] Write failing tests for generating and displaying Discord links for a specific sighting (Red)
     - [x] Implement the details view and link generation logic to pass the tests (Green)
-- [ ] **Task: Conductor - User Manual Verification 'Dashboard Development' (Protocol in workflow.md)**
+- [~] **Task: Conductor - User Manual Verification 'Dashboard Development' (Protocol in workflow.md)**
