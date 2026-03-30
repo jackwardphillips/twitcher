@@ -16,7 +16,7 @@ Initial project setup and configuration for both frontend and backend.
     - [ ] Define the initial `Sighting` model and run migrations
 - [x] **Task: Conductor - User Manual Verification 'Project Scaffolding' (Protocol in workflow.md)** (35d5e20)
 
-## Phase 2: eBird Alert Ingestion
+## Phase 2: eBird Alert Ingestion [checkpoint: 5edf3c4]
 Building the logic to parse and store rare bird sightings from eBird emails.
 
 - [x] **Task: Implement eBird email parsing logic (TDD)** (d5b1712)
@@ -25,7 +25,7 @@ Building the logic to parse and store rare bird sightings from eBird emails.
 - [x] **Task: Implement sighting data storage (TDD)** (5360fd3)
     - [x] Write failing tests for saving parsed sightings into the SQLite database (Red)
     - [x] Implement the storage logic using Prisma to persist sightings (Green)
-- [~] **Task: Conductor - User Manual Verification 'eBird Alert Ingestion' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'eBird Alert Ingestion' (Protocol in workflow.md)** (5edf3c4)
 
 ## Phase 3: Dashboard Development
 Creating the user interface to display and interact with the rarity data.
