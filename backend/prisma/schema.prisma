@@ -10,13 +10,16 @@ datasource db {
 }
 
 model Sighting {
-  id        Int      @id @default(autoincrement())
-  species   String
-  location  String
-  date      DateTime
-  observer  String
-  rarity    Int      // ABA code (e.g., 4 or 5)
-  details   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  species        String
+  scientificName String?
+  location       String
+  date           DateTime
+  observer       String
+  rarity         Int      @default(0) // ABA code (e.g., 4 or 5)
+  details        String?
+  mapUrl         String?
+  checklistUrl   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
