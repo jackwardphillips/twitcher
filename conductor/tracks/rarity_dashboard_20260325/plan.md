@@ -27,7 +27,7 @@ Building the logic to parse and store rare bird sightings from eBird emails.
     - [x] Implement the storage logic using Prisma to persist sightings (Green)
 - [x] **Task: Conductor - User Manual Verification 'eBird Alert Ingestion' (Protocol in workflow.md)** (5edf3c4)
 
-## Phase 3: Dashboard Development
+## Phase 3: Dashboard Development [checkpoint: f1f35ce]
 Creating the user interface to display and interact with the rarity data.
 
 - [x] **Task: Create basic dashboard UI (TDD)** (9943ee2)
@@ -36,4 +36,4 @@ Creating the user interface to display and interact with the rarity data.
 - [x] **Task: Implement sighting details view with Discord links (TDD)** (17d3f03)
     - [x] Write failing tests for generating and displaying Discord links for a specific sighting (Red)
     - [x] Implement the details view and link generation logic to pass the tests (Green)
-- [~] **Task: Conductor - User Manual Verification 'Dashboard Development' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Dashboard Development' (Protocol in workflow.md)** (f1f35ce)
