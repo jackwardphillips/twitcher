@@ -29,6 +29,7 @@ describe('Dashboard', () => {
       expect(screen.getByText(/Rare Bird Dashboard/i)).toBeInTheDocument();
       expect(screen.getByText('Taiga Bean-Goose')).toBeInTheDocument();
       expect(screen.getByText(/Deering Rd/i)).toBeInTheDocument();
+      expect(screen.getByText(/Discord/i)).toBeInTheDocument();
     });
   });
 });

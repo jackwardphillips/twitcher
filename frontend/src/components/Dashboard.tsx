@@ -55,6 +55,7 @@ const Dashboard: React.FC = () => {
             <div className="links">
               {sighting.mapUrl && <a href={sighting.mapUrl} target="_blank" rel="noopener noreferrer">Map</a>}
               {sighting.checklistUrl && <a href={sighting.checklistUrl} target="_blank" rel="noopener noreferrer">Checklist</a>}
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer">Discord</a>
             </div>
           </div>
         ))}
