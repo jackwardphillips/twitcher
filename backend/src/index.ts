@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 import { fileURLToPath } from 'url';
-import prisma from './lib/db.js';
+import { prisma } from './lib/db.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -29,4 +29,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   });
 }
 
-export default app;
+export { app };
+

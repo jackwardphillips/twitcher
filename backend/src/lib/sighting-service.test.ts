@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { saveSightings } from './sighting-service';
-import prisma from './db';
+import { prisma } from './db';
 
 vi.mock('./db', () => ({
-  default: {
+  prisma: {
     sighting: {
-      create: vi.fn(),
+      createMany: vi.fn(),
       findMany: vi.fn(),
     },
   },
@@ -31,13 +31,13 @@ describe('Sighting Service', () => {
 
     await saveSightings(mockSightings);
 
-    expect(prisma.sighting.create).toHaveBeenCalledTimes(1);
-    expect(prisma.sighting.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+    expect(prisma.sighting.createMany).toHaveBeenCalledTimes(1);
+    expect(prisma.sighting.createMany).toHaveBeenCalledWith({
+      data: [expect.objectContaining({
         species: 'Taiga Bean-Goose',
         scientificName: 'Anser fabalis',
         observer: 'Alexander Dabbs',
-      }),
+      })],
     });
   });
 });

@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { parseEBirdAlert } from '../lib/ebird-parser.js';
 import { saveSightings } from '../lib/sighting-service.js';
-import prisma from '../lib/db.js';
+import { prisma } from '../lib/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const samplePath = path.resolve(__dirname, '../../../references/[eBird Alert] ABA Rarities _daily_.eml');

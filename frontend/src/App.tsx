@@ -1,4 +1,4 @@
-import Dashboard from './components/Dashboard'
+import { Dashboard } from './components/Dashboard.js'
 import './App.css'
 
 function App() {
@@ -9,4 +9,4 @@ function App() {
   )
 }
 
-export default App
+export { App }

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Dashboard from './Dashboard';
+import { Dashboard } from './Dashboard.js';
 
 describe('Dashboard', () => {
   beforeEach(() => {
@@ -18,10 +18,11 @@ describe('Dashboard', () => {
       },
     ];
 
-    (vi.mocked(fetch) as any).mockResolvedValueOnce({
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockSightings,
-    });
+    } as Response);
 
     render(<Dashboard />);
 
