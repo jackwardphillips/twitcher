@@ -8,9 +8,9 @@ Initial setup for eBird API communication and database schema expansion.
 - [x] **Task: Update Prisma schema for geospatial and eBird metadata** (058f542)
     - [x] Define migration for `latitude`, `longitude`, `subId`, `locId`, `speciesCode`, `howMany`, etc.
     - [x] Run migrations and generate updated Prisma client
-- [ ] **Task: Implement eBird API Client**
-    - [ ] Write unit tests for `EbirdClient` with mocked API responses
-    - [ ] Implement `EbirdClient` to fetch notable observations and checklist details
+- [x] **Task: Implement eBird API Client** (7aac1be)
+    - [x] Write unit tests for `EbirdClient` with mocked API responses
+    - [x] Implement `EbirdClient` to fetch notable observations and checklist details
 - [ ] **Task: Conductor - User Manual Verification 'API Foundation & Model Update' (Protocol in workflow.md)**
 
 ## Phase 2: Match Engine & Enrichment
