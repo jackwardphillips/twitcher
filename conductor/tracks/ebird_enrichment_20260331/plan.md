@@ -5,9 +5,9 @@ This plan outlines the steps for integrating the eBird API to enrich rare bird a
 ## Phase 1: API Foundation & Model Update
 Initial setup for eBird API communication and database schema expansion.
 
-- [~] **Task: Update Prisma schema for geospatial and eBird metadata**
-    - [ ] Define migration for `latitude`, `longitude`, `subId`, `locId`, `speciesCode`, `howMany`, etc.
-    - [ ] Run migrations and generate updated Prisma client
+- [x] **Task: Update Prisma schema for geospatial and eBird metadata** (058f542)
+    - [x] Define migration for `latitude`, `longitude`, `subId`, `locId`, `speciesCode`, `howMany`, etc.
+    - [x] Run migrations and generate updated Prisma client
 - [ ] **Task: Implement eBird API Client**
     - [ ] Write unit tests for `EbirdClient` with mocked API responses
     - [ ] Implement `EbirdClient` to fetch notable observations and checklist details
