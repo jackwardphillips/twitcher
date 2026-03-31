@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: eBird API Integration & Geospatial Enrichment**
+- [~] **Track: eBird API Integration & Geospatial Enrichment**
   *Link: [./tracks/ebird_enrichment_20260331/](./tracks/ebird_enrichment_20260331/)*

@@ -20,6 +20,12 @@ model Sighting {
   details        String?
   mapUrl         String?
   checklistUrl   String?
+  latitude       Float?
+  longitude      Float?
+  subId          String?
+  locId          String?
+  speciesCode    String?
+  howMany        Int?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
