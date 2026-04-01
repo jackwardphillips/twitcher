@@ -11,6 +11,23 @@ vi.mock('./db', () => ({
   },
 }));
 
+vi.mock('./enrichment-service', () => {
+  return {
+    EnrichmentService: class {
+      enrichAllUnenriched = vi.fn().mockResolvedValue(undefined);
+      enrichSighting = vi.fn().mockResolvedValue(undefined);
+    },
+  };
+});
+
+vi.mock('./ebird-client', () => ({
+  EbirdClient: vi.fn(),
+}));
+
+vi.mock('./match-engine', () => ({
+  MatchEngine: vi.fn(),
+}));
+
 describe('Sighting Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
