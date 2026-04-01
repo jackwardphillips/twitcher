@@ -19,9 +19,9 @@ Developing the logic to link parsed email alerts to precise eBird API records.
 - [x] **Task: Implement Match Engine Service** (c944432)
     - [x] Write unit tests for fuzzy-matching logic (species, date, and location string similarity)
     - [x] Implement `MatchEngine` to resolve email sightings to API `subId` and coordinates
-- [ ] **Task: Create Enrichment Background Worker**
-    - [ ] Write integration tests for the email-to-API enrichment flow
-    - [ ] Implement worker to automatically enrich sightings after ingestion
+- [x] **Task: Create Enrichment Background Worker** (aee25a6)
+    - [x] Write integration tests for the email-to-API enrichment flow
+    - [x] Implement worker to automatically enrich sightings after ingestion
 - [ ] **Task: Conductor - User Manual Verification 'Match Engine & Enrichment' (Protocol in workflow.md)**
 
 ## Phase 3: Geospatial Dashboard (Functionality)
