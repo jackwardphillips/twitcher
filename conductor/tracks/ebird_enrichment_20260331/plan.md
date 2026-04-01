@@ -16,9 +16,9 @@ Initial setup for eBird API communication and database schema expansion.
 ## Phase 2: Match Engine & Enrichment
 Developing the logic to link parsed email alerts to precise eBird API records.
 
-- [ ] **Task: Implement Match Engine Service**
-    - [ ] Write unit tests for fuzzy-matching logic (species, date, and location string similarity)
-    - [ ] Implement `MatchEngine` to resolve email sightings to API `subId` and coordinates
+- [x] **Task: Implement Match Engine Service** (c944432)
+    - [x] Write unit tests for fuzzy-matching logic (species, date, and location string similarity)
+    - [x] Implement `MatchEngine` to resolve email sightings to API `subId` and coordinates
 - [ ] **Task: Create Enrichment Background Worker**
     - [ ] Write integration tests for the email-to-API enrichment flow
     - [ ] Implement worker to automatically enrich sightings after ingestion
