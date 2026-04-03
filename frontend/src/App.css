@@ -201,3 +201,43 @@ body {
 .links a:hover {
   border-bottom-color: var(--clr-sky);
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard h1 {
+    font-size: 2rem;
+  }
+  
+  .dashboard-header {
+    padding: 1.5rem;
+  }
+  
+  .sighting-card {
+    padding: 1.5rem;
+  }
+  
+  .sighting-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filter-btn {
+    flex-grow: 1;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard h1 {
+    font-size: 1.75rem;
+  }
+  
+  .links {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
