@@ -55,10 +55,10 @@ Applying the "Field Journal" design system and final project refinement.
 - [x] **Task: Refactor Sighting Cards & Vertical Stack** (656ba41)
     - [x] Write tests for vertical card stack and rarity border logic
     - [x] Implement "Field Journal" card style and vertical layout
-- [~] **Task: Final Polish & Responsive Verification**
-    - [ ] Perform manual verification of mobile responsiveness and touch targets
-    - [ ] Conduct final end-to-end verification of the enrichment flow
-- [ ] **Task: Conductor - User Manual Verification 'Field Journal UI' (Protocol in workflow.md)**
+- [x] **Task: Final Polish & Responsive Verification** (0220c42)
+    - [x] Perform manual verification of mobile responsiveness and touch targets
+    - [x] Conduct final end-to-end verification of the enrichment flow
+- [~] **Task: Conductor - User Manual Verification 'Field Journal UI' (Protocol in workflow.md)**
 
 ## Phase: Review Fixes
 - [x] Task: Apply review suggestions (18f9615)
