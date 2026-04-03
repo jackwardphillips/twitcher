@@ -49,10 +49,10 @@ Adding user location filtering and historical sighting context.
 ## Phase 5: Field Journal UI (Aesthetic & Polish)
 Applying the "Field Journal" design system and final project refinement.
 
-- [ ] **Task: Apply "Field Journal" Design System**
-    - [ ] Write tests for design system CSS variables and font loading
-    - [ ] Implement parchment background, rust/sage palette, and serif typography
-- [ ] **Task: Refactor Sighting Cards & Vertical Stack**
+- [x] **Task: Apply "Field Journal" Design System** (770447b)
+    - [x] Write tests for design system CSS variables and font loading
+    - [x] Implement parchment background, rust/sage palette, and serif typography
+- [~] **Task: Refactor Sighting Cards & Vertical Stack**
     - [ ] Write tests for vertical card stack and rarity border logic
     - [ ] Implement "Field Journal" card style and vertical layout
 - [ ] **Task: Final Polish & Responsive Verification**
