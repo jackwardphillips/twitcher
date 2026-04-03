@@ -11,9 +11,38 @@ export interface Sighting {
   comments?: string;
 }
 
+/**
+ * Decodes quoted-printable encoding and handles soft line breaks.
+ */
+function decodeQuotedPrintable(text: string): string {
+  // 1. Handle soft line breaks: a '=' at the very end of a line means the next line should be joined
+  // Note: we use a regex that matches '=' followed by optional whitespace and a newline
+  let decoded = text.replace(/=\s*\r?\n/g, '');
+
+  // 2. Decode hex-encoded characters (e.g., =E2=80=93 for en-dash)
+  decoded = decoded.replace(/=([0-9A-F]{2})/gi, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16));
+  });
+
+  // 3. Simple fix for common UTF-8 sequences that were hex-encoded then treated as ISO-8859-1
+  // This is a common issue with eBird emails where UTF-8 is encoded but not explicitly declared.
+  // We'll use a TextDecoder if we wanted to be perfect, but for coordinates and names, 
+  // replacing common mangled characters is often enough.
+  try {
+      // Try to re-interpret as UTF-8 if it looks like it
+      const bytes = new Uint8Array(decoded.split('').map(c => c.charCodeAt(0)));
+      return new TextDecoder('utf-8').decode(bytes);
+  } catch (e) {
+      return decoded;
+  }
+}
+
 export function parseEBirdAlert(content: string): Sighting[] {
+  // Decode the entire content first
+  const decodedContent = decodeQuotedPrintable(content);
+  
   const sightings: Sighting[] = [];
-  const lines = content.split('\n').map(line => line.trim());
+  const lines = decodedContent.split(/\r?\n/).map(line => line.trim());
   
   let i = 0;
   while (i < lines.length) {
@@ -24,7 +53,6 @@ export function parseEBirdAlert(content: string): Sighting[] {
     }
 
     // Match species line: Species Name (Scientific Name) (Count) [CONFIRMED]
-    // Note: Scientific Name might have spaces or groups, e.g., (Anser fabalis)
     const speciesMatch = line.match(/^(.+?) \((.+?)\) \((\d+)\)( CONFIRMED)?$/);
     
     if (speciesMatch) {
