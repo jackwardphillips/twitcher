@@ -1,40 +1,36 @@
-import { EbirdClient, EbirdObservation } from './ebird-client.js';
-import { Sighting } from '@prisma/client';
+import { EbirdClient } from './ebird-client.js';
+import type { EbirdObservation } from './ebird-client.js';
+import type { Sighting } from '@prisma/client';
 
 export class MatchEngine {
-  constructor(private ebirdClient: EbirdClient) {}
+  constructor(public ebirdClient: EbirdClient) {}
 
   async findMatch(sighting: Sighting): Promise<EbirdObservation | null> {
     const { species, location, date } = sighting;
     
     // 1. Try to parse coordinates from the location string
-    // Example: "Deering Rd, Capital CA-BC 48.58130, -124.39482"
-    // or: "Newport Rd, Corinna (44.9071,-69.2646)"
     const coords = this.parseCoordinates(location);
     
     let candidates: EbirdObservation[] = [];
     
     if (coords) {
-      // If we have coordinates, search nearby (radius 5km)
-      candidates = await this.ebirdClient.getNearbyNotableObservations(coords.lat, coords.lng, 5);
+      // If we have coordinates, search nearby (radius 10km, 30 days back)
+      candidates = await this.ebirdClient.getNearbyNotableObservations(coords.lat, coords.lng, 10, 30);
     } else {
-      // Fallback: search by region if possible (needs a region code, defaulting to state/country from location if we had a mapper)
-      // For now, let's assume we can try a broad search or we might need region extraction logic
-      // Extraction logic for regionCode (e.g., "CA-BC")
-      const regionMatch = location.match(/[A-Z]{2}-[A-Z]{2,3}/);
+      // Try to extract a region code or state name
+      const regionMatch = location.match(/\b([A-Z]{2}(?:-[A-Z]{2,3})?)\b/);
       if (regionMatch) {
-        candidates = await this.ebirdClient.getNotableObservations(regionMatch[0]);
+        candidates = await this.ebirdClient.getNotableObservations(regionMatch[1]!, 30);
       }
     }
 
     if (candidates.length === 0) return null;
 
-    // 2. Fuzzy match candidates by species name, location name, and date
+    // 2. Fuzzy match candidates
     return this.selectBestMatch(candidates, species, location, date);
   }
 
-  private parseCoordinates(location: string): { lat: number; lng: number } | null {
-    // Matches "48.58130, -124.39482" or "(44.9071,-69.2646)"
+  public parseCoordinates(location: string): { lat: number; lng: number } | null {
     const regex = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/;
     const match = location.match(regex);
     
@@ -47,52 +43,105 @@ export class MatchEngine {
     return null;
   }
 
-  private selectBestMatch(candidates: EbirdObservation[], targetSpecies: string, targetLocation: string, targetDate: Date): EbirdObservation | null {
+  public selectBestMatch(candidates: EbirdObservation[], targetSpecies: string, targetLocation: string, targetDate: Date): EbirdObservation | null {
+    if (!candidates || candidates.length === 0) return null;
+
     const targetTime = targetDate.getTime();
-    const targetSpeciesLower = targetSpecies.toLowerCase();
+    const targetSpeciesNorm = this.normalizeSpecies(targetSpecies);
     const targetLocationLower = targetLocation.toLowerCase();
+    const targetCoords = this.parseCoordinates(targetLocation);
     
     // 1. Filter by species name similarity
     const speciesMatches = candidates.filter(c => {
-      const comNameLower = c.comName.toLowerCase();
-      return comNameLower === targetSpeciesLower ||
-             comNameLower.includes(targetSpeciesLower) ||
-             targetSpeciesLower.includes(comNameLower);
+      const comNameNorm = this.normalizeSpecies(c.comName);
+      return comNameNorm === targetSpeciesNorm ||
+             comNameNorm.includes(targetSpeciesNorm) ||
+             targetSpeciesNorm.includes(comNameNorm);
     });
 
     if (speciesMatches.length === 0) return null;
 
-    // 2. Score candidates based on time and location similarity
-    const scored = speciesMatches.map(c => {
+    // 2. Filter by Time window (Only consider sightings within 72 hours)
+    // We do this BEFORE scoring to avoid "old" records shadowing fresh ones
+    const seventyTwoHours = 72 * 60 * 60 * 1000;
+    const withinWindow = speciesMatches.filter(c => {
+      const obsTime = new Date(c.obsDt).getTime();
+      return Math.abs(obsTime - targetTime) <= seventyTwoHours;
+    });
+
+    // If we have sightings within the window, only consider those.
+    // Otherwise, we might consider older ones if it's a very rare bird, 
+    // but the 72h window is usually standard for "notable" alerts.
+    const candidatesToScore = withinWindow.length > 0 ? withinWindow : speciesMatches;
+
+    // 3. Score candidates
+    const scored = candidatesToScore.map(c => {
       const obsTime = new Date(c.obsDt).getTime();
       const timeDiff = Math.abs(obsTime - targetTime);
       
-      // Simple location similarity: count shared words
+      // Location word similarity score
       const targetWords = targetLocationLower.split(/\W+/).filter(w => w.length > 2);
       const candidateWords = c.locName.toLowerCase().split(/\W+/).filter(w => w.length > 2);
       const intersection = targetWords.filter(w => candidateWords.includes(w));
-      const locationScore = intersection.length;
+      let locationScore = intersection.length;
 
-      return { candidate: c, timeDiff, locationScore };
+      // Distance score (if coordinates present)
+      let distanceScore = 0;
+      if (targetCoords) {
+        const dist = this.calculateDistance(targetCoords.lat, targetCoords.lng, c.lat, c.lng);
+        // Score: higher is better. 0-5 points based on proximity (0-10km)
+        distanceScore = Math.max(0, 5 - (dist / 2));
+      }
+
+      // Time score: 0-2 points for proximity in time
+      const timeScore = Math.max(0, 2 - (timeDiff / (24 * 60 * 60 * 1000)));
+
+      const totalScore = locationScore + distanceScore + timeScore;
+
+      return { candidate: c, totalScore, timeDiff, locationScore, distanceScore };
     });
 
-    // 3. Sort by location score (desc), then time difference (asc)
+    // 4. Sort by total score (desc), then time difference (asc)
     scored.sort((a, b) => {
-      if (b.locationScore !== a.locationScore) {
-        return b.locationScore - a.locationScore;
+      if (b.totalScore !== a.totalScore) {
+        return b.totalScore - a.totalScore;
       }
       return a.timeDiff - b.timeDiff;
     });
 
     const best = scored[0]!;
     
-    // Only accept if within 24 hours
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-    if (best.timeDiff > twentyFourHours) {
+    // Final check for time window
+    if (best.timeDiff > seventyTwoHours) {
+      console.log(`Match rejected for ${targetSpecies} at ${targetLocation}: Best candidate was ${Math.round(best.timeDiff / 3600000)}h away.`);
       return null;
     }
 
     return best.candidate;
   }
-}
 
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radius of the earth in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
+  }
+
+  private normalizeSpecies(name: string): string {
+    return name.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove non-alphanumeric except spaces
+      .split(/\s+/) // Split into words
+      .filter(w => w !== 'warbler' && w !== 'goose' && w !== 'duck' && w !== 'bird') // Remove noise words
+      .sort() // Sort words alphabetically
+      .join(''); // Join back
+  }
+}
