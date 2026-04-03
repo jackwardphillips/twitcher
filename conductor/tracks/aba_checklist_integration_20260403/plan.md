@@ -3,7 +3,7 @@
 ## Phase 1: Data Ingestion & Storage
 This phase focuses on parsing the ABA Checklist CSV, storing the data, and establishing a basic lookup mechanism.
 
-- [ ] **Task: Parse ABA Checklist CSV**
+- [~] **Task: Parse ABA Checklist CSV**
     - [ ] Write failing tests for CSV parsing logic.
     - [ ] Implement CSV parsing function.
 - [ ] **Task: Define Prisma Schema for Rarity Codes**
