@@ -13,7 +13,7 @@ Initial setup for eBird API communication and database schema expansion.
     - [x] Implement `EbirdClient` to fetch notable observations and checklist details
 - [x] **Task: Conductor - User Manual Verification 'API Foundation & Model Update' (Protocol in workflow.md)**
 
-## Phase 2: Match Engine & Enrichment
+## Phase 2: Match Engine & Enrichment [checkpoint: 8b66a51]
 Developing the logic to link parsed email alerts to precise eBird API records.
 
 - [x] **Task: Implement Match Engine Service** (c944432)
@@ -22,7 +22,7 @@ Developing the logic to link parsed email alerts to precise eBird API records.
 - [x] **Task: Create Enrichment Background Worker** (aee25a6)
     - [x] Write integration tests for the email-to-API enrichment flow
     - [x] Implement worker to automatically enrich sightings after ingestion
-- [ ] **Task: Conductor - User Manual Verification 'Match Engine & Enrichment' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Match Engine & Enrichment' (Protocol in workflow.md)** (8b66a51)
 
 ## Phase 3: Geospatial Dashboard (Functionality)
 Integrating the interactive map and the top-down dashboard layout.
