@@ -6,7 +6,7 @@
 - **Accurate & Objective:** Maintain a high standard for data accuracy and clarity, distinguishing clearly between verified sightings and community discussion.
 
 ## Visual Style
-- **Nature-Inspired & Modern:** Use a clean, modern aesthetic with color palettes and visual elements inspired by the natural world.
+- **"Field Journal" Aesthetic:** A warm, charming aesthetic inspired by physical birding notebooks. Uses parchment backgrounds, serif typography (Playfair Display, Lora), and a rust/sage/gold palette.
 - **Functional & Data-Driven:** Ensure the design remains highly functional, prioritizing data density and ease of scanning for rarity seekers.
 - **Visually Engaging:** Incorporate high-quality bird photography and map visualizations where they enhance the user experience.
 

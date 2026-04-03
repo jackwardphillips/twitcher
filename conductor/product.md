@@ -16,11 +16,15 @@ A centralized, web-based dashboard designed for ABA rare bird seekers and effici
 
 ## Goals
 - **Centralize Information:** Consolidate data from eBird alerts, Discord discussions, and web searches into a single interface.
+- **Geospatial Awareness:** Provide precise mapping and proximity-based filtering to help users find rarities near them.
 - **Informed Decision-Making:** Provide enough context for users to quickly decide if a sighting is worth investigating.
 - **Stay Updated on Rarities:** Ensure users stay current with the latest high-priority rarity alerts.
 
 ## Key Features
 - **Rarity Alert Dashboard:** A summarized, interactive list of recent ABA code 4 and 5 bird sightings.
+- **Interactive Map:** A top-down geospatial view of sightings with rarity-coded markers.
+- **"Near Me" Filter:** One-touch filtering to see sightings within a 50km radius of the user's current location.
+- **Sighting Streaks:** Visual indicators of how many consecutive days a species has been reported at a specific location.
 - **Platform Integration:** Seamless integration with eBird alerts and direct links or snippets from Discord community discussions.
 - **Automated Bird Research:** Automated web searching to gather additional information, photos, and context for rare species.
 
