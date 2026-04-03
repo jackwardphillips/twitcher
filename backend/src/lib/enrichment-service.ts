@@ -1,9 +1,13 @@
 import { MatchEngine } from './match-engine.js';
 import { prisma } from './db.js';
+import { RegionService } from './region-service.js';
 import type { Sighting } from '@prisma/client';
 
 export class EnrichmentService {
-  constructor(private matchEngine: MatchEngine) {}
+  constructor(
+    private matchEngine: MatchEngine,
+    private regionService: RegionService
+  ) {}
 
   async enrichSighting(sightingId: number): Promise<void> {
     const sighting = await prisma.sighting.findUnique({
@@ -16,17 +20,7 @@ export class EnrichmentService {
     const match = await this.matchEngine.findMatch(sighting);
 
     if (match) {
-      await prisma.sighting.update({
-        where: { id: sightingId },
-        data: {
-          latitude: match.lat,
-          longitude: match.lng,
-          subId: match.subId,
-          locId: match.locId,
-          speciesCode: match.speciesCode,
-          howMany: match.howMany,
-        },
-      });
+      await this.applyMatch(sightingId, match);
     }
   }
 
@@ -76,12 +70,12 @@ export class EnrichmentService {
       }
     }
 
-    // 3. Group remaining sightings by extracted region code
-    // (Both sightings without coords AND those that failed their geo-search)
+    // 3. Group remaining sightings by extracted region code (Surgical County > State)
     const regionalPool = [...withoutCoords, ...failedGeoSearch];
     const regionGroups = new Map<string, Sighting[]>();
+    
     for (const sighting of regionalPool) {
-      const regionCode = this.extractRegionCode(sighting.location);
+      const regionCode = await this.extractDetailedRegionCode(sighting.location);
       if (regionCode) {
         if (!regionGroups.has(regionCode)) regionGroups.set(regionCode, []);
         regionGroups.get(regionCode)!.push(sighting);
@@ -102,8 +96,41 @@ export class EnrichmentService {
     }
   }
 
-  private extractRegionCode(location: string): string | null {
-    // 1. Explicit state/province mappings (Highest priority)
+  private async extractDetailedRegionCode(location: string): Promise<string | null> {
+    const parts = location.split(',').map(p => p.trim());
+    
+    // Pattern: [Hotspot], [County], [State], [Country]
+    // We look for State first to narrow down the search
+    let subnational1Code: string | null = null;
+    let countyName: string | null = null;
+
+    // Check from the end of parts
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const part = parts[i]!;
+      const stateCode = this.getStateCode(part);
+      if (stateCode) {
+        subnational1Code = stateCode;
+        // The part before the state is usually the county
+        if (i > 0) {
+            countyName = parts[i-1]!;
+        }
+        break;
+      }
+    }
+
+    if (!subnational1Code) return null;
+
+    // If we have a county, try to get the surgical subnational2 code
+    if (countyName) {
+      const subnational2Code = await this.regionService.findSubregionCode(countyName, subnational1Code);
+      if (subnational2Code) return subnational2Code;
+    }
+
+    // Fallback to subnational1 (State)
+    return subnational1Code;
+  }
+
+  private getStateCode(part: string): string | null {
     const stateMappings: Record<string, string> = {
       'Maine': 'US-ME', 'ME': 'US-ME',
       'New York': 'US-NY', 'NY': 'US-NY',
@@ -119,20 +146,18 @@ export class EnrichmentService {
       'Newfoundland and Labrador': 'CA-NL', 'Newfoundland': 'CA-NL', 'NL': 'CA-NL',
       'Nebraska': 'US-NE', 'NE': 'US-NE',
       'Hawaii': 'US-HI', 'HI': 'US-HI',
+      'Arizona': 'US-AZ', 'AZ': 'US-AZ',
     };
-
+    
+    // Exact match or contains state name
+    if (stateMappings[part]) return stateMappings[part]!;
     for (const [name, code] of Object.entries(stateMappings)) {
-      if (location.includes(name)) return code;
+      if (part.includes(name)) return code;
     }
 
-    // 2. Strict Region Code format: XX-YY or XX-YY-ZZ (e.g., US-NY, CA-BC)
-    const strictRegionMatch = location.match(/\b([A-Z]{2}-[A-Z]{2,3}(?:-[A-Z]{2,3})?)\b/);
-    if (strictRegionMatch) return strictRegionMatch[1]!;
-
-    // 3. Known country codes or specific state abbreviations (Low priority, must be at boundaries)
-    // We avoid generic 2-letter codes like 'ME', 'SW', 'SP' which are often noise
-    const countryMatch = location.match(/\b(US|CA|MX|GB)\b/);
-    if (countryMatch) return countryMatch[1]!;
+    // Check for strict code format XX-YY
+    const strict = part.match(/\b([A-Z]{2}-[A-Z]{2,3})\b/);
+    if (strict) return strict[1]!;
 
     return null;
   }

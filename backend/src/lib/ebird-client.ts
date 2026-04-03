@@ -58,6 +58,7 @@ export class EbirdClient {
     return this.get(`/data/obs/${regionCode}/recent/notable`, {
       back,
       detail: 'full',
+      maxResults: 10000,
     });
   }
 
@@ -68,10 +69,15 @@ export class EbirdClient {
       dist,
       back,
       detail: 'full',
+      maxResults: 10000,
     });
   }
 
   async getChecklist(subId: string): Promise<EbirdChecklist> {
     return this.get(`/product/checklist/view/${subId}`);
+  }
+
+  async getSubregions(regionType: 'country' | 'subnational1' | 'subnational2', parentRegionCode: string): Promise<{ code: string; name: string }[]> {
+    return this.get(`/ref/region/list/${regionType}/${parentRegionCode}`);
   }
 }

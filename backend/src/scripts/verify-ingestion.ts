@@ -3,7 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { parseEBirdAlert } from '../lib/ebird-parser.js';
-import { saveSightings } from '../lib/sighting-service.js';
+import { EnrichmentService } from '../lib/enrichment-service.js';
+import { MatchEngine } from '../lib/match-engine.js';
+import { EbirdClient } from '../lib/ebird-client.js';
+import { RegionService } from '../lib/region-service.js';
 import { prisma } from '../lib/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,6 +19,11 @@ async function main() {
     console.error('ERROR: EBIRD_API_KEY is not set in backend/.env');
     return;
   }
+  
+  const ebirdClient = new EbirdClient(process.env.EBIRD_API_KEY);
+  const matchEngine = new MatchEngine(ebirdClient);
+  const regionService = new RegionService(ebirdClient);
+  const enrichmentService = new EnrichmentService(matchEngine, regionService);
   
   if (!fs.existsSync(samplePath)) {
     console.error(`Sample email not found at ${samplePath}`);
@@ -30,7 +38,24 @@ async function main() {
   // Clear DB first
   await prisma.sighting.deleteMany();
   
-  await saveSightings(sightings);
+  // Save sightings
+  for (const s of sightings) {
+      await prisma.sighting.create({
+          data: {
+              species: s.species,
+              scientificName: s.scientificName,
+              location: s.location,
+              date: s.date,
+              observer: s.observer,
+              details: s.comments,
+              mapUrl: s.mapUrl,
+              checklistUrl: s.checklistUrl,
+          }
+      });
+  }
+
+  // Enrich
+  await enrichmentService.enrichAllUnenriched();
   console.log('Saved and enriched sightings.');
 
   const dbSightings = await prisma.sighting.findMany();
