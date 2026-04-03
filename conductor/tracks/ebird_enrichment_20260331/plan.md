@@ -38,9 +38,9 @@ Integrating the interactive map and the top-down dashboard layout.
 ## Phase 4: Proximity & Streaks
 Adding user location filtering and historical sighting context.
 
-- [ ] **Task: Implement "Near Me" Geolocation Filter**
-    - [ ] Write unit tests for proximity filtering logic (50km radius)
-    - [ ] Implement Geolocation API integration and "Near Me" toggle
+- [x] **Task: Implement "Near Me" Geolocation Filter** (9e671c4)
+    - [x] Write unit tests for proximity filtering logic (50km radius)
+    - [x] Implement Geolocation API integration and "Near Me" toggle
 - [ ] **Task: Implement Sighting Streak Logic**
     - [ ] Write unit tests for calculating consecutive days reported
     - [ ] Implement streak display (e.g., "Seen 3 days in a row") on cards
