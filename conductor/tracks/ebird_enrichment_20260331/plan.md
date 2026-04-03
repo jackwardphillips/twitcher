@@ -41,9 +41,9 @@ Adding user location filtering and historical sighting context.
 - [x] **Task: Implement "Near Me" Geolocation Filter** (9e671c4)
     - [x] Write unit tests for proximity filtering logic (50km radius)
     - [x] Implement Geolocation API integration and "Near Me" toggle
-- [ ] **Task: Implement Sighting Streak Logic**
-    - [ ] Write unit tests for calculating consecutive days reported
-    - [ ] Implement streak display (e.g., "Seen 3 days in a row") on cards
+- [x] **Task: Implement Sighting Streak Logic** (6008602)
+    - [x] Write unit tests for calculating consecutive days reported
+    - [x] Implement streak display (e.g., "Seen 3 days in a row") on cards
 - [ ] **Task: Conductor - User Manual Verification 'Proximity & Streaks' (Protocol in workflow.md)**
 
 ## Phase 5: Field Journal UI (Aesthetic & Polish)
