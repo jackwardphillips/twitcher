@@ -69,6 +69,15 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const getRarityColor = (sighting: Sighting) => {
+    // Determine color based on scientific name or species keywords for now
+    // In a real app, this would come from a 'rarity' field in the DB.
+    const species = sighting.species.toLowerCase();
+    if (species.includes('stint') || species.includes('garganey') || species.includes(' McKay\'s')) return 'var(--clr-berry)';
+    if (species.includes('godwit') || species.includes('curlew')) return 'var(--clr-gold)';
+    return 'var(--clr-rust)';
+  };
+
   const displayedSightings = (nearMe && userLocation) 
     ? filterByProximity(sightings, userLocation.lat, userLocation.lng, 50)
     : sightings;
@@ -95,24 +104,33 @@ const Dashboard: React.FC = () => {
       
       <div className="sightings-list">
         {displayedSightings.map((sighting) => (
-          <div key={sighting.id} className="sighting-card">
-            <h3>{sighting.species}</h3>
-            <p className="scientific-name">{sighting.scientificName}</p>
-            {sighting.streak && sighting.streak > 1 && (
-              <p className="streak-badge">Seen {sighting.streak} days in a row</p>
-            )}
+          <div 
+            key={sighting.id} 
+            className="sighting-card"
+            style={{ borderLeftColor: getRarityColor(sighting) }}
+          >
+            <div className="card-header">
+              {sighting.streak && sighting.streak > 1 && (
+                <span className="streak-badge">Seen {sighting.streak} days in a row</span>
+              )}
+              <h3>{sighting.species}</h3>
+              <p className="scientific-name">{sighting.scientificName}</p>
+            </div>
+            
             <div className="sighting-details">
               <p><strong>Location:</strong> {sighting.location}</p>
-              <p><strong>Date:</strong> {new Date(sighting.date).toLocaleString()}</p>
+              <p><strong>Date:</strong> {new Date(sighting.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</p>
               <p><strong>Observer:</strong> {sighting.observer}</p>
             </div>
+            
             {sighting.details && (
-              <p className="comments">"{sighting.details}"</p>
+              <p className="comments">{sighting.details}</p>
             )}
+            
             <div className="links">
-              {sighting.mapUrl && <a href={sighting.mapUrl} target="_blank" rel="noopener noreferrer">Map</a>}
+              {sighting.mapUrl && <a href={sighting.mapUrl} target="_blank" rel="noopener noreferrer">eBird Map</a>}
               {sighting.checklistUrl && <a href={sighting.checklistUrl} target="_blank" rel="noopener noreferrer">Checklist</a>}
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer">Discord</a>
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer">Discuss</a>
             </div>
           </div>
         ))}
