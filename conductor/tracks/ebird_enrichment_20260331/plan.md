@@ -24,15 +24,15 @@ Developing the logic to link parsed email alerts to precise eBird API records.
     - [x] Implement worker to automatically enrich sightings after ingestion
 - [x] **Task: Conductor - User Manual Verification 'Match Engine & Enrichment' (Protocol in workflow.md)** (8b66a51)
 
-## Phase 3: Geospatial Dashboard (Functionality)
+## Phase 3: Geospatial Dashboard (Functionality) [checkpoint: 49df60f]
 Integrating the interactive map and the top-down dashboard layout.
 
-- [ ] **Task: Integrate React-Leaflet Map**
-    - [ ] Write unit tests for `SightingMap` component rendering markers
-    - [ ] Implement `SightingMap` at the top of the dashboard
-- [ ] **Task: Implement Top-Down Dashboard Layout**
-    - [ ] Write tests for the map-on-top and scrollable list structure
-    - [ ] Implement CSS structure for the integrated layout (functional only)
+- [x] **Task: Integrate React-Leaflet Map** (49df60f)
+    - [x] Write unit tests for `SightingMap` component rendering markers
+    - [x] Implement `SightingMap` at the top of the dashboard
+- [x] **Task: Implement Top-Down Dashboard Layout** (49df60f)
+    - [x] Write tests for the map-on-top and scrollable list structure
+    - [x] Implement CSS structure for the integrated layout (functional only)
 - [ ] **Task: Conductor - User Manual Verification 'Geospatial Dashboard' (Protocol in workflow.md)**
 
 ## Phase 4: Proximity & Streaks
