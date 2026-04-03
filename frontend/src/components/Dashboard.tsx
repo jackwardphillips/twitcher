@@ -73,9 +73,9 @@ const Dashboard: React.FC = () => {
     // Determine color based on scientific name or species keywords for now
     // In a real app, this would come from a 'rarity' field in the DB.
     const species = sighting.species.toLowerCase();
-    if (species.includes('stint') || species.includes('garganey') || species.includes(' McKay\'s')) return 'var(--clr-berry)';
-    if (species.includes('godwit') || species.includes('curlew')) return 'var(--clr-gold)';
-    return 'var(--clr-rust)';
+    if (species.includes('stint') || species.includes('garganey') || species.includes(' McKay\'s')) return 'var(--clr-berry)'; // Very Rare
+    if (species.includes('godwit') || species.includes('curlew')) return 'var(--clr-gold)'; // Uncommon
+    return 'var(--clr-rust)'; // Normal Rare/Notable
   };
 
   const displayedSightings = (nearMe && userLocation) 
