@@ -44,7 +44,7 @@ Adding user location filtering and historical sighting context.
 - [x] **Task: Implement Sighting Streak Logic** (6008602)
     - [x] Write unit tests for calculating consecutive days reported
     - [x] Implement streak display (e.g., "Seen 3 days in a row") on cards
-- [ ] **Task: Conductor - User Manual Verification 'Proximity & Streaks' (Protocol in workflow.md)**
+- [~] **Task: Conductor - User Manual Verification 'Proximity & Streaks' (Protocol in workflow.md)**
 
 ## Phase 5: Field Journal UI (Aesthetic & Polish)
 Applying the "Field Journal" design system and final project refinement.

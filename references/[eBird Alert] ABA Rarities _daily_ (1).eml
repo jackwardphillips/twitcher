@@ -1,0 +1,1424 @@
+Delivered-To: jackwardphillips@gmail.com
+Received: by 2002:a05:7000:91d:b0:80b:2250:8ed1 with SMTP id jb29csp962767mab;
+        Thu, 2 Apr 2026 10:53:24 -0700 (PDT)
+X-Received: by 2002:a05:6214:f29:b0:8a0:a3fb:862c with SMTP id 6a1803df08f44-8a7022bbe5bmr2047146d6.8.1775152404559;
+        Thu, 02 Apr 2026 10:53:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775152404; cv=none;
+        d=google.com; s=arc-20240605;
+        b=PUVIKHY1fKsiu6Pejey1a0L9TZSAiA9/vRPo/HVB+PmstNHsveeB1GAE8rb1zK6k6h
+         KreimGZVQ0t27PdGZP3u4kt/9KUfGA8CIpDSWd3i1PazHnw1vLdrQKSThNLHnXk6mUrQ
+         fARAuyEhdsEVKH2BFil6lGL4x1fX8X6h7dsAo4sYA76SxxPcSYSdmB1mWR8M3AXfHgKX
+         Lxvy0bfatR3s/TADEk8vfWmSL69MB4gTflV3xRJ+j7hTMWLZFyCYh8QDJzCaNl7+MDO3
+         mOPRtW9xHS1/4RMEOXdMHH6ViSZGvXDV/JrkpkHUnhOH6NzjsV61rrO4AZ7jhs73lyN6
+         JC4g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=feedback-id:list-unsubscribe:list-unsubscribe-post
+         :content-transfer-encoding:mime-version:subject:message-id:to:from
+         :date:dkim-signature:dkim-signature;
+        bh=D8yujEP6mEW2XgTU8Y3Krbpn6gE9aqaPEdz1yovCjeY=;
+        fh=cuBZ9WRgeHaIOGL8O5BQYQn5OEXXeo3EZDtvZQoxjXQ=;
+        b=UAHaTX/AUw1DKBviPcJGpDwYXElljujqTP6Xw0KovtQXu9GvzPyB+G+MXnMn/3UtpB
+         oAO9CDcOWPR3aZ/RWl16JCP1d4HAOhRYeZm09jfJTqetPgf8lqWIwSTn9U0XdIXjPRhh
+         ZfY88CdXUzSzNgs7URZLFGTEVMGsgeuuXZ8wdOiieqiWs831YGdmkSbYfLM9G2nhh6Oa
+         DZUs6BAMh7KjKMbkntbwpo1TouRvxM296VNLusrmtX9CjkwVrNXh7pxuwxEtX0MSfsl9
+         PSQ9eM7vKLDbEjKvBfLz4vKdRoPh0ezrgEAUVEeOOQCooMWJNWiadFyoWItdSCFrd9V5
+         dAiw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@birds.cornell.edu header.s=rov6egsulh5f4tv2u3zixz7jgjbpy2jq header.b=IR4Rhtqk;
+       dkim=pass header.i=@amazonses.com header.s=224i4yxa5dv7c2xz3womw6peuasteono header.b=Hl9Yl91G;
+       spf=pass (google.com: domain of 0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@mail.birds.cornell.edu designates 54.240.11.147 as permitted sender) smtp.mailfrom=0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@mail.birds.cornell.edu;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=birds.cornell.edu
+Return-Path: <0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@mail.birds.cornell.edu>
+Received: from a11-147.smtp-out.amazonses.com (a11-147.smtp-out.amazonses.com. [54.240.11.147])
+        by mx.google.com with ESMTPS id 6a1803df08f44-8a597fc67aasi45733996d6.384.2026.04.02.10.53.22
+        for <jackwardphillips@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 02 Apr 2026 10:53:24 -0700 (PDT)
+Received-SPF: pass (google.com: domain of 0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@mail.birds.cornell.edu designates 54.240.11.147 as permitted sender) client-ip=54.240.11.147;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@birds.cornell.edu header.s=rov6egsulh5f4tv2u3zixz7jgjbpy2jq header.b=IR4Rhtqk;
+       dkim=pass header.i=@amazonses.com header.s=224i4yxa5dv7c2xz3womw6peuasteono header.b=Hl9Yl91G;
+       spf=pass (google.com: domain of 0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@mail.birds.cornell.edu designates 54.240.11.147 as permitted sender) smtp.mailfrom=0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@mail.birds.cornell.edu;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=birds.cornell.edu
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=rov6egsulh5f4tv2u3zixz7jgjbpy2jq; d=birds.cornell.edu;
+	t=1775152402;
+	h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:List-Unsubscribe-Post:List-Unsubscribe;
+	bh=2RAJ29nmTOmrSmLpSi6rXPVvpjDXr7Y3yNAaoK3eK5A=;
+	b=IR4Rhtqkxk9sq9PE5/ycShzUXCa1I7h3UzpDXZfhO4LbwbT5IFBud1v3p5CuPbpI
+	HGCPEle4mYNtWXhbx0IvXZsalZ7r9aVdRmogGu238aVXFMD+3JKwJdLDjA2iGnVSDbF
+	RFXwwNooWmLEB3JiVk9aQHMKONNLA0Cjx6ODXOxI=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=224i4yxa5dv7c2xz3womw6peuasteono; d=amazonses.com; t=1775152402;
+	h=Date:From:To:Message-ID:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:List-Unsubscribe-Post:List-Unsubscribe:Feedback-ID;
+	bh=2RAJ29nmTOmrSmLpSi6rXPVvpjDXr7Y3yNAaoK3eK5A=;
+	b=Hl9Yl91GMAccGm7V6uNI3E/1IZSge/de4g9qpZok5Lv7tiNd78Vsff6ngvYHgk/G
+	tj28O8fXNvejLtvbxlsAkSrBC+FNwwoXd+Yt7mZpIalJIWskgyGxxP2ggcyfYDJkrMt
+	GaqFMKXEygkJipExPokYQL55InrLZvEeseYb52uU=
+Date: Thu, 2 Apr 2026 17:53:22 +0000
+From: ebird-alert@birds.cornell.edu
+To: jackwardphillips@gmail.com
+Message-ID: <0100019d4f541075-d74dc39a-ae7d-4e83-bea8-c57f35272f18-000000@email.amazonses.com>
+Subject: [eBird Alert] ABA Rarities <daily>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+List-Unsubscribe: https://ebird.org/alert/listunsubscribe/8a4737fe-2716-4fe7-a797-ee7ffe61293b
+Feedback-ID: ::1.us-east-1.KfmR1inSR84CE8APMH85aavtGg7E+FnhONFksY+w5sM=:AmazonSES
+X-SES-Outgoing: 2026.04.02-54.240.11.147
+
+*** Species Summary:
+
+Pink-footed Goose (3 Maine)
+Barnacle Goose (1 New York)
+Tufted Duck (23 British Columbia, 1 Massachusetts, 2 Newfoundland and Labra=
+dor, 8 Ontario)
+Smooth-billed Ani (4 Florida)
+Ruff (2 California)
+American Flamingo (5 Florida)
+Bulwer's Petrel (8 Hawaii)
+Hook-billed Kite (1 Texas)
+Mottled Owl (6 Texas)
+Aplomado Falcon (5 Texas)
+Rose-throated Becard (8 Texas)
+Cattle Tyrant (3 Texas)
+Thick-billed Vireo (1 Florida)
+Rufous-backed Robin (2 Arizona)
+European Robin (2 Quebec)
+Tricolored Munia (1 Florida)
+Red-throated Pipit (7 California)
+Eurasian Bullfinch (1 Yukon Territory)
+McKay's Bunting (4 Alaska)
+Shiny Cowbird (5 Florida)
+Tropical Parula (9 Texas)
+Mangrove Yellow Warbler (1 Texas)
+Mangrove Yellow Warbler (Mexican) (5 Texas)
+Rufous-capped Warbler (1 Arizona)
+Crimson-collared Grosbeak (5 Texas)
+Morelet's Seedeater (8 Texas)
+
+---------------------------------------------
+Thank you for subscribing to the <daily> ABA Rarities.  This alert is for o=
+bservations of rare birds (ABA code 3 and above) in the ABA Area.  View or =
+unsubscribe to this alert at https://ebird.org/alert/summary?sid=3DSN10489
+NOTE: all sightings are UNCONFIRMED unless indicated.
+
+eBird encourages safe, responsible birding. Some reports may be from privat=
+e property. Respect access restrictions and follow the rules wherever you b=
+ird. For more information, visit the eBird and Merlin Community Guidelines:=
+ https://ebird.org/community-guidelines. Stay connected to the global birdi=
+ng community with eBird Updates: https://mailchi.mp/cornell/ebird-updates-s=
+ign-up-page.
+
+Pink-footed Goose (Anser brachyrhynchus) (1) CONFIRMED
+- Reported Apr 01, 2026 15:43 by Shelley Vermillion
+- 179 Nokomis Road, Corinna, Maine, US (44.914, -69.277), Penobscot, Maine
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D44.9143662,-69.27=
+72726&ll=3D44.9143662,-69.2772726
+- Checklist: https://ebird.org/checklist/S315714797
+- Comments: "Mingling with large flock of CANG and one snow goose. Pink leg=
+s, brownish head, and smaller than CANG."
+
+Pink-footed Goose (Anser brachyrhynchus) (1) CONFIRMED
+- Reported Apr 01, 2026 12:26 by Ann Boover
+- 300=E2=80=93378 Nokomis Rd, Corinna US-ME 44.90975, -69.28354, Penobscot,=
+ Maine
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D44.909748,-69.283=
+545&ll=3D44.909748,-69.283545
+- Checklist: https://ebird.org/checklist/S315680347
+- Media: 3 Photos
+- Comments: "Continuing. Way out in the north corn field with one Snow Goos=
+e and hundreds of Canada Geese. Great looks through my scope at this beauti=
+ful goose. Distant photos."
+
+Pink-footed Goose (Anser brachyrhynchus) (1) CONFIRMED
+- Reported Apr 01, 2026 08:20 by Bill Thompson
+- ME Corinna Nokomis Road, Penobscot, Maine
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D44.9091891,-69.28=
+47209&ll=3D44.9091891,-69.2847209
+- Checklist: https://ebird.org/checklist/S315662024
+- Media: 4 Photos
+- Comments: "Continuing; at the far side of the field along the forest edge=
+, far from the road.   See highly cropped photos."
+
+Barnacle Goose (Branta leucopsis) (1)
+- Reported Apr 02, 2026 10:37 by Tom Schulenberg
+- Lindsay-Parsons Biodiversity Preserve (FLLT), Tompkins, New York
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D42.3101677,-76.52=
+16895&ll=3D42.3101677,-76.5216895
+- Checklist: https://ebird.org/checklist/S315943586
+- Comments: "continuing, and remarkably long-staying, rare goose. close to =
+shore along the east side of Coleman Lake, later drifting farther south. mu=
+ch smaller than adjacent CANG, with broad white flanks; distinctly gray upp=
+erparts, darker on thecupper mantle and scalloped with black; and white fac=
+e, with narrow black 'mask' (line from eye to lores)."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:45 by Sean McElaney
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315752005
+- Comments: "Seen distant but well with scope, went over to Royal roads sid=
+e later to get a closer look. Lovely Drake Hanging out with a raft of LESC =
+noticeably different with black back and tuft visible"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:35 by Walter Thorne
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315755986
+- Comments: "This black and white, scaup like duck had been seen all aftern=
+oon and evening at this site.  Thankyou to Sean for pinpointing the duck an=
+d helping me view it in his scope.  The duck was  far out in the bay in a l=
+arge raft of scaups.  Was seen in calm waters."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:00 by Trevor Henry
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315759217
+- Media: 3 Photos
+- Comments: "Mega find by Keith T. Stunning drake with bold white sides, da=
+rk black back and a slicked back mullet. Associating with the other Aythya =
+in the middle of the lagoon. Photos"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 16:51 by Gordon Hart
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315758067
+- Comments: "With some Lesser Scaup. Very white wavy side pattern, black he=
+ad with prominent tuft on the back . From a distance with scope but quite d=
+istinctive . Seen a couple of times swimming with Lesser Scaup"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 15:50 by Conor Standen
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315750940
+- Comments: "Mega find by Keith Taylor. Associating with lesser scaups. As =
+I arrived I saw the flock of scaups slowly moving away from me towards roya=
+l roads. After searching in the flock for 20 or so min I eventually was abl=
+e to pick out the unmistakable black back of the tufted duck before i lost =
+it again in the swarm of scaups."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 15:11 by Carla Springinotic
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315736892
+- Media: 1 Photo
+- Comments: "Nice find by Keith Taylor. Duck with black back and tuft on he=
+ad. Seen on the far side of the lagoon. Thanks to Les P for pointing it out=
+ for me. See pictures."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 14:40 by Rick Hardy
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315754916
+- Media: 8 Photos
+- Comments: "Thanks to Keith T. for the original find and Les P. for pointi=
+ng it out, photos:"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 14:33 by Mary Robichaud
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315706524
+- Comments: "Adult male. Black back. Blue bill, yellow eyes. Found by Keith=
+ Taylor"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 14:30 by Les Peterson
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315708408
+- Media: 5 Photos
+- Comments: "Male. Photos. Thanks to Keith T. for spotting it.   Was with s=
+caup flock next to the shore when I arrived.  Eventually the birds flew out=
+  to the mid-to-far-side of the lagoon towards Royal Roads."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 14:18 by Anonymous eBirder
+- Esquimalt Lagoon, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4257613,-123.4=
+631732&ll=3D48.4257613,-123.4631732
+- Checklist: https://ebird.org/checklist/S315693167
+- Media: 1 Photo
+- Comments: "Lifer! Black back and head tufts blowing in the wind. Associat=
+inf with the LESC and BUFF flocks. Thanks to Klaus for posting it!"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 13:00 by kirsten mills
+- Esquimalt Lagoon, Colwood, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4291798,-123.4=
+587479&ll=3D48.4291798,-123.4587479
+- Checklist: https://ebird.org/checklist/S315724548
+- Media: 1 Photo
+- Comments: "Photos taken. Bird was hugging the shoreline halfway between b=
+ridge and hump"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 15:11 by klaus emmaneel
+- Esquimalt Lagoon, Colwood CA-BC 48.42984, -123.45794, Capital, British Co=
+lumbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.429837,-123.45=
+794&ll=3D48.429837,-123.45794
+- Checklist: https://ebird.org/checklist/S315707996
+- Media: 2 Photos
+- Comments: "Drake with prominent tuft and black back associating with Less=
+er Scaup.  Found by Keith Taylor .  Photos taken"
+
+Tufted Duck (Aythya fuligula) (1)
+- Reported Apr 01, 2026 17:16 by Jacquelyn Papale
+- Nantucket Long Pond--Massasoit Bridge, Nantucket, Massachusetts
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D41.2721783,-70.18=
+56422&ll=3D41.2721783,-70.1856422
+- Checklist: https://ebird.org/checklist/S315694743
+- Comments: "Cont here and at N. Head of Long Pond"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 19:18 by Sean McElaney
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315751913
+- Comments: "Recurring bird spotted originally from peninsula side of the l=
+agoon earlier today. Lovely Drake Hanging out with a raft of LESC noticeabl=
+y different with black back and tuft visible"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:55 by Walter Thorne
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315757060
+- Comments: "Seen in a large raft of scaups as it had been seen most of tod=
+ay.  Quite the rarity on this black and white scaup like duck, with its plu=
+mage sticking out from the back of its head.  Thanks to Trevor for helping =
+pinpoint the location in the fading light."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:41 by Simon Dakin
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315750670
+- Comments: "Scaup-like bird with black back and distinctive head tuft. Wit=
+h a large group of lesser scaups in the middle of the lagoon."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:41 by Simone Littledale
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315750669
+- Comments: "Scaup-like bird with black back and distinctive head tuft. Wit=
+h a large group of lesser scaups in the middle of the lagoon."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 18:21 by Jocelynn Johannesson
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315756966
+- Comments: "Continuing with scaup flock. Male with head tuft and black bac=
+k. Thanks to Jodie and Trevor for the scope views."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 17:34 by Steph Brulot-Sawchyn
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315752905
+- Comments: "Crisp male found earlier today by Keith Taylor. Clean white fl=
+anks and dark back delineated back and a prominent tuft. Actively diving in=
+ a flock of scaup, visible at distance with a scope from the parking lot on=
+ the shoreline of Royal Roads on the west side of the bay."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 17:34 by Liam Ragan
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315752904
+- Comments: "Crisp male found earlier today by Keith Taylor. Clean white fl=
+anks and dark back delineated back and a prominent tuft. Actively diving in=
+ a flock of scaup, visible at distance with a scope from the parking lot on=
+ the shoreline of Royal Roads on the west side of the bay."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 17:34 by Thompson Hyggen
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315752908
+- Comments: "Crisp male found earlier today by Keith Taylor. Clean white fl=
+anks and dark back delineated back and a prominent tuft. Actively diving in=
+ a flock of scaup, visible at distance with a scope from the parking lot on=
+ the shoreline of Royal Roads on the west side of the bay."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 17:12 by Isaac Esselink
+- Royal Roads University, Capital, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.4303965,-123.4=
+734535&ll=3D48.4303965,-123.4734535
+- Checklist: https://ebird.org/checklist/S315752341
+- Comments: "Bold white sides dark black back, tufted tuft. Mixed in with m=
+ostly lesser and some greater scaup, as well as buffles at times. Was seen =
+swimming not far from shore off of royal roads side. Was in the scope for c=
+lose quick close looks then dove and was not seen again by me, was later pi=
+cked up again by Jody closer to esquimalt lagoon side. LIFER. Pouring rain,=
+ no record shots. Ran out of time"
+
+Tufted Duck (Aythya fuligula) (1)
+- Reported Apr 01, 2026 17:21 by Jody  Wells
+- Royal Roads University--Charlie=E2=80=99s Trail, Capital, British Columbi=
+a
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D48.438594,-123.47=
+3562&ll=3D48.438594,-123.473562
+- Checklist: https://ebird.org/checklist/S315773367
+- Comments: "Continuing male... Keith Taylor's Nice find
+Distant photo.doc=20
+
+Even when over 80 lesc came right next to shore it remained far out in the =
+middle"
+
+Tufted Duck (Aythya fuligula) (4)
+- Reported Apr 02, 2026 11:09 by Charles Fitzpatrick
+- St. John's--Quidi Vidi Lake, Avalon Peninsula-St. John's, Newfoundland an=
+d Labrador
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D47.580135,-52.694=
+1258&ll=3D47.580135,-52.6941258
+- Checklist: https://ebird.org/checklist/S315903565
+- Comments: "Male."
+
+Tufted Duck (Aythya fuligula) (2)
+- Reported Apr 02, 2026 07:32 by Frank King
+- St. John's--Quidi Vidi Lake, Avalon Peninsula-St. John's, Newfoundland an=
+d Labrador
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D47.580135,-52.694=
+1258&ll=3D47.580135,-52.6941258
+- Checklist: https://ebird.org/checklist/S315829132
+- Media: 3 Photos
+
+Tufted Duck (Aythya fuligula) (1)
+- Reported Apr 01, 2026 17:25 by =E2=98=98=EF=B8=8F Diggle
+- Surrey=E2=80=94Green Timbers Forest, Metro Vancouver, British Columbia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D49.18044,-122.823=
+54&ll=3D49.18044,-122.82354
+- Checklist: https://ebird.org/checklist/S315751564
+- Media: 5 Photos
+- Comments: "Continuing bird - Remarkable clear white side, plain bill, cle=
+ar black tuft on back of head (though damp) possibly associating with ring-=
+necked ducks. Photos will be attached shortly!"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 16:00 by Burl Gar
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315742487
+- Media: 1 Photo
+- Comments: "Emb. A"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 15:15 by Rosanne Petrich
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315756183
+- Media: 7 Photos
+- Comments: "Scaup like duck with very white sides and black head and black=
+er-than-scaup back. A small tuft visible at the back of head. Seen in Emb A=
+. Photos"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 13:58 by L Villeneff
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315721031
+- Comments: "Continuing male, great find by Michael Chiu! Scaup type diving=
+ duck with black back and dangly tuft on nape"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 12:25 by John Harper
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315709357
+- Media: 2 Photos
+- Comments: "In bay A. Take path to Pen B, at the "Do not enter" sign, foll=
+ow the grassy path left to the shore of Bay A. At 3pm the Tufted was 20-30 =
+yards offshore, with the King eider 50 yards beyond!"
+
+Tufted Duck (Aythya fuligula) (1)
+- Reported Apr 01, 2026 11:30 by Veda Hingert-McDonald
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315642122
+- Comments: "saw the head tuft thanks to a tip from another birder"
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 07:46 by Mike McInnis
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315610279
+- Media: 1 Photo
+- Comments: "RN duck + mullet.  Pics.  Thx Paul for refinding."
+
+Tufted Duck (Aythya fuligula) (1) CONFIRMED
+- Reported Apr 01, 2026 06:00 by Brian Chan
+- Tommy Thompson Park, Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.6282673,-79.32=
+9167&ll=3D43.6282673,-79.329167
+- Checklist: https://ebird.org/checklist/S315702120
+- Comments: "Continuing male, great find by Michael Chiu! Scaup type diving=
+ duck with black back and dangly tuft on nape"
+
+Tufted Duck (Aythya fuligula) (1)
+- Reported Apr 01, 2026 11:30 by Craig Mcdonald
+- Tommy Thompson Park, Toronto CA-ON (43.6209,-79.3397), Toronto, Ontario
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D43.620892,-79.339=
+675&ll=3D43.620892,-79.339675
+- Checklist: https://ebird.org/checklist/S315661498
+- Comments: "In the Bay west of B - black head with distinct tuft trailing,=
+ good views White sides"
+
+Smooth-billed Ani (Crotophaga ani) (3)
+- Reported Apr 02, 2026 07:27 by Hannah O=E2=80=99Carroll
+- Frog Pond WMA--Area between SW 376th St and SR9336, Miami-Dade, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.4095548,-80.56=
+59628&ll=3D25.4095548,-80.5659628
+- Checklist: https://ebird.org/checklist/S315901101
+- Comments: "Photos taken, no grooves present"
+
+Smooth-billed Ani (Crotophaga ani) (3)
+- Reported Apr 02, 2026 07:27 by William Paquin
+- Frog Pond WMA--Area between SW 376th St and SR9336, Miami-Dade, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.4095548,-80.56=
+59628&ll=3D25.4095548,-80.5659628
+- Checklist: https://ebird.org/checklist/S315937464
+- Comments: "Photos taken, no grooves present"
+
+Smooth-billed Ani (Crotophaga ani) (2)
+- Reported Apr 02, 2026 07:19 by Brian Debs
+- Frog Pond WMA--Area between SW 376th St and SR9336, Miami-Dade, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.4095548,-80.56=
+59628&ll=3D25.4095548,-80.5659628
+- Checklist: https://ebird.org/checklist/S315910795
+- Comments: "Continuing"
+
+Smooth-billed Ani (Crotophaga ani) (3)
+- Reported Apr 02, 2026 07:04 by Jonathan Dowell
+- L31W Canal (north of SR9336), Miami-Dade, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.398942,-80.572=
+6146&ll=3D25.398942,-80.5726146
+- Checklist: https://ebird.org/checklist/S315885490
+- Media: 3 Photos
+- Comments: "Continuing. Emerged at 0800 to top of reeds near road, NW of 3=
+rd post east of intersection, perched behind reeds, one flew to green bush =
+N of post 3 in good view, others lost in reeds nearby 50 yards N of road. M=
+ission accomplished, I lost track of them. Please see photos. Like the Groo=
+ve-Billed Ani, these birds act like they need their first cup of coffee."
+
+Ruff (Calidris pugnax) (1)
+- Reported Apr 01, 2026 17:49 by Jack McDonough
+- Merced NWR--Auto Tour Route (4.8-mile one-way loop road), Merced, Califor=
+nia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D37.1716364,-120.6=
+203699&ll=3D37.1716364,-120.6203699
+- Checklist: https://ebird.org/checklist/S315754022
+- Media: 12 Photos
+- Comments: "*rare - female =E2=80=9CReeve=E2=80=9D in second impoundment: =
+(37.1778112, -120.6249700) associating with dowitchers and dunlin. With rec=
+ent large influxes of shorebirds here, I=E2=80=99ve been hoping something e=
+lse would show up. Photos"
+
+Ruff (Calidris pugnax) (1)
+- Reported Apr 01, 2026 17:49 by Savanna Berg
+- Merced NWR--Auto Tour Route (4.8-mile one-way loop road), Merced, Califor=
+nia
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D37.1716364,-120.6=
+203699&ll=3D37.1716364,-120.6203699
+- Checklist: https://ebird.org/checklist/S315754102
+- Media: 12 Photos
+- Comments: "*rare - fresh juv female type in second impoundment: (37.17781=
+12, -120.6249700). Photos"
+
+American Flamingo (Phoenicopterus ruber) (17)
+- Reported Apr 02, 2026 09:30 by Gavin Qian
+- Merritt Island NWR--Haulover Canal Area, Brevard, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D28.7374281,-80.75=
+46186&ll=3D28.7374281,-80.7546186
+- Checklist: https://ebird.org/checklist/S315896291
+- Comments: "large flock near rookery at island"
+
+American Flamingo (Phoenicopterus ruber) (16)
+- Reported Apr 02, 2026 07:46 by thomas ford
+- Merritt Island NWR--Haulover Canal Area, Brevard, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D28.7374281,-80.75=
+46186&ll=3D28.7374281,-80.7546186
+- Checklist: https://ebird.org/checklist/S315939867
+- Media: 4 Photos
+- Comments: "Anybody who follows ebird knows these rare birds have been her=
+e for quite some time I was a little surprised to see 16. That was the high=
+est number for me.  I tried to get one photo that shows 14 just couldn't ge=
+t 16 in a single photo. There were two separate groups when I arrived one f=
+urther out but passing fishing boat sent the 8 deep water ones running to s=
+hallow water. LOL"
+
+American Flamingo (Phoenicopterus ruber) (17)
+- Reported Apr 02, 2026 09:33 by Jean Siesener
+- NW Haulover Rd, Titusville US-FL 28.73095, -80.76084, Brevard, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D28.730951,-80.760=
+837&ll=3D28.730951,-80.760837
+- Checklist: https://ebird.org/checklist/S315887538
+- Comments: "West of the bird island"
+
+American Flamingo (Phoenicopterus ruber) (16)
+- Reported Apr 02, 2026 11:09 by Jim Eager
+- Northwest Haulover Road, Titusville US-FL 28.73082, -80.76119, Brevard, F=
+lorida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D28.730819,-80.761=
+187&ll=3D28.730819,-80.761187
+- Checklist: https://ebird.org/checklist/S315927284
+- Comments: "Counted by ones. Long legged pink wading birds with downturned=
+ bill"
+
+American Flamingo (Phoenicopterus ruber) (9) CONFIRMED
+- Reported Apr 01, 2026 13:20 by Matthew Feuss
+- Unnamed Road, Mims, Florida, US (28.731, -80.761), Brevard, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D28.730744,-80.761=
+1185&ll=3D28.730744,-80.7611185
+- Checklist: https://ebird.org/checklist/S315643469
+- Comments: "Continuing being seen"
+
+Bulwer's Petrel (Bulweria bulwerii) (1)
+- Reported Mar 31, 2026 07:10 by Sam Wilson
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (2) 19.63756, -156.05714=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.637563,-156.05=
+7145&ll=3D19.637563,-156.057145
+- Checklist: https://ebird.org/checklist/S315682165
+
+Bulwer's Petrel (Bulweria bulwerii) (1)
+- Reported Mar 31, 2026 07:10 by Sue Wright
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (2) 19.63756, -156.05714=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.637563,-156.05=
+7145&ll=3D19.637563,-156.057145
+- Checklist: https://ebird.org/checklist/S315655568
+
+Bulwer's Petrel (Bulweria bulwerii) (2)
+- Reported Mar 31, 2026 08:10 by Sam Wilson
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (3) 19.46509, -156.06444=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.465091,-156.06=
+4445&ll=3D19.465091,-156.064445
+- Checklist: https://ebird.org/checklist/S315682164
+
+Bulwer's Petrel (Bulweria bulwerii) (2)
+- Reported Mar 31, 2026 08:10 by Sue Wright
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (3) 19.46509, -156.06444=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.465091,-156.06=
+4445&ll=3D19.465091,-156.064445
+- Checklist: https://ebird.org/checklist/S315635450
+
+Bulwer's Petrel (Bulweria bulwerii) (2)
+- Reported Mar 31, 2026 10:10 by Sam Wilson
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (5) 19.15438, -155.98409=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.154382,-155.98=
+409&ll=3D19.154382,-155.98409
+- Checklist: https://ebird.org/checklist/S315682162
+
+Bulwer's Petrel (Bulweria bulwerii) (2)
+- Reported Mar 31, 2026 10:10 by Sue Wright
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (5) 19.15438, -155.98409=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.154382,-155.98=
+409&ll=3D19.154382,-155.98409
+- Checklist: https://ebird.org/checklist/S315635554
+
+Bulwer's Petrel (Bulweria bulwerii) (1) CONFIRMED
+- Reported Mar 31, 2026 12:10 by Sam Wilson
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (7) 19.39924, -156.11553=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.399243,-156.11=
+5533&ll=3D19.399243,-156.115533
+- Checklist: https://ebird.org/checklist/S315682160
+- Comments: "Not unusual here this time of year: small overall all dark pet=
+rel with long, pointed tail in flight, and long, narrow wings with a light =
+carpel bar"
+
+Bulwer's Petrel (Bulweria bulwerii) (1) CONFIRMED
+- Reported Mar 31, 2026 12:10 by Sue Wright
+- Hawaii Bird Tours=E2=80=99 Kona Pelagic: 3.31.26 (7) 19.39924, -156.11553=
+, Hawaii, Hawaii
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D19.399243,-156.11=
+5533&ll=3D19.399243,-156.115533
+- Checklist: https://ebird.org/checklist/S315635647
+- Comments: "Not unusual here this time of year: small overall all dark pet=
+rel with long, pointed tail in flight, and long, narrow wings with a light =
+carpel bar"
+
+Hook-billed Kite (Chondrohierax uncinatus) (1)
+- Reported Apr 01, 2026 08:55 by Gail Smith
+- Santa Ana NWR (LTC 059), Hidalgo, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0813003,-98.13=
+51399&ll=3D26.0813003,-98.1351399
+- Checklist: https://ebird.org/checklist/S315734117
+- Comments: "Kite with wide bands on tail.  Seen flying near Willow Lake."
+
+Mottled Owl (Strix virgata) (1)
+- Reported Mar 31, 2026 19:05 by Brendan McKay
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315665982
+- Media: 5 Photos
+- Comments: "*rare
+Continuing, came over for some great looks and sang a whole bunch"
+
+Mottled Owl (Strix virgata) (1)
+- Reported Mar 31, 2026 19:05 by Vitus Li
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315663811
+- Media: 5 Photos
+- Comments: "*rare
+Continuing, came over for some great looks and sang a whole bunch"
+
+Mottled Owl (Strix virgata) (1)
+- Reported Mar 31, 2026 19:05 by Nick  Lund
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315665697
+- Media: 5 Photos
+- Comments: "*rare
+Continuing, came over for some great looks and sang a whole bunch"
+
+Mottled Owl (Strix virgata) (1)
+- Reported Mar 31, 2026 19:05 by Leigh Baker
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315674544
+- Media: 5 Photos
+- Comments: "*rare
+Continuing, came over for some great looks and sang a whole bunch"
+
+Mottled Owl (Strix virgata) (1)
+- Reported Mar 31, 2026 19:05 by Simon Kiacz
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315663270
+- Media: 5 Photos
+- Comments: "*rare
+Continuing, came over for some great looks and sang a whole bunch"
+
+Mottled Owl (Strix virgata) (1)
+- Reported Mar 31, 2026 19:05 by Steve Quartieri
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315667977
+- Media: 5 Photos
+- Comments: "*rare
+Continuing, came over for some great looks and sang a whole bunch"
+
+Aplomado Falcon (Falco femoralis) (2)
+- Reported Apr 02, 2026 09:20 by Vitus Li
+- Cameron Co.--TX100--Aplomado Viewing Area, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0913939,-97.32=
+72438&ll=3D26.0913939,-97.3272438
+- Checklist: https://ebird.org/checklist/S315909890
+- Comments: "Majestic views on wire and nest"
+
+Aplomado Falcon (Falco femoralis) (2)
+- Reported Apr 02, 2026 09:48 by Robert Davis
+- Mustang Island SP=E2=80=94Aplomado Falcon Viewing Platform, TX361, Nueces=
+, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.692173,-97.163=
+53&ll=3D27.692173,-97.16353
+- Checklist: https://ebird.org/checklist/S315915006
+- Comments: "On platform then flew to nearby power pole. Photo tba."
+
+Aplomado Falcon (Falco femoralis) (1)
+- Reported Mar 28, 2026 13:57 by Ornulf Asker
+- Mustang Island SP=E2=80=94Aplomado Falcon Viewing Platform, TX361, Nueces=
+, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.692173,-97.163=
+53&ll=3D27.692173,-97.16353
+- Checklist: https://ebird.org/checklist/S315671417
+
+Aplomado Falcon (Falco femoralis) (2)
+- Reported Apr 01, 2026 14:10 by Siri Jayaratne
+- Mustang Island State Park, Corpus Christi US-TX 27.65712, -97.18723, Nuec=
+es, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.657116,-97.187=
+228&ll=3D27.657116,-97.187228
+- Checklist: https://ebird.org/checklist/S315717899
+
+Aplomado Falcon (Falco femoralis) (2)
+- Reported Apr 01, 2026 14:10 by Barry Zimmer
+- Mustang Island State Park, Corpus Christi US-TX 27.65712, -97.18723, Nuec=
+es, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.657116,-97.187=
+228&ll=3D27.657116,-97.187228
+- Checklist: https://ebird.org/checklist/S315680253
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Jack OConnell
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315714473
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Leigh Baker
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315675948
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Brendan McKay
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315666003
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Nick  Lund
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315665689
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Vitus Li
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315662620
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Shelby Thomas
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315669463
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Steve Quartieri
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315667878
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Rose-throated Becard (Pachyramphus aglaiae) (4)
+- Reported Apr 01, 2026 07:02 by Simon Kiacz
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315662530
+- Media: 2 Photos
+- Comments: "*rare
+Continuing pairs, nest building"
+
+Cattle Tyrant (Machetornis rixosa) (Exotic: Provisional) (1) CONFIRMED
+- Reported Apr 01, 2026 17:09 by Isaiah Scott
+- stakeout Cattle Tyrant, downtown Corpus Christi (2023-25), Nueces, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.7951484,-97.39=
+42164&ll=3D27.7951484,-97.3942164
+- Checklist: https://ebird.org/checklist/S315706456
+- Comments: "Seen on blue oyster dumpster catching flies. Shout out to staf=
+f at Water Street Oyster Bar for directing me to the spot!"
+
+Cattle Tyrant (Machetornis rixosa) (Exotic: Provisional) (1) CONFIRMED
+- Reported Apr 01, 2026 08:46 by Robert Davis
+- stakeout Cattle Tyrant, downtown Corpus Christi (2023-25), Nueces, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.7951484,-97.39=
+42164&ll=3D27.7951484,-97.3942164
+- Checklist: https://ebird.org/checklist/S315542997
+- Media: 2 Photos
+- Comments: "Found after about 10 minutes. Usual spot. Photos perched on th=
+e Chicago Pizza sign."
+
+Cattle Tyrant (Machetornis rixosa) (Exotic: Provisional) (1) CONFIRMED
+- Reported Mar 28, 2026 08:39 by Pam Koepf
+- stakeout Cattle Tyrant, downtown Corpus Christi (2023-25), Nueces, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D27.7951484,-97.39=
+42164&ll=3D27.7951484,-97.3942164
+- Checklist: https://ebird.org/checklist/S315751940
+- Media: 4 Photos
+- Comments: "Ongoing bird. Pics"
+
+Thick-billed Vireo (Vireo crassirostris) (1)
+- Reported Apr 01, 2026 09:57 by Catie Welch
+- Dagny Johnson Key Largo Hammock Botanical SP, Monroe, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.280242,-80.297=
+3986&ll=3D25.280242,-80.2973986
+- Checklist: https://ebird.org/checklist/S315738224
+- Media: 1 Audio
+- Comments: "Audio
+
+25.2802829, -80.2970656"
+
+Rufous-backed Robin (Turdus rufopalliatus) (1)
+- Reported Apr 01, 2026 08:00 by Kathi Marston
+- Hassayampa River Preserve (closed Mon/Tue), Maricopa, Arizona
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D33.9333419,-112.6=
+946297&ll=3D33.9333419,-112.6946297
+- Checklist: https://ebird.org/checklist/S315679041
+- Comments: "Hanging with 2 AMRO in the same area as Eric saw one on 3/26. =
+Eye seen clearly twice without the distinctive AMRO eye ring. Slender body =
+& lighter back. Too deep in brush for good photos"
+
+Rufous-backed Robin (Turdus rufopalliatus) (1)
+- Reported Apr 01, 2026 08:00 by Leslie Morgan
+- Hassayampa River Preserve (closed Mon/Tue), Maricopa, Arizona
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D33.9333419,-112.6=
+946297&ll=3D33.9333419,-112.6946297
+- Checklist: https://ebird.org/checklist/S315754576
+- Comments: "Hanging with 2 AMRO in the same area as Eric saw one on 3/26. =
+Eye seen clearly twice without the distinctive AMRO eye ring. Slender body =
+& lighter back. Too deep in brush for good photos"
+
+European Robin (Erithacus rubecula) (1)
+- Reported Apr 02, 2026 07:35 by Sabrina Jacob
+- poste d'observation Rougegorge familier, Montr=C3=A9al (2026), Montr=C3=
+=A9al, Quebec
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D45.5699906,-73.53=
+0318&ll=3D45.5699906,-73.530318
+- Checklist: https://ebird.org/checklist/S315847784
+- Comments: "=C3=80 mon arriv=C3=A9e, je rencontre David Stobbe, qui me nom=
+me ne pas encore vu le rouge-gorge ce matin. Je lui conseille de me suivre =
+=C3=A0 la mangeoire lorsque je le nourrit, car il le verra mieux. Il accept=
+e et me suit. J=E2=80=99appelle James (et mon surnom =C3=A0 mon chouchou) e=
+t celui-ci appara=C3=AEt quelques instants apr=C3=A8s. Pendant que je mets =
+sa nourriture, il tournoie autour, donnant tout un d=C3=A9fi photographique=
+ =C3=A0 M.Stobbe hahah. Je le rassure en disant qu=E2=80=99il devrait reste=
+r plus stable quand il d=C3=A9couvrira la nourriture. Je recule l=C3=A9g=C3=
+=A8rement et le rouge-gorge s=E2=80=99approche de la mangeoire. Il se perch=
+e sur le perchoir en bois et observe attentivement la nouvelle mangeoire =
+=C3=A0 d=C3=B4me. Il fait le tour de celle-ci, allant de branche en branche=
+ et l=E2=80=99observant de tous les angles. Donnant dor=C3=A9navant =C3=A0 =
+M.Stobbe de belles opportunit=C3=A9s photos ! Se d=C3=A9cide enfin apr=C3=
+=A8s quelques minutes et des mots d=E2=80=99encouragements de ma part, d=E2=
+=80=99entrer dans la cage anti-=C3=A9cureuil et prendre une petite bouch=C3=
+=A9e de suif dans la mangeoire ! Yay! Elle est accept=C3=A9 par James! Il r=
+eprend une petite bouch=C3=A9e qu=E2=80=99il ira d=C3=A9guster plus loin da=
+ns la haie de c=C3=A8dre vers la gauche. Nous quittons ensuite."
+
+European Robin (Erithacus rubecula) (1)
+- Reported Apr 01, 2026 07:04 by Drew Hopkins
+- poste d'observation Rougegorge familier, Montr=C3=A9al (2026), Montr=C3=
+=A9al, Quebec
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D45.5699906,-73.53=
+0318&ll=3D45.5699906,-73.530318
+- Checklist: https://ebird.org/checklist/S315627106
+- Comments: "Found in cedars near feeder
+ Went from chest height to ground and fed twice. Healthy looking bird. Clea=
+n plumage, feathers appear to be unworn. Stayed for about 2 minutes."
+
+Tricolored Munia (Lonchura malacca) (Exotic: Naturalized) (3) CONFIRMED
+- Reported Apr 01, 2026 15:14 by Alice Church
+- Belle Glade Marina & Torry Island, Palm Beach, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.7063982,-80.71=
+68961&ll=3D26.7063982,-80.7168961
+- Checklist: https://ebird.org/checklist/S315756713
+- Media: 3 Photos
+- Comments: "Continuing in the high grass next to the open field across the=
+ road from Slim's. 1 adult and 2 juveniles were seen. Windy conditions, but=
+ was able to get photos of one of the juveniles."
+
+Red-throated Pipit (Anthus cervinus) (1)
+- Reported Apr 01, 2026 16:30 by Haim Weizman
+- 4150 Ute Dr, San Diego, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.808081,-117.20=
+3203&ll=3D32.808081,-117.203203
+- Checklist: https://ebird.org/checklist/S315756772
+- Media: 6 Photos
+- Comments: "Continuing since it was found by Adrian and Paul. A very loud =
+baseball practice initially seemed like a nightmare for birding, but it tur=
+ned out to be a blessing because it provided access to the back fields. Pho=
+tos."
+
+Red-throated Pipit (Anthus cervinus) (1) CONFIRMED
+- Reported Apr 01, 2026 09:30 by Frank Marenghi
+- 4150 Ute Dr, San Diego US-CA 32.80723, -117.20350, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.807234,-117.20=
+3504&ll=3D32.807234,-117.203504
+- Checklist: https://ebird.org/checklist/S315616109
+- Comments: "Continuing on h.s. baseball field with American Pipits near sc=
+oreboard"
+
+Red-throated Pipit (Anthus cervinus) (1)
+- Reported Apr 02, 2026 07:54 by Andy Lasar
+- 4150 Ute Dr, San Diego US-CA 32.80829, -117.20347, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.808289,-117.20=
+3466&ll=3D32.808289,-117.203466
+- Checklist: https://ebird.org/checklist/S315928436
+- Comments: "Continuing at the baseball field. In the flock of ampi. Red th=
+roat and pale legs on a streaky pipit. Pics. Third times the charm!"
+
+Red-throated Pipit (Anthus cervinus) (1)
+- Reported Apr 02, 2026 08:20 by Asher Lee
+- Clairemont High Baseball Fields, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.808507,-117.20=
+2913&ll=3D32.808507,-117.202913
+- Checklist: https://ebird.org/checklist/S315930160
+- Comments: "Continuing in the baseball field. Nice rosy throat, bold strea=
+king on the back. Smaller than nearby AMPI"
+
+Red-throated Pipit (Anthus cervinus) (1)
+- Reported Apr 01, 2026 09:45 by Katherine and Jeff Clemens
+- North Clairemont Community Park, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.8324492,-117.1=
+959936&ll=3D32.8324492,-117.1959936
+- Checklist: https://ebird.org/checklist/S315907602
+- Comments: "Red face and neck, prominent dark streaking on sides of chest.=
+ Seen in left field near the chain link fence next to the parking lot."
+
+Red-throated Pipit (Anthus cervinus) (1) CONFIRMED
+- Reported Mar 31, 2026 07:02 by Sally Veach
+- South Clairemont Community Park, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.806199,-117.19=
+95427&ll=3D32.806199,-117.1995427
+- Checklist: https://ebird.org/checklist/S315700069
+- Media: 5 Photos
+- Comments: "Continuing. Seen at the high school here. (32.8089167, -117.20=
+39375)"
+
+Red-throated Pipit (Anthus cervinus) (1) CONFIRMED
+- Reported Mar 31, 2026 07:02 by Patricia Langen
+- South Clairemont Community Park, San Diego, California
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D32.806199,-117.19=
+95427&ll=3D32.806199,-117.1995427
+- Checklist: https://ebird.org/checklist/S315703901
+- Media: 5 Photos
+- Comments: "Continuing. Seen at the high school here. (32.8089167, -117.20=
+39375)"
+
+Eurasian Bullfinch (Pyrrhula pyrrhula) (1)
+- Reported Apr 01, 2026 07:30 by Jukka Jantunen
+- Watson Lake--Liard Ave, Yukon, Yukon Territory
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D60.070036,-128.70=
+20284&ll=3D60.070036,-128.7020284
+- Checklist: https://ebird.org/checklist/S315914615
+- Comments: "F"
+
+McKay's Bunting (Plectrophenax hyperboreus) (20) CONFIRMED
+- Reported Apr 01, 2026 12:07 by Alan Van Norman
+- Nome--Icy View, Nome Census Area, Alaska
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D64.5193554,-165.3=
+754683&ll=3D64.5193554,-165.3754683
+- Checklist: https://ebird.org/checklist/S315705031
+- Comments: "Coming to a feeder on the southwest side of Icy View."
+
+McKay's Bunting (Plectrophenax hyperboreus) (12) CONFIRMED
+- Reported Apr 01, 2026 09:29 by Alan Van Norman
+- Nome--Icy View, Nome Census Area, Alaska
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D64.5193554,-165.3=
+754683&ll=3D64.5193554,-165.3754683
+- Checklist: https://ebird.org/checklist/S315704435
+- Comments: "Coming to a feeder on the southwest side of Icy View."
+
+McKay's Bunting (Plectrophenax hyperboreus) (25)
+- Reported Mar 28, 2026 12:31 by Stuart White
+- Nome--Icy View, Nome Census Area, Alaska
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D64.5193554,-165.3=
+754683&ll=3D64.5193554,-165.3754683
+- Checklist: https://ebird.org/checklist/S315650520
+- Media: 7 Photos
+
+McKay's Bunting (Plectrophenax hyperboreus) (40) CONFIRMED
+- Reported Mar 27, 2026 12:16 by Stuart White
+- Nome--Icy View, Nome Census Area, Alaska
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D64.5193554,-165.3=
+754683&ll=3D64.5193554,-165.3754683
+- Checklist: https://ebird.org/checklist/S315656464
+- Media: 6 Photos
+- Comments: "Conservative estimate the bunting flocks moving around Icy Vie=
+w. There were at least two flocks of around 20 birds each."
+
+Shiny Cowbird (Molothrus bonariensis) (1)
+- Reported Apr 02, 2026 08:03 by Pamela=E2=80=99s Mackey
+- 20313 SW 322nd St, Homestead US-FL 25.46813, -80.52041, Miami-Dade, Flori=
+da
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.468134,-80.520=
+407&ll=3D25.468134,-80.520407
+- Checklist: https://ebird.org/checklist/S315853491
+- Comments: "Saw multiple times.  On feeder. Often sighted here."
+
+Shiny Cowbird (Molothrus bonariensis) (1) CONFIRMED
+- Reported Apr 01, 2026 16:02 by Megan Davis
+- Everglades NP--Flamingo, Monroe, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.1416,-80.9255&=
+ll=3D25.1416,-80.9255
+- Checklist: https://ebird.org/checklist/S315674897
+- Comments: "Outside visitors center by the flag pole."
+
+Shiny Cowbird (Molothrus bonariensis) (1) CONFIRMED
+- Reported Apr 01, 2026 15:57 by Nathan Ukens
+- Everglades NP--Flamingo, Monroe, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.1416,-80.9255&=
+ll=3D25.1416,-80.9255
+- Checklist: https://ebird.org/checklist/S315679219
+- Comments: "Continuing rarity*shiny iridescently purple cowbird no brown o=
+n the head. Feeding with flock of cowbirds in front lawn. Pics to be added"
+
+Shiny Cowbird (Molothrus bonariensis) (2) CONFIRMED
+- Reported Apr 01, 2026 15:38 by Brad Elvert
+- Everglades NP--Flamingo, Monroe, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.1416,-80.9255&=
+ll=3D25.1416,-80.9255
+- Checklist: https://ebird.org/checklist/S315742385
+- Comments: "2 males seen in large cowbird flock simultaneously, to confirm=
+ the 2 male bird presence. Photos and video taken. I camped the last couple=
+ nights and the flock wasn=E2=80=99t always around the marina,, fyi.. don=
+=E2=80=99t know where it goes sometimes"
+
+Shiny Cowbird (Molothrus bonariensis) (1) CONFIRMED
+- Reported Apr 01, 2026 13:42 by Laura Donnelly-Smith
+- Everglades NP--Guy Bradley Trail, Monroe, Florida
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D25.1389043,-80.92=
+69966&ll=3D25.1389043,-80.9269966
+- Checklist: https://ebird.org/checklist/S315686279
+- Comments: "High in a tree outside the Guy Bradley visitor center. Mixed i=
+n w starlings and brown-headed cowbirds, Merlin ID'd song of both cowbird t=
+ypes. Glossy, black/iridescent. Confirmed ID several hours later w other bi=
+rders near visitor center."
+
+Tropical Parula (Setophaga pitiayumi) (1) CONFIRMED
+- Reported Apr 01, 2026 07:37 by Gary Yoder
+- Hill Country SNA--(Medina Co. portion / S. of Bandera Creek rd.)(HOTW 045=
+), Medina, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D29.6236349,-99.17=
+47677&ll=3D29.6236349,-99.1747677
+- Checklist: https://ebird.org/checklist/S315627649
+- Media: 3 Photos
+- Comments: "Seen in  primitive camping parking area as previously reported=
+. No eye ring visible when seen in binos, but one very small white dot at b=
+ase of eyes need some serious comments from reviewers.
+Have recordings."
+
+Tropical Parula (Setophaga pitiayumi) (2)
+- Reported Apr 01, 2026 07:33 by Janice Travis
+- King Ranch--Norias Division (Kenedy Co.), Kenedy, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.7876524,-97.77=
+07243&ll=3D26.7876524,-97.7707243
+- Checklist: https://ebird.org/checklist/S315722051
+
+Tropical Parula (Setophaga pitiayumi) (2)
+- Reported Apr 01, 2026 07:33 by Andrew Orgill
+- King Ranch--Norias Division (Kenedy Co.), Kenedy, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.7876524,-97.77=
+07243&ll=3D26.7876524,-97.7707243
+- Checklist: https://ebird.org/checklist/S315734876
+
+Tropical Parula (Setophaga pitiayumi) (2)
+- Reported Apr 01, 2026 07:33 by Mike Stewart =F0=9F=A6=85
+- King Ranch--Norias Division (Kenedy Co.), Kenedy, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.7876524,-97.77=
+07243&ll=3D26.7876524,-97.7707243
+- Checklist: https://ebird.org/checklist/S315723134
+
+Tropical Parula (Setophaga pitiayumi) (3)
+- Reported Mar 31, 2026 08:08 by Linda Bennett
+- King Ranch--Norias Division (Kenedy Co.), Kenedy, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.7876524,-97.77=
+07243&ll=3D26.7876524,-97.7707243
+- Checklist: https://ebird.org/checklist/S315840736
+- Media: 1 Photo
+
+Tropical Parula (Setophaga pitiayumi) (1)
+- Reported Apr 01, 2026 09:21 by BIRDING ECOTOURS
+- Lost Maples SNA (HOTW 061), Bandera, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D29.8155087,-99.57=
+62582&ll=3D29.8155087,-99.5762582
+- Checklist: https://ebird.org/checklist/S315644949
+- Comments: "Male singing loudly and hanging out with his NOPA girlfriend. =
+Photos."
+
+Tropical Parula (Setophaga pitiayumi) (1)
+- Reported Apr 01, 2026 09:21 by Miles Hoff
+- Lost Maples SNA (HOTW 061), Bandera, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D29.8155087,-99.57=
+62582&ll=3D29.8155087,-99.5762582
+- Checklist: https://ebird.org/checklist/S315833690
+- Comments: "Male singing loudly and hanging out with his NOPA girlfriend. =
+Photos."
+
+Tropical Parula (Setophaga pitiayumi) (1)
+- Reported Apr 01, 2026 09:21 by Jacob Roalef - Birding Ecotours
+- Lost Maples SNA (HOTW 061), Bandera, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D29.8155087,-99.57=
+62582&ll=3D29.8155087,-99.5762582
+- Checklist: https://ebird.org/checklist/S315644948
+- Comments: "Male singing loudly and hanging out with his NOPA girlfriend. =
+Photos."
+
+Tropical Parula (Setophaga pitiayumi) (1)
+- Reported Apr 01, 2026 09:21 by Sam Zuckerman
+- Lost Maples SNA (HOTW 061), Bandera, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D29.8155087,-99.57=
+62582&ll=3D29.8155087,-99.5762582
+- Checklist: https://ebird.org/checklist/S315645628
+- Comments: "Male singing loudly and hanging out with his NOPA girlfriend. =
+Photos."
+
+Mangrove Yellow Warbler (Setophaga petechia) (1)
+- Reported Mar 30, 2026 14:49 by Jason Crabtree
+- South Padre Is.--N. of KOA marsh/beach, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0799705,-97.16=
+63207&ll=3D26.0799705,-97.1663207
+- Checklist: https://ebird.org/checklist/S314894283
+
+Mangrove Yellow Warbler (Mexican) (Setophaga petechia [castaneiceps Group])=
+ (10)
+- Reported Apr 01, 2026 10:34 by William Buswell
+- South Padre Is.--Queen Isabella causeway east end, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0852396,-97.16=
+98773&ll=3D26.0852396,-97.1698773
+- Checklist: https://ebird.org/checklist/S315608470
+
+Mangrove Yellow Warbler (Mexican) (Setophaga petechia [castaneiceps Group])=
+ (10)
+- Reported Apr 01, 2026 10:34 by Rajan Rao
+- South Padre Is.--Queen Isabella causeway east end, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0852396,-97.16=
+98773&ll=3D26.0852396,-97.1698773
+- Checklist: https://ebird.org/checklist/S315608463
+
+Mangrove Yellow Warbler (Mexican) (Setophaga petechia [castaneiceps Group])=
+ (10)
+- Reported Apr 01, 2026 10:34 by Eaton Ekarintaragun
+- South Padre Is.--Queen Isabella causeway east end, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0852396,-97.16=
+98773&ll=3D26.0852396,-97.1698773
+- Checklist: https://ebird.org/checklist/S315608467
+
+Mangrove Yellow Warbler (Mexican) (Setophaga petechia [castaneiceps Group])=
+ (10)
+- Reported Apr 01, 2026 10:34 by Kieran Schnitzspahn
+- South Padre Is.--Queen Isabella causeway east end, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0852396,-97.16=
+98773&ll=3D26.0852396,-97.1698773
+- Checklist: https://ebird.org/checklist/S315608469
+
+Mangrove Yellow Warbler (Mexican) (Setophaga petechia [castaneiceps Group])=
+ (10)
+- Reported Apr 01, 2026 10:34 by Caleb Helsel
+- South Padre Is.--Queen Isabella causeway east end, Cameron, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.0852396,-97.16=
+98773&ll=3D26.0852396,-97.1698773
+- Checklist: https://ebird.org/checklist/S315608471
+
+Rufous-capped Warbler (Basileuterus rufifrons) (1) CONFIRMED
+- Reported Apr 01, 2026 07:15 by Joel Swanstrom
+- Sycamore Canyon (Pajarito Mountains), Santa Cruz, Arizona
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D31.4290009,-111.1=
+905975&ll=3D31.4290009,-111.1905975
+- Checklist: https://ebird.org/checklist/S315631891
+- Media: 1 Photo
+- Comments: "One singing on tree top when arrived just north of coordinates=
+ provided by Tucson Bird Alliance RBA at 8:15am."
+
+Crimson-collared Grosbeak (Periporphyrus celaeno) (1)
+- Reported Apr 02, 2026 07:51 by John Nelson
+- Edinburg Scenic Wetlands WBC (LTC 061), Hidalgo, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.2905822,-98.13=
+51909&ll=3D26.2905822,-98.1351909
+- Checklist: https://ebird.org/checklist/S315949258
+- Comments: "Continuing female. Very vocal and showing well between the ent=
+rance and main building."
+
+Crimson-collared Grosbeak (Periporphyrus celaeno) (1) CONFIRMED
+- Reported Apr 01, 2026 15:57 by Nick  Lund
+- Edinburg Scenic Wetlands WBC (LTC 061), Hidalgo, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.2905822,-98.13=
+51909&ll=3D26.2905822,-98.1351909
+- Checklist: https://ebird.org/checklist/S315713003
+- Media: 2 Photos
+- Comments: "Continuing. Many thanks to the Naturalist, Will, for getting u=
+s to the right spot. The bird was calmly eating leaves along a dirt path ju=
+st south of the Main Building (not the building by the parking lot) and jus=
+t east of the wooden boardwalk."
+
+Crimson-collared Grosbeak (Periporphyrus celaeno) (1) CONFIRMED
+- Reported Apr 01, 2026 15:57 by Brendan McKay
+- Edinburg Scenic Wetlands WBC (LTC 061), Hidalgo, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.2905822,-98.13=
+51909&ll=3D26.2905822,-98.1351909
+- Checklist: https://ebird.org/checklist/S315713005
+- Media: 2 Photos
+- Comments: "Continuing. Many thanks to the Naturalist, Will, for getting u=
+s to the right spot. The bird was calmly eating leaves along a dirt path ju=
+st south of the Main Building (not the building by the parking lot) and jus=
+t east of the wooden boardwalk."
+
+Crimson-collared Grosbeak (Periporphyrus celaeno) (1) CONFIRMED
+- Reported Mar 31, 2026 15:31 by Ken Cross
+- Edinburg Scenic Wetlands WBC (LTC 061), Hidalgo, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.2905822,-98.13=
+51909&ll=3D26.2905822,-98.1351909
+- Checklist: https://ebird.org/checklist/S315670759
+- Media: 7 Photos
+- Comments: "Continuing bird in known location. Much darker than I expected=
+. Black head with large bill. Body dark olives yellow."
+
+Crimson-collared Grosbeak (Periporphyrus celaeno) (1) CONFIRMED
+- Reported Mar 31, 2026 15:31 by Stephen Grainger
+- Edinburg Scenic Wetlands WBC (LTC 061), Hidalgo, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.2905822,-98.13=
+51909&ll=3D26.2905822,-98.1351909
+- Checklist: https://ebird.org/checklist/S315654082
+- Media: 7 Photos
+- Comments: "Continuing bird in known location. Much darker than I expected=
+. Black head with large bill. Body dark olives yellow."
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Brendan McKay
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315666003
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Leigh Baker
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315675948
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Jack OConnell
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315714473
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Shelby Thomas
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315669463
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Steve Quartieri
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315667878
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Vitus Li
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315662620
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Nick  Lund
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315665689
+- Media: 1 Photo
+
+Morelet's Seedeater (Sporophila morelleti) (2)
+- Reported Apr 01, 2026 07:02 by Simon Kiacz
+- Santa Margarita Ranch (LTC 079) (restricted access - guided groups only),=
+ Starr, Texas
+- Map: http://maps.google.com/?ie=3DUTF8&t=3Dp&z=3D13&q=3D26.4856177,-99.09=
+12337&ll=3D26.4856177,-99.0912337
+- Checklist: https://ebird.org/checklist/S315662530
+- Media: 1 Photo
+
+***********
+
+You received this message because you are subscribed to eBird's ABA Raritie=
+s
+
+Manage your eBird alert subscriptions:
+https://ebird.org/alerts
+
+eBird Alerts provide recent reports of regionally or seasonally rare specie=
+s (Rarities Alerts) or species you have not yet observed (Needs Alerts) in =
+your region of interest; both Accepted and Unreviewed observations are incl=
+uded. Some reports may be from private property or inaccessible to the gene=
+ral public. It is the responsibility of every eBirder to be aware of and re=
+spectful of access restrictions. For more information, see our Terms of Use=
+: https://www.birds.cornell.edu/home/terms-of-use/
