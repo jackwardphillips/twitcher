@@ -39,7 +39,7 @@ describe('eBird Parser', () => {
       count: 1,
       confirmed: false,
       observer: 'Tucker Frank',
-      location: '219=E2=80=93277 Newport Rd, Corinna US-ME (44.9071,-69.2646), Penobscot, Maine',
+      location: '219–277 Newport Rd, Corinna US-ME (44.9071,-69.2646), Penobscot, Maine',
       date: new Date('Mar 29, 2026 16:50'),
     });
   });

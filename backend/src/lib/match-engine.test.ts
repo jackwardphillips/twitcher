@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MatchEngine } from './match-engine.js';
-import { EbirdClient, EbirdObservation } from './ebird-client.js';
+import { EbirdClient } from './ebird-client.js';
+import type { EbirdObservation } from './ebird-client.js';
 
 describe('MatchEngine', () => {
   let ebirdClient: EbirdClient;

@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EnrichmentService } from './enrichment-service.js';
 import { MatchEngine } from './match-engine.js';
 import { prisma } from './db.js';
-import { EbirdObservation } from './ebird-client.js';
+import { RegionService } from './region-service.js';
+import type { EbirdObservation } from './ebird-client.js';
 
 describe('EnrichmentService', () => {
   let matchEngine: MatchEngine;
+  let regionService: RegionService;
   let enrichmentService: EnrichmentService;
 
   beforeEach(async () => {
@@ -14,8 +16,18 @@ describe('EnrichmentService', () => {
     
     matchEngine = {
       findMatch: vi.fn(),
+      selectBestMatch: vi.fn(),
+      ebirdClient: {
+        getNotableObservations: vi.fn(),
+        getNearbyNotableObservations: vi.fn(),
+      },
     } as any;
-    enrichmentService = new EnrichmentService(matchEngine);
+
+    regionService = {
+      findSubregionCode: vi.fn(),
+    } as any;
+
+    enrichmentService = new EnrichmentService(matchEngine, regionService);
   });
 
   it('should enrich a sighting with matching eBird observation', async () => {
@@ -81,19 +93,24 @@ describe('EnrichmentService', () => {
     });
 
     // It should still have null subId but we might need a way to track that it was checked
-    // For now, let's just assert that it's still there and unenriched
+    // For now, let's be strict but log rejections.
     expect(unenriched?.subId).toBeNull();
   });
 
   it('should enrich all unenriched sightings', async () => {
     await prisma.sighting.createMany({
       data: [
-        { species: 'A', location: 'X', date: new Date(), observer: '1' },
-        { species: 'B', location: 'Y', date: new Date(), observer: '2' },
+        { species: 'A', location: 'Victoria, British Columbia', date: new Date(), observer: '1' },
+        { species: 'B', location: 'Portland, Maine', date: new Date(), observer: '2' },
       ],
     });
 
-    (matchEngine.findMatch as any).mockResolvedValue({
+    (matchEngine.ebirdClient.getNotableObservations as any).mockResolvedValue([]);
+    (matchEngine.ebirdClient.getNearbyNotableObservations as any).mockResolvedValue([]);
+    (regionService.findSubregionCode as any).mockResolvedValue(null);
+
+    // We also need to mock selectBestMatch for the new refactored logic
+    (matchEngine as any).selectBestMatch = vi.fn().mockReturnValue({
       speciesCode: 'abc', comName: 'Bird', subId: 'S1', lat: 1, lng: 2
     });
 
@@ -103,4 +120,3 @@ describe('EnrichmentService', () => {
     expect(sightings.every(s => s.subId === 'S1')).toBe(true);
   });
 });
-

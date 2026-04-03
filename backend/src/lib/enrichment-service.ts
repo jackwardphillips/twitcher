@@ -4,6 +4,29 @@ import { RegionService } from './region-service.js';
 import type { Sighting } from '@prisma/client';
 
 export class EnrichmentService {
+  private static readonly STATE_MAPPINGS: Record<string, string> = {
+    'Maine': 'US-ME', 'ME': 'US-ME',
+    'New York': 'US-NY', 'NY': 'US-NY',
+    'Pennsylvania': 'US-PA', 'PA': 'US-PA',
+    'Florida': 'US-FL', 'FL': 'US-FL',
+    'Texas': 'US-TX', 'TX': 'US-TX',
+    'California': 'US-CA', 'CA': 'US-CA',
+    'British Columbia': 'CA-BC', 'BC': 'CA-BC',
+    'Quebec': 'CA-QC', 'QC': 'CA-QC',
+    'Ontario': 'CA-ON', 'ON': 'CA-ON',
+    'Massachusetts': 'US-MA', 'MA': 'US-MA',
+    'Vermont': 'US-VT', 'VT': 'US-VT',
+    'Newfoundland and Labrador': 'CA-NL', 'Newfoundland': 'CA-NL', 'NL': 'CA-NL',
+    'Nebraska': 'US-NE', 'NE': 'US-NE',
+    'Hawaii': 'US-HI', 'HI': 'US-HI',
+    'Arizona': 'US-AZ', 'AZ': 'US-AZ',
+    'Alaska': 'US-AK', 'AK': 'US-AK',
+    'Yukon': 'CA-YT', 'YT': 'CA-YT',
+    'Oregon': 'US-OR', 'OR': 'US-OR',
+    'Washington': 'US-WA', 'WA': 'US-WA',
+    'New Jersey': 'US-NJ', 'NJ': 'US-NJ',
+  };
+
   constructor(
     private matchEngine: MatchEngine,
     private regionService: RegionService
@@ -131,32 +154,9 @@ export class EnrichmentService {
   }
 
   private getStateCode(part: string): string | null {
-    const stateMappings: Record<string, string> = {
-      'Maine': 'US-ME', 'ME': 'US-ME',
-      'New York': 'US-NY', 'NY': 'US-NY',
-      'Pennsylvania': 'US-PA', 'PA': 'US-PA',
-      'Florida': 'US-FL', 'FL': 'US-FL',
-      'Texas': 'US-TX', 'TX': 'US-TX',
-      'California': 'US-CA', 'CA': 'US-CA',
-      'British Columbia': 'CA-BC', 'BC': 'CA-BC',
-      'Quebec': 'CA-QC', 'QC': 'CA-QC',
-      'Ontario': 'CA-ON', 'ON': 'CA-ON',
-      'Massachusetts': 'US-MA', 'MA': 'US-MA',
-      'Vermont': 'US-VT', 'VT': 'US-VT',
-      'Newfoundland and Labrador': 'CA-NL', 'Newfoundland': 'CA-NL', 'NL': 'CA-NL',
-      'Nebraska': 'US-NE', 'NE': 'US-NE',
-      'Hawaii': 'US-HI', 'HI': 'US-HI',
-      'Arizona': 'US-AZ', 'AZ': 'US-AZ',
-      'Alaska': 'US-AK', 'AK': 'US-AK',
-      'Yukon': 'CA-YT', 'YT': 'CA-YT',
-      'Oregon': 'US-OR', 'OR': 'US-OR',
-      'Washington': 'US-WA', 'WA': 'US-WA',
-      'New Jersey': 'US-NJ', 'NJ': 'US-NJ',
-    };
-    
     // Exact match or contains state name
-    if (stateMappings[part]) return stateMappings[part]!;
-    for (const [name, code] of Object.entries(stateMappings)) {
+    if (EnrichmentService.STATE_MAPPINGS[part]) return EnrichmentService.STATE_MAPPINGS[part]!;
+    for (const [name, code] of Object.entries(EnrichmentService.STATE_MAPPINGS)) {
       if (part.includes(name)) return code;
     }
 

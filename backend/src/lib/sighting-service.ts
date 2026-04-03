@@ -25,8 +25,8 @@ export async function saveSightings(sightings: Sighting[]): Promise<void> {
   });
 
   // Automatically trigger background enrichment for all unenriched sightings
-  // This is a simple 'fire and forget' approach suitable for this stage
-  enrichmentService.enrichAllUnenriched().catch(err => {
+  // We return the promise so callers can wait if they want to
+  return enrichmentService.enrichAllUnenriched().catch(err => {
     console.error('Background enrichment failed:', err);
   });
 }
