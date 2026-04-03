@@ -147,6 +147,11 @@ export class EnrichmentService {
       'Nebraska': 'US-NE', 'NE': 'US-NE',
       'Hawaii': 'US-HI', 'HI': 'US-HI',
       'Arizona': 'US-AZ', 'AZ': 'US-AZ',
+      'Alaska': 'US-AK', 'AK': 'US-AK',
+      'Yukon': 'CA-YT', 'YT': 'CA-YT',
+      'Oregon': 'US-OR', 'OR': 'US-OR',
+      'Washington': 'US-WA', 'WA': 'US-WA',
+      'New Jersey': 'US-NJ', 'NJ': 'US-NJ',
     };
     
     // Exact match or contains state name
