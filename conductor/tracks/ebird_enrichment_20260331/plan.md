@@ -46,7 +46,7 @@ Adding user location filtering and historical sighting context.
     - [x] Implement streak display (e.g., "Seen 3 days in a row") on cards
 - [x] **Task: Conductor - User Manual Verification 'Proximity & Streaks' (Protocol in workflow.md)** (f30ef79)
 
-## Phase 5: Field Journal UI (Aesthetic & Polish)
+## Phase 5: Field Journal UI (Aesthetic & Polish) [checkpoint: e34aaa8]
 Applying the "Field Journal" design system and final project refinement.
 
 - [x] **Task: Apply "Field Journal" Design System** (770447b)
@@ -58,7 +58,7 @@ Applying the "Field Journal" design system and final project refinement.
 - [x] **Task: Final Polish & Responsive Verification** (0220c42)
     - [x] Perform manual verification of mobile responsiveness and touch targets
     - [x] Conduct final end-to-end verification of the enrichment flow
-- [~] **Task: Conductor - User Manual Verification 'Field Journal UI' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Field Journal UI' (Protocol in workflow.md)** (e34aaa8)
 
 ## Phase: Review Fixes
 - [x] Task: Apply review suggestions (18f9615)
