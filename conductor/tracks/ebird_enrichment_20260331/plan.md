@@ -35,7 +35,7 @@ Integrating the interactive map and the top-down dashboard layout.
     - [x] Implement CSS structure for the integrated layout (functional only)
 - [x] **Task: Conductor - User Manual Verification 'Geospatial Dashboard' (Protocol in workflow.md)**
 
-## Phase 4: Proximity & Streaks
+## Phase 4: Proximity & Streaks [checkpoint: f30ef79]
 Adding user location filtering and historical sighting context.
 
 - [x] **Task: Implement "Near Me" Geolocation Filter** (9e671c4)
@@ -44,7 +44,7 @@ Adding user location filtering and historical sighting context.
 - [x] **Task: Implement Sighting Streak Logic** (6008602)
     - [x] Write unit tests for calculating consecutive days reported
     - [x] Implement streak display (e.g., "Seen 3 days in a row") on cards
-- [~] **Task: Conductor - User Manual Verification 'Proximity & Streaks' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Proximity & Streaks' (Protocol in workflow.md)** (f30ef79)
 
 ## Phase 5: Field Journal UI (Aesthetic & Polish)
 Applying the "Field Journal" design system and final project refinement.
