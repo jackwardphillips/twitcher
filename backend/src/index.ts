@@ -17,7 +17,44 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
     const sightings = await prisma.sighting.findMany({
       orderBy: { date: 'desc' },
     });
-    res.json(sightings);
+
+    // Calculate streaks in memory for all sightings
+    // Group by (species, location)
+    const grouped: Record<string, string[]> = {};
+    for (const s of sightings) {
+      const key = `${s.species}|${s.location}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(s.date.toISOString().split('T')[0]);
+    }
+
+    // Convert grouped dates to unique sorted sets
+    const streakData: Record<string, string[]> = {};
+    for (const key in grouped) {
+      streakData[key] = Array.from(new Set(grouped[key])).sort().reverse();
+    }
+
+    const sightingsWithStreaks = sightings.map(s => {
+      const key = `${s.species}|${s.location}`;
+      const dates = streakData[key];
+      const refDateStr = s.date.toISOString().split('T')[0];
+      
+      let streak = 0;
+      let currentDate = new Date(refDateStr);
+      
+      while (true) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        if (dates.includes(dateStr)) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return { ...s, streak };
+    });
+
+    res.json(sightingsWithStreaks);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch sightings' });
   }

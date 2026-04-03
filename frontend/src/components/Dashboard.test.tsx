@@ -34,19 +34,25 @@ describe('Dashboard', () => {
     },
   ];
 
-  it('renders a list of sightings', async () => {
+  it('renders a list of sightings with streak badges', async () => {
+    const sightingsWithStreak = [
+      {
+        ...mockSightings[0],
+        streak: 3,
+      },
+    ];
+
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockSightings,
+      json: async () => sightingsWithStreak,
     } as Response);
 
     render(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Rare Bird Dashboard/i)).toBeInTheDocument();
       expect(screen.getByText('Near Bird')).toBeInTheDocument();
-      expect(screen.getByText('Far Bird')).toBeInTheDocument();
+      expect(screen.getByText(/Seen 3 days in a row/i)).toBeInTheDocument();
     });
   });
 
