@@ -33,7 +33,7 @@ Integrating the interactive map and the top-down dashboard layout.
 - [x] **Task: Implement Top-Down Dashboard Layout** (49df60f)
     - [x] Write tests for the map-on-top and scrollable list structure
     - [x] Implement CSS structure for the integrated layout (functional only)
-- [ ] **Task: Conductor - User Manual Verification 'Geospatial Dashboard' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Geospatial Dashboard' (Protocol in workflow.md)**
 
 ## Phase 4: Proximity & Streaks
 Adding user location filtering and historical sighting context.
@@ -59,3 +59,6 @@ Applying the "Field Journal" design system and final project refinement.
     - [ ] Perform manual verification of mobile responsiveness and touch targets
     - [ ] Conduct final end-to-end verification of the enrichment flow
 - [ ] **Task: Conductor - User Manual Verification 'Field Journal UI' (Protocol in workflow.md)**
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions (18f9615)
