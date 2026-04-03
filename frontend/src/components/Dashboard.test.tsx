@@ -13,6 +13,8 @@ describe('Dashboard', () => {
         id: 1,
         species: 'Taiga Bean-Goose',
         location: 'Deering Rd',
+        latitude: 45.0,
+        longitude: -70.0,
         date: new Date().toISOString(),
         observer: 'Alexander Dabbs',
       },

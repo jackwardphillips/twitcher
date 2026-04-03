@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { SightingMap } from './SightingMap.js';
 
 interface Sighting {
   id: number;
   species: string;
   scientificName?: string;
   location: string;
+  latitude: number | null;
+  longitude: number | null;
   date: string;
   observer: string;
   details?: string;
@@ -39,6 +42,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
       <h1>Rare Bird Dashboard</h1>
+      <SightingMap sightings={sightings} />
       <div className="sightings-list">
         {sightings.map((sighting) => (
           <div key={sighting.id} className="sighting-card">

@@ -4,6 +4,7 @@
 - **React (TypeScript):** A robust and widely-used library for building modern, responsive user interfaces.
 - **Vanilla CSS:** Leverages native browser capabilities for maximum flexibility and performance.
 - **Vite:** A fast build tool for modern web projects.
+- **Leaflet & React-Leaflet (Added 2026-04-03):** For interactive mapping of bird sightings with precise geospatial pins.
 
 ## Backend
 - **Node.js (Express):** A reliable, high-performance environment for building the dashboard's API.
