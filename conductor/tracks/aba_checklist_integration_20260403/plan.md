@@ -1,0 +1,26 @@
+# Implementation Plan - ABA Checklist Integration
+
+## Phase 1: Data Ingestion & Storage
+This phase focuses on parsing the ABA Checklist CSV, storing the data, and establishing a basic lookup mechanism.
+
+- [ ] **Task: Parse ABA Checklist CSV**
+    - [ ] Write failing tests for CSV parsing logic.
+    - [ ] Implement CSV parsing function.
+- [ ] **Task: Define Prisma Schema for Rarity Codes**
+    - [ ] Write failing tests for new schema.
+    - [ ] Define new Prisma model for ABA rarity data.
+- [ ] **Task: Implement Database Seeding**
+    - [ ] Write failing tests for seeding logic.
+    - [ ] Implement script to seed database with parsed ABA data.
+- [ ] **Task: Conductor - User Manual Verification 'Data Ingestion & Storage' (Protocol in workflow.md)**
+
+## Phase 2: Rarity Code Lookup Service
+This phase focuses on creating a service to query the stored ABA rarity data.
+
+- [ ] **Task: Implement Rarity Lookup Service**
+    - [ ] Write failing tests for the lookup service.
+    - [ ] Implement service to query rarity codes by species name.
+- [ ] **Task: Conductor - User Manual Verification 'Rarity Code Lookup' (Protocol in workflow.md)**
+
+## Phase: Review Fixes
+- [ ] **Task: Apply review suggestions**

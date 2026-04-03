@@ -1,0 +1,8 @@
+{
+  "track_id": "aba_checklist_integration_20260403",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-03T18:19:00Z",
+  "updated_at": "2026-04-03T18:19:00Z",
+  "description": "ABA checklist integration Ingest the ABA Checklist CSV (manually downloaded from aba.org and committed to the repo under @C:\Users\doobs\OneDrive\Documents\projectsare-bird-dashboardeferences\ABA_Checklist-8.19.csv and build a species rarity code lookup that the rest of the app can use. Context: - The ABA CSV has columns including: common name, scientific name, ABA code (1–6) - Code definitions: 1-2 = regularly occurring, 3 = rare but annual, 4 = casual (not annual, 6+ records), 5 = accidental (5 or fewer records), 6 = extinct/extirpated - The dashboard currently only surfaces codes 4 and 5, but this track should store all codes so future filtering logic (code 3+ within X miles) works without re-ingesting - The existing eBird sighting data already lives in SQLite via Prisma"
+}
