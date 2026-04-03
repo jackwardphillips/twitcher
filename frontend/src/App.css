@@ -1,138 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-base: #f5f0e8;       /* parchment */
+  --bg-surface: #fdf8f0;    /* card surface */
+
+  --clr-rust: #c4622d;      /* primary — terracotta */
+  --clr-sage: #5a7a5c;      /* secondary — forest */
+  --clr-gold: #d4943a;      /* highlight — golden hour */
+  --clr-sky: #4a7fa5;       /* data — field-guide blue */
+  --clr-berry: #7b3f6e;     /* rare alerts — deep berry */
+
+  --text-primary: #2c2416;
+  --text-secondary: #6b5a3e;
+  --text-muted: #a08c6e;
+
+  --border: #d4c4a8;
+
+  --shadow-sm: 2px 3px 8px rgba(44, 36, 22, 0.1);
+  --shadow-md: 4px 6px 16px rgba(44, 36, 22, 0.15);
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-data: 'DM Mono', monospace;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  padding: 0; /* Remove padding for full-bleed map */
 }
 
 .dashboard-header {
+  padding: 2rem;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
 .dashboard h1 {
-  color: #2c3e50;
+  font-family: var(--font-display);
+  font-weight: 900;
+  color: var(--clr-rust);
   margin: 0;
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
 }
 
 .controls {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .filter-btn {
   padding: 0.6rem 1.2rem;
-  border-radius: 20px;
-  border: 2px solid #3498db;
-  background: white;
-  color: #3498db;
+  border-radius: 4px;
+  border: 1px solid var(--clr-sage);
+  background: transparent;
+  color: var(--clr-sage);
+  font-family: var(--font-body);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .filter-btn:hover {
-  background: #f0f7ff;
+  background: rgba(90, 122, 92, 0.05);
 }
 
 .filter-btn.active {
-  background: #3498db;
+  background: var(--clr-sage);
   color: white;
 }
 
 .geo-error {
-  color: #e74c3c;
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: var(--clr-berry);
+  font-family: var(--font-data);
+  font-size: 0.8rem;
 }
 
 .no-results {
-  grid-column: 1 / -1;
   text-align: center;
-  padding: 3rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 2px dashed #dee2e6;
-  color: #6c757d;
-  font-size: 1.1rem;
+  padding: 4rem 2rem;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 1.2rem;
 }
 
 .sightings-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* Stacked cards with dividers */
+  padding: 0 1rem 4rem 1rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .sighting-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  transition: transform 0.2s;
-  border: 1px solid #eee;
+  background: var(--bg-surface);
+  padding: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+/* Left border for rarity placeholder - will be refined in next task */
+.sighting-card {
+  border-left: 4px solid var(--clr-rust);
 }
 
 .sighting-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
 }
 
 .sighting-card h3 {
-  margin: 0 0 0.5rem 0;
-  color: #2980b9;
+  margin: 0 0 0.25rem 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  color: var(--clr-rust);
+  font-size: 1.8rem;
 }
 
 .scientific-name {
+  font-family: var(--font-body);
   font-style: italic;
-  color: #7f8c8d;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
 }
 
 .streak-badge {
   display: inline-block;
   padding: 0.2rem 0.6rem;
-  background: #fff4e5;
-  color: #f39c12;
-  border-radius: 4px;
+  background: transparent;
+  color: var(--clr-gold);
+  border-radius: 0;
+  font-family: var(--font-data);
   font-size: 0.75rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   text-transform: uppercase;
-  border: 1px solid #f39c12;
+  border: 1px solid var(--clr-gold);
 }
 
 .sighting-details p {
-  margin: 0.25rem 0;
-  font-size: 0.95rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.sighting-details strong {
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .comments {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: #f9f9f9;
-  border-left: 4px solid #3498db;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(196, 98, 45, 0.03);
+  border-left: 2px solid var(--clr-gold);
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  line-height: 1.6;
 }
 
 .links {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .links a {
-  color: #3498db;
+  color: var(--clr-sky);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
 }
 
 .links a:hover {
-  text-decoration: underline;
+  border-bottom-color: var(--clr-sky);
 }
