@@ -17,6 +17,7 @@
 ## Integration & Automation
 - **Playwright:** For automated web searching and scraping of bird species information and photos.
 - **Axios:** For handling HTTP requests to eBird and other external APIs.
+- **Concurrently:** For simultaneous execution of backend and frontend development services.
 
 ## Deployment
 - **Frontend:** Vercel or Netlify for rapid, scalable frontend hosting.
