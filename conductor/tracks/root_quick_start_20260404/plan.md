@@ -11,19 +11,19 @@ This phase focuses on setting up the project-level `package.json` and installing
     - [x] Verify `package-lock.json` is created correctly.
 - [x] **Task: Conductor - User Manual Verification 'Initialize Root Project' (Protocol in workflow.md)**
 
-## Phase 2: Configure Scripts [checkpoint: phase2_config]
+## Phase 2: Configure Scripts [checkpoint: ac3732f]
 This phase focuses on defining the convenience scripts in the root `package.json`.
 
 - [x] **Task: Add Quick Start Scripts** 14d2092
     - [x] Add the `start` script to the root `package.json` using `concurrently`.
     - [x] Add an `install:all` script to run `npm install` in both subdirectories.
     - [x] (Optional) Add a `setup` script that runs `install:all` and any necessary DB migrations.
-- [~] **Task: Conductor - User Manual Verification 'Configure Scripts' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Configure Scripts' (Protocol in workflow.md)**
 
 ## Phase 3: Verification [checkpoint: phase3_verify]
 This phase focuses on ensuring the quick start command works as expected.
 
-- [ ] **Task: Verify npm start**
+- [~] **Task: Verify npm start**
     - [ ] Run `npm start` from the root directory.
     - [ ] Confirm both the backend and frontend launch successfully.
     - [ ] Verify the frontend can successfully communicate with the backend.
