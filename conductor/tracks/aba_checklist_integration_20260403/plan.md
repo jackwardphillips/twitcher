@@ -6,9 +6,7 @@ This phase focuses on parsing the ABA Checklist CSV, storing the data, and estab
 - [~] **Task: Parse ABA Checklist CSV**
     - [ ] Write failing tests for CSV parsing logic.
     - [ ] Implement CSV parsing function.
-- [ ] **Task: Define Prisma Schema for Rarity Codes**
-    - [ ] Write failing tests for new schema.
-    - [ ] Define new Prisma model for ABA rarity data.
+- [x] **Task: Define Prisma Schema for Rarity Codes** 17a0ce2
 - [ ] **Task: Implement Database Seeding**
     - [ ] Write failing tests for seeding logic.
     - [ ] Implement script to seed database with parsed ABA data.
