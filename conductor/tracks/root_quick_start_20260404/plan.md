@@ -6,10 +6,10 @@ This phase focuses on setting up the project-level `package.json` and installing
 - [x] **Task: Create Root package.json** 5bc4b6d
     - [x] Initialize a minimal `package.json` in the project root directory.
     - [x] Configure it as a private package to prevent accidental publishing.
-- [~] **Task: Install concurrently**
-    - [ ] Run `npm install concurrently --save-dev` in the root directory.
-    - [ ] Verify `package-lock.json` is created correctly.
-- [ ] **Task: Conductor - User Manual Verification 'Initialize Root Project' (Protocol in workflow.md)**
+- [x] **Task: Install concurrently** c1ea20f
+    - [x] Run `npm install concurrently --save-dev` in the root directory.
+    - [x] Verify `package-lock.json` is created correctly.
+- [~] **Task: Conductor - User Manual Verification 'Initialize Root Project' (Protocol in workflow.md)**
 
 ## Phase 2: Configure Scripts [checkpoint: phase2_config]
 This phase focuses on defining the convenience scripts in the root `package.json`.
