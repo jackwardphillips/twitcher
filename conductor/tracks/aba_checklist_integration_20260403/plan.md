@@ -12,13 +12,13 @@ This phase focuses on parsing the ABA Checklist CSV, storing the data, and estab
     - [x] Implement script to seed database with parsed ABA data.
 - [x] **Task: Conductor - User Manual Verification 'Data Ingestion & Storage' (Protocol in workflow.md)** a34f0bc
 
-## Phase 2: Rarity Code Lookup Service
+## Phase 2: Rarity Code Lookup Service [checkpoint: 5c6406d]
 This phase focuses on creating a service to query the stored ABA rarity data.
 
 - [x] **Task: Implement Rarity Lookup Service** 7a12bde
     - [x] Write failing tests for the lookup service.
     - [x] Implement service to query rarity codes by species name.
-- [~] **Task: Conductor - User Manual Verification 'Rarity Code Lookup' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Rarity Code Lookup' (Protocol in workflow.md)** 5c6406d
 
 ## Phase: Review Fixes
 - [ ] **Task: Apply review suggestions**
