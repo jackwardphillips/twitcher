@@ -9,58 +9,93 @@ interface ABABirdEntry {
 }
 
 export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
-  const lines = csvContent.split('
-');
+  const lines = csvContent.split(/?
+/);
   const parsedBirds: ABABirdEntry[] = [];
 
   for (const line of lines) {
-    // Skip empty lines
-    if (!line.trim()) {
+    if (!line.trim() || line.startsWith('"Version') || line.startsWith('"Note')) {
       continue;
     }
 
-    const fields = line.split(',');
+    // Custom CSV parser logic to handle quoted fields
+    const fields: string[] = [];
+    let currentField = '';
+    let inQuotes = false;
 
-    // Heuristics to skip header rows and family group lines:
-    // 1. Lines starting with "Version", "Note" are headers.
-    // 2. Lines with fewer than 5 fields are likely malformed or incomplete.
-    // 3. Lines where the first field is not empty and looks like a family group are headers.
-    // 4. Lines where the common name (field 1) is empty after splitting are likely not species data.
-    if (
-      line.startsWith('"Version') ||
-      line.startsWith('"Note') ||
-      fields.length < 5 || // Minimum fields for a species entry: Family,,,,Species,Common Name,Scientific Name,Alpha Code,ABA Code -> needs at least 6 parts if Family is empty
-      fields[0].startsWith('"') && fields[0].includes('(') && fields[0].includes(')') || // Detects family group names like "Ducks, Geese, and Swans (Anatidae)"
-      fields[1]?.trim() === '' // Ensure common name field is not empty
-    ) {
-      continue;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        // Check for escaped quote ("")
+        if (inQuotes && line[i + 1] === '"') {
+          currentField += '"';
+          i++; // Skip the next quote
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        fields.push(currentField);
+        currentField = '';
+      } else {
+        currentField += char;
+      }
     }
+    fields.push(currentField); // Add the last field
 
-    // Ensure we have enough fields for the data we need
-    if (fields.length < 6) {
-        continue; // Not enough fields for species, scientific name, and ABA code
+    // Clean up quotes from fields if they exist and are not escaped quotes
+    const cleanedFields = fields.map(field => {
+        field = field.trim();
+        if (field.startsWith('"') && field.endsWith('"')) {
+            return field.substring(1, field.length - 1).replace(/""/g, '"');
+        }
+        return field;
+    });
+
+    let commonName: string | undefined;
+    let scientificName: string | undefined;
+    let abaCodeString: string | undefined;
+
+    // Heuristic based on observed CSV structure:
+    // Case 1: Line starts with a comma (implies empty Family field)
+    // Structure: "", CommonName, FrenchCommonName, ScientificName, AlphaCode, ABACode (length 6)
+    if (cleanedFields[0] === '' && cleanedFields.length >= 6) {
+        commonName = cleanedFields[1];
+        scientificName = cleanedFields[3];
+        abaCodeString = cleanedFields[5];
     }
-
-    const commonName = fields[1]?.trim();
-    const scientificName = fields[3]?.trim();
-    const abaCodeString = fields[5]?.trim();
+    // Case 2: Line starts with a quoted field (implies CommonName is quoted, Family is empty)
+    // Structure: QuotedCommonName, FrenchCommonName, ScientificName, AlphaCode, ABACode (length 5)
+    else if (cleanedFields.length === 5 && cleanedFields[0].startsWith('"')) {
+        commonName = cleanedFields[0];
+        scientificName = cleanedFields[2]; // Scientific Name is at index 2 in this 5-field structure
+        abaCodeString = cleanedFields[4]; // ABA Code is at index 4 in this 5-field structure
+    }
+    // Case 3: Potentially a line with a family name followed by species data.
+    // Structure: Family, CommonName, FrenchCommonName, ScientificName, AlphaCode, ABACode (length 6+)
+    // We can generally assume species data starts from index 1 if family is present.
+    // This case might need more specific handling if family names themselves are complex.
+    // For now, let's prioritize the two clear cases above and skip others that don't fit.
+    else {
+        continue; // Skip lines that don't match expected structures
+    }
 
     // Basic validation: commonName and scientificName should not be empty for a valid entry
-    if (!commonName || !scientificName) {
+    if (!commonName?.trim() || !scientificName?.trim()) {
         continue;
     }
 
     let abaCode: number | null = null;
-    if (abaCodeString) {
-      const parsedCode = parseInt(abaCodeString, 10);
+    if (abaCodeString?.trim()) {
+      const parsedCode = parseInt(abaCodeString.trim(), 10);
       if (!isNaN(parsedCode)) {
         abaCode = parsedCode;
       }
     }
 
     parsedBirds.push({
-      commonName,
-      scientificName,
+      commonName: commonName.trim(),
+      scientificName: scientificName.trim(),
       abaCode,
     });
   }
