@@ -1,0 +1,8 @@
+{
+  "track_id": "root_quick_start_20260404",
+  "type": "chore",
+  "status": "new",
+  "created_at": "2026-04-04T18:35:00Z",
+  "updated_at": "2026-04-04T18:35:00Z",
+  "description": "create a quick start so i can look at the dashboard without manually running frontend and backend"
+}
