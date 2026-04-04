@@ -10,6 +10,8 @@ interface ABABirdEntry {
 export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
   // Use csv-parse library as instructed.
   // We explicitly name the columns to match the test expectations and potential CSV structure.
+  // relax_column_count: true allows for rows with varying field counts.
+  // skip_lines is used to bypass the initial metadata lines in the CSV.
   const records = parse(csvContent, {
     columns: [
       'family',
@@ -21,28 +23,29 @@ export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
     ],
     skip_empty_lines: true,
     trim: true,
-    // Adjust skip_lines based on analysis: skip metadata (3 lines) + family header (1 line)
-    // to start parsing from the first species data line.
-    skip_lines: 4
+    skip_lines: 3, // Skip the initial metadata lines in the CSV file.
+    relax_column_count: true // Allow rows with different numbers of columns.
   });
 
   const parsedBirds: ABABirdEntry[] = [];
 
   for (const record of records) {
-    // Filter out non-species lines (like family group headers or empty lines after parsing).
+    // Filter out non-species lines.
     // A species line should have a common name and scientific name.
-    // The 'record' object will have keys as defined in the 'columns' array above.
-    // We need to check if the parsed record is a valid species entry.
-    // 'commonName' and 'scientificName' are essential.
+    // 'record' object keys are from the 'columns' array.
     if (!record.commonName || !record.scientificName) {
       continue;
     }
 
-    // Some lines might be family headers even after skipping, check if commonName is a known family name or if the first field (family) is meaningful.
-    // However, the current heuristic relies on commonName and scientificName being present.
+    // The 'family' field might be populated for family group lines if they are not skipped by 'skip_lines'.
+    // We only want species data. Heuristic: if commonName is empty or looks like a family name, skip.
+    // However, the primary check of commonName and scientificName should suffice if species lines are consistent.
+    // The test data includes family lines without a leading comma, which might be parsed if not skipped properly.
+    // For now, rely on commonName and scientificName being present for species data.
 
     let abaCode: number | null = null;
-    if (record.abaCode) {
+    // Check if abaCode exists and is not an empty string before parsing
+    if (record.abaCode && record.abaCode.trim() !== '') {
       const parsedCode = parseInt(record.abaCode, 10);
       if (!isNaN(parsedCode)) {
         abaCode = parsedCode;
