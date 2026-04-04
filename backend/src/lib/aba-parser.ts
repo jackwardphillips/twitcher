@@ -9,8 +9,11 @@ interface ABABirdEntry {
 }
 
 export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
+  // Correctly splitting lines using a regex that handles 
+ and 
+
   const lines = csvContent.split(/?
-/); // Corrected regex here
+/);
   const parsedBirds: ABABirdEntry[] = [];
 
   for (const line of lines) {
