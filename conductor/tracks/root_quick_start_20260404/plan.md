@@ -20,14 +20,14 @@ This phase focuses on defining the convenience scripts in the root `package.json
     - [x] (Optional) Add a `setup` script that runs `install:all` and any necessary DB migrations.
 - [x] **Task: Conductor - User Manual Verification 'Configure Scripts' (Protocol in workflow.md)**
 
-## Phase 3: Verification [checkpoint: phase3_verify]
+## Phase 3: Verification [checkpoint: 310f8ec]
 This phase focuses on ensuring the quick start command works as expected.
 
-- [~] **Task: Verify npm start**
-    - [ ] Run `npm start` from the root directory.
-    - [ ] Confirm both the backend and frontend launch successfully.
-    - [ ] Verify the frontend can successfully communicate with the backend.
-- [ ] **Task: Verify Process Termination**
-    - [ ] Terminate the `npm start` command (Ctrl+C).
-    - [ ] Confirm both child processes (backend and frontend) have been stopped.
-- [ ] **Task: Conductor - User Manual Verification 'Verification' (Protocol in workflow.md)**
+- [x] **Task: Verify npm start** 310f8ec
+    - [x] Run `npm start` from the root directory.
+    - [x] Confirm both the backend and frontend launch successfully.
+    - [x] Verify the frontend can successfully communicate with the backend.
+- [x] **Task: Verify Process Termination** 310f8ec
+    - [x] Terminate the `npm start` command (Ctrl+C).
+    - [x] Confirm both child processes (backend and frontend) have been stopped.
+- [x] **Task: Conductor - User Manual Verification 'Verification' (Protocol in workflow.md)**
