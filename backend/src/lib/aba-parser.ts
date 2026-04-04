@@ -10,10 +10,9 @@ interface ABABirdEntry {
 export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
   // Use csv-parse library as instructed.
   // We explicitly name the columns to match the test expectations and potential CSV structure.
-  // skip_lines is used to bypass the initial metadata lines in the CSV.
   const records = parse(csvContent, {
     columns: [
-      'family', // Added to account for the 6th field
+      'family',
       'commonName',
       'frenchCommonName',
       'scientificName',
@@ -22,7 +21,9 @@ export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
     ],
     skip_empty_lines: true,
     trim: true,
-    skip_lines: 3 // Skip the initial metadata lines in the CSV file.
+    // Adjust skip_lines based on analysis: skip metadata (3 lines) + family header (1 line)
+    // to start parsing from the first species data line.
+    skip_lines: 4
   });
 
   const parsedBirds: ABABirdEntry[] = [];
@@ -31,9 +32,14 @@ export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
     // Filter out non-species lines (like family group headers or empty lines after parsing).
     // A species line should have a common name and scientific name.
     // The 'record' object will have keys as defined in the 'columns' array above.
+    // We need to check if the parsed record is a valid species entry.
+    // 'commonName' and 'scientificName' are essential.
     if (!record.commonName || !record.scientificName) {
       continue;
     }
+
+    // Some lines might be family headers even after skipping, check if commonName is a known family name or if the first field (family) is meaningful.
+    // However, the current heuristic relies on commonName and scientificName being present.
 
     let abaCode: number | null = null;
     if (record.abaCode) {
