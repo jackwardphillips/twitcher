@@ -3,10 +3,10 @@
 ## Phase 1: Initialize Root Project [checkpoint: phase1_init]
 This phase focuses on setting up the project-level `package.json` and installing the necessary tools.
 
-- [ ] **Task: Create Root package.json**
-    - [ ] Initialize a minimal `package.json` in the project root directory.
-    - [ ] Configure it as a private package to prevent accidental publishing.
-- [ ] **Task: Install concurrently**
+- [x] **Task: Create Root package.json** 5bc4b6d
+    - [x] Initialize a minimal `package.json` in the project root directory.
+    - [x] Configure it as a private package to prevent accidental publishing.
+- [~] **Task: Install concurrently**
     - [ ] Run `npm install concurrently --save-dev` in the root directory.
     - [ ] Verify `package-lock.json` is created correctly.
 - [ ] **Task: Conductor - User Manual Verification 'Initialize Root Project' (Protocol in workflow.md)**
