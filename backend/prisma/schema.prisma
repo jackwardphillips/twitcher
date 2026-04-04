@@ -29,3 +29,10 @@ model Sighting {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model RarityCode {
+  id             Int     @id @default(autoincrement())
+  commonName     String  @unique // ABA common name
+  scientificName String? // ABA scientific name
+  abaCode        Int     // ABA rarity code (1-6)
+}
