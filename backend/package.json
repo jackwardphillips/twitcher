@@ -7,6 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "seed:rarity": "tsx src/scripts/seed-rarity.ts",
     "test": "vitest run"
   },
   "keywords": [],
@@ -16,6 +17,7 @@
   "dependencies": {
     "@prisma/client": "^7.5.0",
     "better-sqlite3": "^12.8.0",
+    "csv-parse": "^6.2.1",
     "express": "^5.2.1"
   },
   "devDependencies": {
