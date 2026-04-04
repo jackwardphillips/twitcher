@@ -13,6 +13,7 @@ export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
   // skip_lines is used to bypass the initial metadata lines in the CSV.
   const records = parse(csvContent, {
     columns: [
+      'family', // Added to account for the 6th field
       'commonName',
       'frenchCommonName',
       'scientificName',
