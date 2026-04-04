@@ -1,6 +1,6 @@
 # Implementation Plan - Project Root Quick Start
 
-## Phase 1: Initialize Root Project [checkpoint: phase1_init]
+## Phase 1: Initialize Root Project [checkpoint: 5c2d4e9]
 This phase focuses on setting up the project-level `package.json` and installing the necessary tools.
 
 - [x] **Task: Create Root package.json** 5bc4b6d
@@ -9,12 +9,12 @@ This phase focuses on setting up the project-level `package.json` and installing
 - [x] **Task: Install concurrently** c1ea20f
     - [x] Run `npm install concurrently --save-dev` in the root directory.
     - [x] Verify `package-lock.json` is created correctly.
-- [~] **Task: Conductor - User Manual Verification 'Initialize Root Project' (Protocol in workflow.md)**
+- [x] **Task: Conductor - User Manual Verification 'Initialize Root Project' (Protocol in workflow.md)**
 
 ## Phase 2: Configure Scripts [checkpoint: phase2_config]
 This phase focuses on defining the convenience scripts in the root `package.json`.
 
-- [ ] **Task: Add Quick Start Scripts**
+- [~] **Task: Add Quick Start Scripts**
     - [ ] Add the `start` script to the root `package.json` using `concurrently`.
     - [ ] Add an `install:all` script to run `npm install` in both subdirectories.
     - [ ] (Optional) Add a `setup` script that runs `install:all` and any necessary DB migrations.
