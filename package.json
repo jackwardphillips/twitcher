@@ -1,0 +1,12 @@
+{
+  "name": "rare-bird-dashboard-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root project for Rare Bird Dashboard",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
