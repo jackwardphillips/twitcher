@@ -6,13 +6,13 @@
 - [x] Task: Run `npx prisma migrate dev --name add_incoming_email` and regenerate client. 0f28636
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Database & Schema' (Protocol in workflow.md) ca9c4bb
 
-## Phase 2: IMAP Ingestion Service
+## Phase 2: IMAP Ingestion Service [checkpoint: f10e620]
 - [x] Task: Research and add a lightweight IMAP client library (e.g., `imapflow` or `node-imap`). f30f0ae
 - [x] Task: Write failing tests for `ImapClient` (mocking IMAP connection and 24h search). cd8e679
 - [x] Task: Implement `ImapClient` in `backend/src/lib/imap-client.ts`. cd8e679
 - [x] Task: Write failing tests for `IngestionService` (deduplication and raw storage). ed16447
 - [x] Task: Implement `IngestionService` in `backend/src/lib/ingestion-service.ts`. ed16447
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: IMAP Ingestion Service' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: IMAP Ingestion Service' (Protocol in workflow.md) f10e620
 
 ## Phase 3: Integration & Auto-Parsing
 - [ ] Task: Write failing tests for the integration of `IngestionService` -> `ebird-parser` -> `SightingService`.
