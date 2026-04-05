@@ -1,9 +1,9 @@
 # Implementation Plan: Automated Email Ingestion
 
 ## Phase 1: Database & Schema
-- [ ] Task: Define `IncomingEmail` model in `backend/prisma/schema.prisma`.
+- [x] Task: Define `IncomingEmail` model in `backend/prisma/schema.prisma`. 0f28636
   - Fields: `id`, `messageId` (unique), `subject`, `from`, `date`, `rawBody`, `status` (new/processed/failed), `createdAt`.
-- [ ] Task: Run `npx prisma migrate dev --name add_incoming_email` and regenerate client.
+- [x] Task: Run `npx prisma migrate dev --name add_incoming_email` and regenerate client. 0f28636
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Database & Schema' (Protocol in workflow.md)
 
 ## Phase 2: IMAP Ingestion Service
