@@ -8,8 +8,8 @@
 
 ## Phase 2: IMAP Ingestion Service
 - [x] Task: Research and add a lightweight IMAP client library (e.g., `imapflow` or `node-imap`). f30f0ae
-- [ ] Task: Write failing tests for `ImapClient` (mocking IMAP connection and 24h search).
-- [ ] Task: Implement `ImapClient` in `backend/src/lib/imap-client.ts`.
+- [x] Task: Write failing tests for `ImapClient` (mocking IMAP connection and 24h search). cd8e679
+- [x] Task: Implement `ImapClient` in `backend/src/lib/imap-client.ts`. cd8e679
 - [ ] Task: Write failing tests for `IngestionService` (deduplication and raw storage).
 - [ ] Task: Implement `IngestionService` in `backend/src/lib/ingestion-service.ts`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: IMAP Ingestion Service' (Protocol in workflow.md)
