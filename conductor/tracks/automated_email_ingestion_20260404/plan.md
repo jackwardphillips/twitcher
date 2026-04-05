@@ -7,7 +7,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Database & Schema' (Protocol in workflow.md) ca9c4bb
 
 ## Phase 2: IMAP Ingestion Service
-- [x] Task: Research and add a lightweight IMAP client library (e.g., `imapflow` or `node-imap`). 5a24f24
+- [x] Task: Research and add a lightweight IMAP client library (e.g., `imapflow` or `node-imap`). f30f0ae
 - [ ] Task: Write failing tests for `ImapClient` (mocking IMAP connection and 24h search).
 - [ ] Task: Implement `ImapClient` in `backend/src/lib/imap-client.ts`.
 - [ ] Task: Write failing tests for `IngestionService` (deduplication and raw storage).
