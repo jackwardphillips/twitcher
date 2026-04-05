@@ -13,4 +13,14 @@ describe('Prisma Schema Updates', () => {
     expect(sightingFields).toContain('speciesCode');
     expect(sightingFields).toContain('howMany');
   });
+
+  it('should have the IncomingEmail model in the Prisma client', () => {
+    // This will fail if the model is not in the schema and generated
+    const emailFields = Object.values(Prisma.IncomingEmailScalarFieldEnum);
+
+    expect(emailFields).toContain('id');
+    expect(emailFields).toContain('messageId');
+    expect(emailFields).toContain('rawBody');
+    expect(emailFields).toContain('status');
+  });
 });

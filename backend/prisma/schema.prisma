@@ -36,3 +36,14 @@ model RarityCode {
   scientificName String? // ABA scientific name
   abaCode        Int     // ABA rarity code (1-6)
 }
+
+model IncomingEmail {
+  id        Int      @id @default(autoincrement())
+  messageId String   @unique
+  subject   String?
+  from      String?
+  date      DateTime?
+  rawBody   String
+  status    String   @default("new") // new, processed, failed
+  createdAt DateTime @default(now())
+}
