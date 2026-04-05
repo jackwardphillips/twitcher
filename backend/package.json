@@ -18,7 +18,8 @@
     "@prisma/client": "^7.5.0",
     "better-sqlite3": "^12.8.0",
     "csv-parse": "^6.2.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "imapflow": "^1.2.18"
   },
   "devDependencies": {
     "@prisma/adapter-better-sqlite3": "^7.6.0",
