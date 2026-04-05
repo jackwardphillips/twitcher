@@ -1,5 +1,7 @@
 import { ImapClient } from './imap-client.js';
 import { db } from './db.js';
+import { parseEBirdAlert } from './ebird-parser.js';
+import { saveSightings } from './sighting-service.js';
 
 export interface IngestionResult {
   ingested: number;
@@ -31,7 +33,7 @@ export class IngestionService {
           continue;
         }
 
-        await db.incomingEmail.create({
+        const saved = await db.incomingEmail.create({
           data: {
             messageId: email.messageId,
             subject: email.subject,
@@ -41,7 +43,27 @@ export class IngestionService {
             status: 'new',
           },
         });
-        ingested++;
+
+        // Auto-parse immediately
+        try {
+          const sightings = parseEBirdAlert(email.rawBody);
+          if (sightings.length > 0) {
+            await saveSightings(sightings);
+          }
+          
+          await db.incomingEmail.update({
+            where: { id: saved.id },
+            data: { status: 'processed' },
+          });
+          ingested++;
+        } catch (parseError) {
+          console.error(`Failed to parse email ${email.messageId}:`, parseError);
+          await db.incomingEmail.update({
+            where: { id: saved.id },
+            data: { status: 'failed' },
+          });
+          failed++;
+        }
       } catch (error) {
         console.error(`Failed to ingest email ${email.messageId}:`, error);
         failed++;
