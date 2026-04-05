@@ -1,0 +1,8 @@
+{
+  "track_id": "automated_email_ingestion_20260404",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-04T22:00:00Z",
+  "updated_at": "2026-04-04T22:00:00Z",
+  "description": "\"Automated email ingestion\" IMAP polling for eBird alert emails. Detect new emails from eBird, extract raw content, store for the existing parser. Idempotent via message ID deduplication. Leaves inbox untouched."
+}
