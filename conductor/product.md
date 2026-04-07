@@ -26,7 +26,8 @@ A centralized, web-based dashboard designed for ABA rare bird seekers and effici
 - **Interactive Map:** A top-down geospatial view of sightings with rarity-coded markers.
 - **"Near Me" Filter:** One-touch filtering to see sightings within a 50km radius of the user's current location.
 - **Sighting Streaks:** Visual indicators of how many consecutive days a species has been reported at a specific location.
-- **Platform Integration:** Seamless integration with eBird alerts and direct links or snippets from Discord community discussions.
+- **Automated Email Ingestion:** Active IMAP polling for eBird alerts (ABA Rarities) to automatically ingest and parse sightings.
+- **Platform Integration:** Direct links or snippets from Discord community discussions.
 - **Automated Bird Research:** Automated web searching to gather additional information, photos, and context for rare species.
 
 ## Technical Preferences

@@ -15,6 +15,7 @@
 - **Prisma (ORM):** Provides type-safe database access and streamlined migrations.
 
 ## Integration & Automation
+- **imapflow (Added 2026-04-06):** Lightweight IMAP client for polling eBird alert emails.
 - **Playwright:** For automated web searching and scraping of bird species information and photos.
 - **Axios:** For handling HTTP requests to eBird and other external APIs.
 - **Concurrently:** For simultaneous execution of backend and frontend development services.
