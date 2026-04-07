@@ -28,11 +28,13 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
     const imapClient = new ImapClient(imapConfig);
     const ingestionService = new IngestionService(imapClient);
     
+    console.log('Triggering ingestion via API...');
     const results = await ingestionService.ingest();
+    console.log('Ingestion result:', results);
     res.json({ message: 'Ingestion complete', results });
   } catch (error) {
-    console.error('Ingestion failed:', error);
-    res.status(500).json({ error: 'Ingestion failed' });
+    console.error('Ingestion failed via API:', error);
+    res.status(500).json({ error: 'Ingestion failed', details: error instanceof Error ? error.message : String(error) });
   }
 });
 
