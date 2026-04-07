@@ -2,13 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IngestionService } from './ingestion-service.js';
 import { ImapClient } from './imap-client.js';
 import { db } from './db.js';
+import { parseEBirdAlert } from './ebird-parser.js';
+import { saveSightings } from './sighting-service.js';
 
 vi.mock('./imap-client.js');
+vi.mock('./ebird-parser.js');
+vi.mock('./sighting-service.js');
 vi.mock('./db.js', () => ({
   db: {
     incomingEmail: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -26,26 +31,70 @@ describe('IngestionService', () => {
     service = new IngestionService(mockImapClient);
   });
 
-  it('should ingest unique emails and ignore duplicates', async () => {
+  it('should ingest unique emails, parse them, and save sightings', async () => {
     const mockEmails = [
       { messageId: 'msg1', subject: 'Subject 1', from: 'sender@test.com', date: new Date(), rawBody: 'Body 1' },
-      { messageId: 'msg2', subject: 'Subject 2', from: 'sender@test.com', date: new Date(), rawBody: 'Body 2' },
     ];
 
     mockImapClient.fetchRecentAlerts.mockResolvedValue(mockEmails);
     
-    // msg1 exists, msg2 is new
-    (db.incomingEmail.findUnique as any)
-      .mockResolvedValueOnce({ messageId: 'msg1' })
-      .mockResolvedValueOnce(null);
+    // msg1 is new
+    (db.incomingEmail.findUnique as any).mockResolvedValue(null);
+    (db.incomingEmail.create as any).mockResolvedValue({ id: 1, ...mockEmails[0] });
+    (db.incomingEmail.update as any).mockResolvedValue({ id: 1 });
+    (parseEBirdAlert as any).mockReturnValue([{ species: 'Hawk' }]);
+    (saveSightings as any).mockResolvedValue(undefined);
 
     const result = await service.ingest();
 
-    expect(db.incomingEmail.create).toHaveBeenCalledTimes(1);
     expect(db.incomingEmail.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ messageId: 'msg2' }),
+      data: expect.objectContaining({ messageId: 'msg1', status: 'new' }),
+    });
+    expect(parseEBirdAlert).toHaveBeenCalledWith('Body 1');
+    expect(saveSightings).toHaveBeenCalledWith([{ species: 'Hawk' }]);
+    expect(db.incomingEmail.update).toHaveBeenCalledWith({
+      where: { id: 1 },
+      data: { status: 'processed' },
     });
     expect(result.ingested).toBe(1);
+  });
+
+  it('should ignore duplicate emails', async () => {
+    const mockEmails = [
+      { messageId: 'msg1', subject: 'Subject 1', from: 'sender@test.com', date: new Date(), rawBody: 'Body 1' },
+    ];
+
+    mockImapClient.fetchRecentAlerts.mockResolvedValue(mockEmails);
+    
+    // msg1 already exists
+    (db.incomingEmail.findUnique as any).mockResolvedValue({ id: 1, messageId: 'msg1' });
+
+    const result = await service.ingest();
+
+    expect(db.incomingEmail.create).not.toHaveBeenCalled();
     expect(result.skipped).toBe(1);
+    expect(result.ingested).toBe(0);
+  });
+
+  it('should mark email as failed if parsing or saving fails', async () => {
+    const mockEmails = [
+      { messageId: 'msg1', subject: 'Subject 1', from: 'sender@test.com', date: new Date(), rawBody: 'Body 1' },
+    ];
+
+    mockImapClient.fetchRecentAlerts.mockResolvedValue(mockEmails);
+    
+    // msg1 is new
+    (db.incomingEmail.findUnique as any).mockResolvedValue(null);
+    (db.incomingEmail.create as any).mockResolvedValue({ id: 1, ...mockEmails[0] });
+    (parseEBirdAlert as any).mockImplementation(() => { throw new Error('Parse error'); });
+
+    const result = await service.ingest();
+
+    expect(db.incomingEmail.update).toHaveBeenCalledWith({
+      where: { id: 1 },
+      data: { status: 'failed' },
+    });
+    expect(result.failed).toBe(1);
+    expect(result.ingested).toBe(0);
   });
 });
