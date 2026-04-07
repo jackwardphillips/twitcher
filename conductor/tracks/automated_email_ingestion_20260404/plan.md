@@ -21,6 +21,6 @@
 - [x] Task: Write integration tests for the full `/api/ingest` flow. 1f448a1
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Integration & Auto-Parsing' (Protocol in workflow.md) 3a56b54
 
-## Phase 4: Final Verification
-- [~] Task: Final manual verification with a test IMAP account or mocked server.
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Verification' (Protocol in workflow.md)
+## Phase 4: Final Verification [checkpoint: 7852a3c]
+- [x] Task: Final manual verification with a test IMAP account or mocked server. 7852a3c
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Final Verification' (Protocol in workflow.md) 7852a3c
