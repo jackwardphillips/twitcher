@@ -2,6 +2,9 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import { fileURLToPath } from 'url';
 import { prisma } from './lib/db.js';
+import { IngestionService } from './lib/ingestion-service.js';
+import { ImapClient } from './lib/imap-client.js';
+import 'dotenv/config';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -10,6 +13,27 @@ app.use(express.json());
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Rare Bird Dashboard API is running' });
+});
+
+app.post('/api/ingest', async (req: Request, res: Response) => {
+  try {
+    const imapConfig = {
+      host: process.env.IMAP_HOST || '',
+      port: parseInt(process.env.IMAP_PORT || '993', 10),
+      user: process.env.IMAP_USER || '',
+      pass: process.env.IMAP_PASS || '',
+      secure: process.env.IMAP_SECURE !== 'false',
+    };
+
+    const imapClient = new ImapClient(imapConfig);
+    const ingestionService = new IngestionService(imapClient);
+    
+    const results = await ingestionService.ingest();
+    res.json({ message: 'Ingestion complete', results });
+  } catch (error) {
+    console.error('Ingestion failed:', error);
+    res.status(500).json({ error: 'Ingestion failed' });
+  }
 });
 
 app.get('/api/sightings', async (req: Request, res: Response) => {
