@@ -14,13 +14,13 @@
 - [x] Task: Implement `IngestionService` in `backend/src/lib/ingestion-service.ts`. ed16447
 - [x] Task: Conductor - User Manual Verification 'Phase 2: IMAP Ingestion Service' (Protocol in workflow.md) f10e620
 
-## Phase 3: Integration & Auto-Parsing
+## Phase 3: Integration & Auto-Parsing [checkpoint: 3a56b54]
 - [x] Task: Write failing tests for the integration of `IngestionService` -> `ebird-parser` -> `SightingService`. 9cb0056
 - [x] Task: Implement the auto-parsing logic that triggers after ingestion. a5c506e
 - [x] Task: Add `POST /api/ingest` to `backend/src/index.ts`. 3a55fda
 - [x] Task: Write integration tests for the full `/api/ingest` flow. 1f448a1
-- [~] Task: Conductor - User Manual Verification 'Phase 3: Integration & Auto-Parsing' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Integration & Auto-Parsing' (Protocol in workflow.md) 3a56b54
 
 ## Phase 4: Final Verification
-- [ ] Task: Final manual verification with a test IMAP account or mocked server.
+- [~] Task: Final manual verification with a test IMAP account or mocked server.
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Verification' (Protocol in workflow.md)
