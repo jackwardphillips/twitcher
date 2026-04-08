@@ -57,6 +57,20 @@ describe('IngestionService', () => {
       data: { status: 'processed' },
     });
     expect(result.ingested).toBe(1);
+    expect(result.status).toBe('success');
+  });
+
+  it('should return no_new_emails when imap returns empty', async () => {
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([]);
+    const result = await service.ingest();
+    expect(result.status).toBe('no_new_emails');
+  });
+
+  it('should return imap_error when imap fails', async () => {
+    mockImapClient.fetchRecentAlerts.mockRejectedValue(new Error('IMAP error'));
+    const result = await service.ingest();
+    expect(result.status).toBe('imap_error');
+    expect(result.error).toBe('IMAP error');
   });
 
   it('should ignore duplicate emails', async () => {
@@ -74,6 +88,7 @@ describe('IngestionService', () => {
     expect(db.incomingEmail.create).not.toHaveBeenCalled();
     expect(result.skipped).toBe(1);
     expect(result.ingested).toBe(0);
+    expect(result.status).toBe('success');
   });
 
   it('should mark email as failed if parsing or saving fails', async () => {
