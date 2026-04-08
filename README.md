@@ -76,12 +76,4 @@ This project is a comprehensive application for tracking and analyzing bird sigh
 
 ## Usage
 
-Once both the backend and frontend servers are running, you can access the Rare-Bird Dashboard through your web browser. The frontend will automatically connect to the backend API.
-
-## Contributing
-
-Contributions are welcome! Please follow the guidelines in `conductor/code_styleguides/` for code style and contribution best practices.
-
-## License
-
-This project is licensed under the MIT License - see the `LICENSE` file for details. (Assuming MIT, as it's common; actual license file might need to be checked if it exists).
+Once both the backend and frontend servers are running, you can access the RareBird Dashboard through your web browser. The frontend will automatically connect to the backend API.
