@@ -16,8 +16,8 @@ export class IngestionService {
     this.imapClient = imapClient;
   }
 
-  async ingest(): Promise<IngestionResult> {
-    const emails = await this.imapClient.fetchRecentAlerts();
+  async ingest(since?: Date): Promise<IngestionResult> {
+    const emails = await this.imapClient.fetchRecentAlerts(since);
     let ingested = 0;
     let skipped = 0;
     let failed = 0;

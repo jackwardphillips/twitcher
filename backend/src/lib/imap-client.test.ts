@@ -28,13 +28,13 @@ describe('ImapClient', () => {
     });
   });
 
-  it('should fetch emails from ebird-alert@birds.cornell.edu from the last 24 hours', async () => {
+  it('should fetch emails with ABA Rarities in the subject', async () => {
     const mockMessages = [
       {
         uid: 1,
         envelope: { 
           messageId: 'msg1', 
-          subject: 'Alert', 
+          subject: '[eBird Alert] ABA Rarities daily', 
           from: [{ address: 'ebird-alert@birds.cornell.edu' }], 
           date: new Date() 
         },
@@ -44,7 +44,7 @@ describe('ImapClient', () => {
         uid: 2,
         envelope: { 
           messageId: 'msg2', 
-          subject: 'Alert', 
+          subject: '[eBird Alert] Fairfield County Rare Bird Alert daily', 
           from: [{ address: 'ebird-alert@birds.cornell.edu' }], 
           date: new Date() 
         },
@@ -66,14 +66,50 @@ describe('ImapClient', () => {
     expect(mockImapFlow.fetch).toHaveBeenCalledWith(
       expect.objectContaining({ 
         from: 'ebird-alert@birds.cornell.edu',
+        subject: 'ABA Rarities',
         since: expect.any(Date)
       }),
       { envelope: true, source: true }
     );
-    expect(emails).toHaveLength(2);
+    expect(emails).toHaveLength(1);
     expect(emails[0].messageId).toBe('msg1');
-    expect(emails[0].rawBody).toBe('Email body 1');
+    expect(emails[0].subject).toContain('ABA Rarities');
     expect(mockImapFlow.logout).toHaveBeenCalled();
+  });
+
+  it('should use the provided "since" date when specified', async () => {
+    const customSince = new Date('2026-01-01');
+    
+    async function* mockFetchGenerator() {}
+    mockImapFlow.fetch.mockReturnValue(mockFetchGenerator());
+
+    await client.fetchRecentAlerts(customSince);
+
+    expect(mockImapFlow.fetch).toHaveBeenCalledWith(
+      expect.objectContaining({ 
+        from: 'ebird-alert@birds.cornell.edu',
+        subject: 'ABA Rarities',
+        since: customSince
+      }),
+      expect.anything()
+    );
+  });
+
+  it('should default to 1 day ago when "since" is not provided', async () => {
+    async function* mockFetchGenerator() {}
+    mockImapFlow.fetch.mockReturnValue(mockFetchGenerator());
+
+    const before = new Date();
+    before.setDate(before.getDate() - 1);
+    
+    await client.fetchRecentAlerts();
+
+    const fetchCall = mockImapFlow.fetch.mock.calls[0];
+    const actualSince = fetchCall[0].since;
+    
+    expect(fetchCall[0].from).toBe('ebird-alert@birds.cornell.edu');
+    expect(fetchCall[0].subject).toBe('ABA Rarities');
+    expect(Math.abs(actualSince.getTime() - before.getTime())).toBeLessThan(5000);
   });
 
   it('should handle IMAP connection errors gracefully', async () => {

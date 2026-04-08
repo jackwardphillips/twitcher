@@ -23,7 +23,7 @@ export class ImapClient {
     this.config = config;
   }
 
-  async fetchRecentAlerts(): Promise<IngestedEmail[]> {
+  async fetchRecentAlerts(since?: Date): Promise<IngestedEmail[]> {
     const client = new ImapFlow({
       host: this.config.host,
       port: this.config.port,
@@ -38,24 +38,33 @@ export class ImapClient {
     await client.connect();
 
     const emails: IngestedEmail[] = [];
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    const searchDate = since || new Date();
+    if (!since) {
+      searchDate.setDate(searchDate.getDate() - 1);
+    }
 
     const lock = await client.getMailboxLock('INBOX');
     try {
       const searchCriteria = {
+        since: searchDate,
         from: 'ebird-alert@birds.cornell.edu',
-        since: yesterday,
+        subject: 'ABA Rarities',
       };
 
       for await (const message of client.fetch(searchCriteria, { envelope: true, source: true })) {
-        emails.push({
-          messageId: message.envelope.messageId,
-          subject: message.envelope.subject,
-          from: message.envelope.from?.[0]?.address || 'unknown',
-          date: message.envelope.date,
-          rawBody: message.source.toString(),
-        });
+        const from = message.envelope.from?.[0]?.address || 'unknown';
+        const subject = message.envelope.subject || '';
+        
+        // Filter by sender and ABA Rarities subject
+        if (from === 'ebird-alert@birds.cornell.edu' && subject.includes('ABA Rarities')) {
+          emails.push({
+            messageId: message.envelope.messageId,
+            subject: subject,
+            from: from,
+            date: message.envelope.date,
+            rawBody: message.source.toString(),
+          });
+        }
       }
     } finally {
       lock.release();

@@ -8,6 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "seed:rarity": "tsx src/scripts/seed-rarity.ts",
+    "seed:emails": "tsx src/scripts/seed-from-emails.ts",
+    "backfill:emails": "tsx src/scripts/backfill-emails.ts",
+    "check:counts": "tsx src/scripts/check-counts.ts",
     "test": "vitest run"
   },
   "keywords": [],
