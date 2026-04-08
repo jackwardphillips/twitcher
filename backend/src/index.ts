@@ -2,7 +2,8 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import { fileURLToPath } from 'url';
 import { prisma } from './lib/db.js';
-import { IngestionService, IngestionResult } from './lib/ingestion-service.js';
+import { IngestionService } from './lib/ingestion-service.js';
+import type { IngestionResult } from './lib/ingestion-service.js';
 import { ImapClient } from './lib/imap-client.js';
 import 'dotenv/config';
 

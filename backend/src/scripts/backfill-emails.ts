@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { ImapClient } from '../lib/imap-client.js';
 import { IngestionService } from '../lib/ingestion-service.js';
+import type { IngestionResult } from '../lib/ingestion-service.js';
 import { db } from '../lib/db.js';
 
 async function main() {
