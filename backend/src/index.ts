@@ -13,7 +13,7 @@ app.use(express.json());
 
 let lastIngestionResult: IngestionResult | null = null;
 
-async function triggerIngestion(): Promise<IngestionResult> {
+async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   const imapConfig = {
     host: process.env.IMAP_HOST || '',
     port: parseInt(process.env.IMAP_PORT || '993', 10),
@@ -25,7 +25,7 @@ async function triggerIngestion(): Promise<IngestionResult> {
   const imapClient = new ImapClient(imapConfig);
   const ingestionService = new IngestionService(imapClient);
   
-  const results = await ingestionService.ingest();
+  const results = await ingestionService.ingest(undefined, enrich);
   lastIngestionResult = results;
   return results;
 }

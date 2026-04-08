@@ -26,7 +26,7 @@ async function main() {
   console.log(`Backfilling emails since ${backfillDate.toISOString()}...`);
 
   try {
-    const results = await ingestionService.ingest(backfillDate);
+    const results = await ingestionService.ingest(backfillDate, false);
     console.log('--- Backfill Complete ---');
     console.log(`Ingested: ${results.ingested}`);
     console.log(`Skipped: ${results.skipped}`);

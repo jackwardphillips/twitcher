@@ -45,19 +45,32 @@ describe('IngestionService', () => {
     (parseEBirdAlert as any).mockReturnValue([{ species: 'Hawk' }]);
     (saveSightings as any).mockResolvedValue(undefined);
 
-    const result = await service.ingest();
+    const result = await service.ingest(undefined, true);
 
     expect(db.incomingEmail.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ messageId: 'msg1', status: 'new' }),
     });
     expect(parseEBirdAlert).toHaveBeenCalledWith('Body 1');
-    expect(saveSightings).toHaveBeenCalledWith([{ species: 'Hawk' }]);
+    expect(saveSightings).toHaveBeenCalledWith([{ species: 'Hawk' }], true);
     expect(db.incomingEmail.update).toHaveBeenCalledWith({
       where: { id: 1 },
       data: { status: 'processed' },
     });
     expect(result.ingested).toBe(1);
     expect(result.status).toBe('success');
+  });
+
+  it('should pass enrich=false to saveSightings', async () => {
+    const mockEmails = [
+      { messageId: 'msg1', subject: 'Subject 1', from: 'sender@test.com', date: new Date(), rawBody: 'Body 1' },
+    ];
+    mockImapClient.fetchRecentAlerts.mockResolvedValue(mockEmails);
+    (db.incomingEmail.findUnique as any).mockResolvedValue(null);
+    (db.incomingEmail.create as any).mockResolvedValue({ id: 1, ...mockEmails[0] });
+    (parseEBirdAlert as any).mockReturnValue([{ species: 'Hawk' }]);
+    
+    await service.ingest(undefined, false);
+    expect(saveSightings).toHaveBeenCalledWith(expect.anything(), false);
   });
 
   it('should return no_new_emails when imap returns empty', async () => {

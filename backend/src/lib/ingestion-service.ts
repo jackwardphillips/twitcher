@@ -18,7 +18,7 @@ export class IngestionService {
     this.imapClient = imapClient;
   }
 
-  async ingest(since?: Date): Promise<IngestionResult> {
+  async ingest(since?: Date, enrich = true): Promise<IngestionResult> {
     try {
       const emails = await this.imapClient.fetchRecentAlerts(since);
       let ingested = 0;
@@ -55,7 +55,7 @@ export class IngestionService {
           try {
             const sightings = parseEBirdAlert(email.rawBody);
             if (sightings.length > 0) {
-              await saveSightings(sightings);
+              await saveSightings(sightings, enrich);
             }
             
             await db.incomingEmail.update({
