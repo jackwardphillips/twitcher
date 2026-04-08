@@ -5,7 +5,10 @@ import { prisma } from './db';
 vi.mock('./db', () => ({
   prisma: {
     sighting: {
-      createMany: vi.fn(),
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
+    rarityCode: {
       findMany: vi.fn(),
     },
   },
@@ -28,6 +31,10 @@ vi.mock('./match-engine', () => ({
   MatchEngine: vi.fn(),
 }));
 
+vi.mock('./region-service', () => ({
+  RegionService: vi.fn(),
+}));
+
 describe('Sighting Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,15 +53,20 @@ describe('Sighting Service', () => {
       },
     ];
 
+    (prisma.rarityCode.findMany as any).mockResolvedValue([
+      { commonName: 'Taiga Bean-Goose', abaCode: 4 }
+    ]);
+
     await saveSightings(mockSightings);
 
-    expect(prisma.sighting.createMany).toHaveBeenCalledTimes(1);
-    expect(prisma.sighting.createMany).toHaveBeenCalledWith({
-      data: [expect.objectContaining({
+    expect(prisma.sighting.create).toHaveBeenCalledTimes(1);
+    expect(prisma.sighting.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
         species: 'Taiga Bean-Goose',
         scientificName: 'Anser fabalis',
         observer: 'Alexander Dabbs',
-      })],
+        rarity: 4
+      }),
     });
   });
 });

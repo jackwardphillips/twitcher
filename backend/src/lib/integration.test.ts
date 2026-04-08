@@ -52,12 +52,15 @@ describe('Ingestion Integration', () => {
     await service.ingest();
 
     expect(db.incomingEmail.create).toHaveBeenCalled();
-    expect(sightingService.saveSightings).toHaveBeenCalledWith(expect.arrayContaining([
-      expect.objectContaining({
-        species: 'Common Crane',
-        observer: 'John Doe',
-      })
-    ]));
+    expect(sightingService.saveSightings).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          species: 'Common Crane',
+          observer: 'John Doe',
+        })
+      ]),
+      true
+    );
     expect(db.incomingEmail.update).toHaveBeenCalledWith({
       where: { id: 1 },
       data: { status: 'processed' },

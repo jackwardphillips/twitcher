@@ -75,13 +75,16 @@ describe('Full API Ingestion Flow', () => {
     }));
 
     // Verify SightingService was called (proves parser and integration works)
-    expect(sightingService.saveSightings).toHaveBeenCalledWith(expect.arrayContaining([
-      expect.objectContaining({
-        species: 'Common Crane',
-        observer: 'John Doe',
-        location: 'Test Location'
-      })
-    ]));
+    expect(sightingService.saveSightings).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          species: 'Common Crane',
+          observer: 'John Doe',
+          location: 'Test Location'
+        })
+      ]),
+      true
+    );
 
     // Verify status updated to processed
     expect(db.incomingEmail.update).toHaveBeenCalledWith({

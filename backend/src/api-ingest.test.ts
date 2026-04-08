@@ -30,6 +30,9 @@ describe('POST /api/ingest', () => {
     const response = await request(app).post('/api/ingest');
 
     expect(response.status).toBe(500);
-    expect(response.body).toEqual({ error: 'Ingestion failed' });
+    expect(response.body).toEqual({ 
+      error: 'Ingestion failed',
+      details: 'IMAP failure'
+    });
   });
 });
