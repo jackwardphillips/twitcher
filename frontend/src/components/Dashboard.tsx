@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SightingMap } from './SightingMap.js';
 import { filterByProximity } from '../lib/geo-utils.js';
+import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js';
 
 interface Sighting {
   id: number;
@@ -11,6 +12,7 @@ interface Sighting {
   longitude: number | null;
   date: string;
   observer: string;
+  rarity: number;
   details?: string;
   mapUrl?: string;
   checklistUrl?: string;
@@ -87,12 +89,7 @@ const Dashboard: React.FC = () => {
   };
 
   const getRarityColor = (sighting: Sighting) => {
-    // Determine color based on scientific name or species keywords for now
-    // In a real app, this would come from a 'rarity' field in the DB.
-    const species = sighting.species.toLowerCase();
-    if (species.includes('stint') || species.includes('garganey') || species.includes(' McKay\'s')) return 'var(--clr-berry)'; // Very Rare
-    if (species.includes('godwit') || species.includes('curlew')) return 'var(--clr-gold)'; // Uncommon
-    return 'var(--clr-rust)'; // Normal Rare/Notable
+    return getRarityUtilityColor(sighting.rarity);
   };
 
   const displayedSightings = (nearMe && userLocation) 
