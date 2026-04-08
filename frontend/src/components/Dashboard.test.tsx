@@ -47,12 +47,42 @@ describe('Dashboard', () => {
       ok: true,
       json: async () => sightingsWithStreak,
     } as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        lastIngestedEmailDate: '2026-04-01T12:00:00Z',
+        lastRun: { status: 'success' }
+      }),
+    } as Response);
 
     render(<Dashboard />);
 
     await waitFor(() => {
       expect(screen.getByText('Near Bird')).toBeInTheDocument();
       expect(screen.getByText(/Seen 3 days in a row/i)).toBeInTheDocument();
+      expect(screen.getByText(/Last email ingested:/i)).toBeInTheDocument();
+      expect(screen.getByText(/Apr 1, 2026/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays connection issue when imap fails', async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockSightings,
+    } as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        lastIngestedEmailDate: '2026-04-01T12:00:00Z',
+        lastRun: { status: 'imap_error', error: 'Connection failed' }
+      }),
+    } as Response);
+
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/⚠️ Connection Issue/i)).toBeInTheDocument();
     });
   });
 
@@ -61,6 +91,10 @@ describe('Dashboard', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockSightings,
+    } as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
     } as Response);
 
     // Mock geolocation response (Near 'Near Bird')
@@ -101,6 +135,10 @@ describe('Dashboard', () => {
       ok: true,
       json: async () => mockSightings,
     } as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
+    } as Response);
 
     // Mock geolocation response (Far from both)
     const mockGeolocation = vi.mocked(navigator.geolocation.getCurrentPosition);
@@ -136,6 +174,11 @@ describe('Dashboard', () => {
   it('handles fetch error', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    // Second fetch will be rejected if first is, but let's be safe
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
+    } as Response);
 
     render(<Dashboard />);
 
@@ -149,6 +192,10 @@ describe('Dashboard', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockSightings,
+    } as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
     } as Response);
 
     // Remove navigator.geolocation
@@ -170,6 +217,10 @@ describe('Dashboard', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockSightings,
+    } as Response);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
     } as Response);
 
     // Mock geolocation error

@@ -58,6 +58,37 @@ body {
   letter-spacing: -0.02em;
 }
 
+.header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ingestion-status {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-label {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-value {
+  color: var(--text-secondary);
+}
+
+.ingestion-error {
+  color: var(--clr-berry);
+  font-weight: 600;
+  cursor: help;
+}
+
 .controls {
   display: flex;
   align-items: center;

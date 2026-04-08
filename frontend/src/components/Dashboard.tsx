@@ -17,10 +17,20 @@ interface Sighting {
   streak?: number;
 }
 
+interface IngestionStatus {
+  lastIngestedEmailDate: string | null;
+  lastRun: {
+    status: 'success' | 'no_new_emails' | 'imap_error';
+    error?: string;
+    ingested: number;
+  } | null;
+}
+
 const Dashboard: React.FC = () => {
   const [sightings, setSightings] = useState<Sighting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [ingestionStatus, setIngestionStatus] = useState<IngestionStatus | null>(null);
   
   // Near Me Filter state
   const [nearMe, setNearMe] = useState(false);
@@ -28,6 +38,7 @@ const Dashboard: React.FC = () => {
   const [geoError, setGeoError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Fetch sightings
     fetch('/api/sightings')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch sightings');
@@ -41,6 +52,12 @@ const Dashboard: React.FC = () => {
         setError(err.message);
         setLoading(false);
       });
+
+    // Fetch ingestion status
+    fetch('/api/ingestion-status')
+      .then((res) => res.json())
+      .then((data) => setIngestionStatus(data))
+      .catch((err) => console.error('Failed to fetch ingestion status:', err));
   }, []);
 
   const handleToggleNearMe = () => {
@@ -88,7 +105,22 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>Rare Bird Dashboard</h1>
+        <div className="header-main">
+          <h1>Rare Bird Dashboard</h1>
+          {ingestionStatus?.lastIngestedEmailDate && (
+            <div className="ingestion-status">
+              <span className="status-label">Last email ingested:</span>
+              <span className="status-value">
+                {new Date(ingestionStatus.lastIngestedEmailDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+              </span>
+              {ingestionStatus.lastRun?.status === 'imap_error' && (
+                <span className="ingestion-error" title={ingestionStatus.lastRun.error}>
+                   ⚠️ Connection Issue
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <div className="controls">
           <button 
             className={`filter-btn ${nearMe ? 'active' : ''}`}
