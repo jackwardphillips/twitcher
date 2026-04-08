@@ -1,4 +1,4 @@
-# Rare-Bird Dashboard
+# Rare Bird Dashboard
 
 This project is a comprehensive application for tracking and analyzing bird sightings, with a particular focus on rare bird occurrences. It integrates with external data sources like eBird, processes incoming sighting data, and provides a dashboard for visualization and analysis.
 
