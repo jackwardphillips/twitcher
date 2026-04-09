@@ -46,14 +46,14 @@ describe('Rarity Seeder', () => {
     expect(prisma.rarityCode.upsert).toHaveBeenCalledTimes(2);
 
     expect(prisma.rarityCode.upsert).toHaveBeenCalledWith({
-      where: { commonName: 'Bird 1' },
-      update: { scientificName: 'Species 1', abaCode: 1 },
+      where: { scientificName: 'Species 1' },
+      update: { commonName: 'Bird 1', abaCode: 1 },
       create: { commonName: 'Bird 1', scientificName: 'Species 1', abaCode: 1 },
     });
 
     expect(prisma.rarityCode.upsert).toHaveBeenCalledWith({
-      where: { commonName: 'Bird 2' },
-      update: { scientificName: 'Species 2', abaCode: 2 },
+      where: { scientificName: 'Species 2' },
+      update: { commonName: 'Bird 2', abaCode: 2 },
       create: { commonName: 'Bird 2', scientificName: 'Species 2', abaCode: 2 },
     });
   });

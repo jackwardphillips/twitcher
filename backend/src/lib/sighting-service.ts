@@ -14,15 +14,15 @@ const enrichmentService = new EnrichmentService(matchEngine, regionService);
 
 export async function saveSightings(sightings: Sighting[], enrich = true): Promise<void> {
   // Fetch rarity codes for all species in this batch
-  const uniqueSpecies = [...new Set(sightings.map(s => s.species))];
+  const uniqueScientificNames = [...new Set(sightings.map(s => s.scientificName))].filter(Boolean) as string[];
   const rarityRecords = await prisma.rarityCode.findMany({
-    where: { commonName: { in: uniqueSpecies } },
+    where: { scientificName: { in: uniqueScientificNames } },
   });
 
-  const rarityMap = new Map(rarityRecords.map(r => [r.commonName, r.abaCode]));
+  const rarityMap = new Map(rarityRecords.map(r => [r.scientificName, r.abaCode]));
 
   for (const sighting of sightings) {
-    const rarity = rarityMap.get(sighting.species) || 0;
+    const rarity = sighting.scientificName ? (rarityMap.get(sighting.scientificName) ?? 0) : 0;
 
     await prisma.sighting.create({
       data: {
@@ -39,11 +39,21 @@ export async function saveSightings(sightings: Sighting[], enrich = true): Promi
     });
   }
 
-  // Automatically trigger background enrichment for all unenriched sightings
+  // Automatically trigger background enrichment for all unenriched sightings in the last 3 days
   // We return the promise so callers can wait if they want to
-  if (enrich) {
-    return enrichmentService.enrichAllUnenriched().catch(err => {
-      console.error('Background enrichment failed:', err);
-    });
-  }
+if (enrich) {
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  
+  const recentUnenriched = await prisma.sighting.findMany({
+    where: {
+      subId: null,
+      date: { gte: threeDaysAgo },
+    },
+  });
+
+  return enrichmentService.enrichSightings(recentUnenriched).catch(err => {
+    console.error('Background enrichment failed:', err);
+  });
+}
 }

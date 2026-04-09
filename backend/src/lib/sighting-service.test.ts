@@ -19,6 +19,7 @@ vi.mock('./enrichment-service', () => {
     EnrichmentService: class {
       enrichAllUnenriched = vi.fn().mockResolvedValue(undefined);
       enrichSighting = vi.fn().mockResolvedValue(undefined);
+      enrichSightings = vi.fn().mockResolvedValue(undefined);
     },
   };
 });
@@ -51,21 +52,34 @@ describe('Sighting Service', () => {
         location: 'Deering Rd',
         date: new Date('2026-03-29T17:00:00Z'),
       },
+      {
+        species: 'Common Bird',
+        scientificName: 'Commonis birdis',
+        count: 1,
+        confirmed: true,
+        observer: 'Alexander Dabbs',
+        location: 'Deering Rd',
+        date: new Date('2026-03-29T17:00:00Z'),
+      },
     ];
 
     (prisma.rarityCode.findMany as any).mockResolvedValue([
-      { commonName: 'Taiga Bean-Goose', abaCode: 4 }
+      { scientificName: 'Anser fabalis', abaCode: 4 }
     ]);
 
     await saveSightings(mockSightings);
 
-    expect(prisma.sighting.create).toHaveBeenCalledTimes(1);
-    expect(prisma.sighting.create).toHaveBeenCalledWith({
+    expect(prisma.sighting.create).toHaveBeenCalledTimes(2);
+    expect(prisma.sighting.create).toHaveBeenNthCalledWith(1, {
       data: expect.objectContaining({
         species: 'Taiga Bean-Goose',
-        scientificName: 'Anser fabalis',
-        observer: 'Alexander Dabbs',
         rarity: 4
+      }),
+    });
+    expect(prisma.sighting.create).toHaveBeenNthCalledWith(2, {
+      data: expect.objectContaining({
+        species: 'Common Bird',
+        rarity: 0
       }),
     });
   });

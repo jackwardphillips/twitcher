@@ -20,9 +20,9 @@ export async function seedRarityCodes(csvPath: string): Promise<void> {
 
     try {
       await prisma.rarityCode.upsert({
-        where: { commonName: bird.commonName },
+        where: { scientificName: bird.scientificName },
         update: {
-          scientificName: bird.scientificName,
+          commonName: bird.commonName,
           abaCode: bird.abaCode,
         },
         create: {

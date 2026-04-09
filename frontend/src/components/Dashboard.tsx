@@ -89,7 +89,9 @@ const Dashboard: React.FC = () => {
   };
 
   const getRarityColor = (sighting: Sighting) => {
-    return getRarityUtilityColor(sighting.rarity);
+    // If rarity is 0 or not found in map, default to code 5 color
+    const rarity = sighting.rarity === 0 ? 5 : sighting.rarity;
+    return getRarityUtilityColor(rarity);
   };
 
   const displayedSightings = (nearMe && userLocation) 
@@ -153,8 +155,8 @@ const Dashboard: React.FC = () => {
             </div>
             
             {sighting.details && (
-              <p className="comments">{sighting.details}</p>
-            )}
+              <p className="comments" style={{ borderLeftColor: getRarityColor(sighting) }}>{sighting.details}</p>
+              )}
             
             <div className="links">
               {sighting.mapUrl && <a href={sighting.mapUrl} target="_blank" rel="noopener noreferrer">eBird Map</a>}

@@ -38,29 +38,30 @@ export class EnrichmentService {
     });
 
     if (!sighting) return;
-    if (sighting.subId) return; // Already enriched
+    if (sighting.subId) return;
 
     const match = await this.matchEngine.findMatch(sighting);
-
     if (match) {
       await this.applyMatch(sightingId, match);
     }
   }
 
+  // Original method - enriches ALL unenriched sightings in the DB
   async enrichAllUnenriched(): Promise<void> {
     const unenriched = await prisma.sighting.findMany({
-      where: {
-        subId: null,
-      },
+      where: { subId: null },
     });
+    await this.enrichSightings(unenriched);
+  }
 
-    if (unenriched.length === 0) return;
+  // New method - enriches a specific list you hand it (e.g. filtered by date)
+  async enrichSightings(sightings: Sighting[]): Promise<void> {
+    if (sightings.length === 0) return;
 
-    // 1. Separate sightings with and without coordinates
     const withCoords: Sighting[] = [];
     const withoutCoords: Sighting[] = [];
 
-    for (const sighting of unenriched) {
+    for (const sighting of sightings) {
       if (sighting.location.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/)) {
         withCoords.push(sighting);
       } else {
@@ -68,7 +69,6 @@ export class EnrichmentService {
       }
     }
 
-    // 2. Process geo-searches for sightings with coordinates (caching by lat/lng)
     const geoCache = new Map<string, any[]>();
     const failedGeoSearch: Sighting[] = [];
 
@@ -82,21 +82,19 @@ export class EnrichmentService {
           );
           geoCache.set(key, observations);
         }
-        
+
         const match = this.matchEngine.selectBestMatch(geoCache.get(key)!, sighting.species, sighting.location, sighting.date);
         if (match) {
           await this.applyMatch(sighting.id, match);
         } else {
-          // Fallback: If geo-search fails, add to the regional pool
           failedGeoSearch.push(sighting);
         }
       }
     }
 
-    // 3. Group remaining sightings by extracted region code (Surgical County > State)
     const regionalPool = [...withoutCoords, ...failedGeoSearch];
     const regionGroups = new Map<string, Sighting[]>();
-    
+
     for (const sighting of regionalPool) {
       const regionCode = await this.extractDetailedRegionCode(sighting.location);
       if (regionCode) {
@@ -105,7 +103,6 @@ export class EnrichmentService {
       }
     }
 
-    // 4. Process each region group with a single API call
     for (const [regionCode, sightings] of regionGroups.entries()) {
       console.log(`Fetching notable observations for region: ${regionCode}...`);
       const observations = await this.matchEngine.ebirdClient.getNotableObservations(regionCode, 30);
@@ -114,28 +111,23 @@ export class EnrichmentService {
         const match = this.matchEngine.selectBestMatch(observations, sighting.species, sighting.location, sighting.date);
         if (match) await this.applyMatch(sighting.id, match);
       }
-      // Small delay to respect rate limits
       await new Promise(resolve => setTimeout(resolve, 200));
     }
   }
 
   private async extractDetailedRegionCode(location: string): Promise<string | null> {
     const parts = location.split(',').map(p => p.trim());
-    
-    // Pattern: [Hotspot], [County], [State], [Country]
-    // We look for State first to narrow down the search
+
     let subnational1Code: string | null = null;
     let countyName: string | null = null;
 
-    // Check from the end of parts
     for (let i = parts.length - 1; i >= 0; i--) {
       const part = parts[i]!;
       const stateCode = this.getStateCode(part);
       if (stateCode) {
         subnational1Code = stateCode;
-        // The part before the state is usually the county
         if (i > 0) {
-            countyName = parts[i-1]!;
+          countyName = parts[i-1]!;
         }
         break;
       }
@@ -143,24 +135,20 @@ export class EnrichmentService {
 
     if (!subnational1Code) return null;
 
-    // If we have a county, try to get the surgical subnational2 code
     if (countyName) {
       const subnational2Code = await this.regionService.findSubregionCode(countyName, subnational1Code);
       if (subnational2Code) return subnational2Code;
     }
 
-    // Fallback to subnational1 (State)
     return subnational1Code;
   }
 
   private getStateCode(part: string): string | null {
-    // Exact match or contains state name
     if (EnrichmentService.STATE_MAPPINGS[part]) return EnrichmentService.STATE_MAPPINGS[part]!;
     for (const [name, code] of Object.entries(EnrichmentService.STATE_MAPPINGS)) {
       if (part.includes(name)) return code;
     }
 
-    // Check for strict code format XX-YY
     const strict = part.match(/\b([A-Z]{2}-[A-Z]{2,3})\b/);
     if (strict) return strict[1]!;
 

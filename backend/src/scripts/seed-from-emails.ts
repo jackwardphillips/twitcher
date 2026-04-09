@@ -29,8 +29,8 @@ async function main() {
     console.log(`Parsed ${sightings.length} sightings from ${file}.`);
     
     if (sightings.length > 0) {
-      await saveSightings(sightings);
-      console.log(`Saved ${sightings.length} sightings.`);
+      await saveSightings(sightings, false);
+      console.log(`Saved ${sightings.length} sightings (enrichment disabled).`);
     }
   }
 

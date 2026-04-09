@@ -33,7 +33,7 @@ model Sighting {
 model RarityCode {
   id             Int     @id @default(autoincrement())
   commonName     String  @unique // ABA common name
-  scientificName String? // ABA scientific name
+  scientificName String? @unique // ABA scientific name
   abaCode        Int     // ABA rarity code (1-6)
 }
 
