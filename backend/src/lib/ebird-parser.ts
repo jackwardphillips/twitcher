@@ -33,10 +33,20 @@ function decodeQuotedPrintable(text: string): string {
   }
 }
 
+/**
+ * Validates if a date object is valid.
+ */
 function isValidDate(date: Date): boolean {
   return date instanceof Date && !isNaN(date.getTime());
 }
 
+/**
+ * Parses eBird alert email content into an array of Sighting objects.
+ * Handles quoted-printable encoding and skips malformed records.
+ * 
+ * @param content The raw email content from an eBird alert.
+ * @returns An array of parsed Sighting objects.
+ */
 export function parseEBirdAlert(content: string): Sighting[] {
   // Decode the entire content first
   const decodedContent = decodeQuotedPrintable(content);

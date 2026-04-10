@@ -20,7 +20,7 @@
 
 ## Phase 3: Final Integration and Quality Gate
 
-- [ ] Task: Run all backend tests to ensure no regressions.
+- [~] Task: Run all backend tests to ensure no regressions.
 - [ ] Task: Verify that all public API signatures remain unchanged.
 - [ ] Task: Conduct a final self-review against the Quality Gates in `workflow.md`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Final Integration' (Protocol in workflow.md)

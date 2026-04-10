@@ -33,6 +33,11 @@ export class EnrichmentService {
     private regionService: RegionService
   ) {}
 
+  /**
+   * Enriches a single sighting by ID by finding a matching eBird observation.
+   * 
+   * @param sightingId The ID of the sighting to enrich.
+   */
   async enrichSighting(sightingId: number): Promise<void> {
     const sighting = await prisma.sighting.findUnique({
       where: { id: sightingId },
@@ -47,7 +52,9 @@ export class EnrichmentService {
     }
   }
 
-  // Original method - enriches ALL unenriched sightings in the DB
+  /**
+   * Enriches all sightings that do not yet have an eBird subId.
+   */
   async enrichAllUnenriched(): Promise<void> {
     const unenriched = await prisma.sighting.findMany({
       where: { subId: null },
@@ -55,7 +62,12 @@ export class EnrichmentService {
     await this.enrichSightings(unenriched);
   }
 
-  // New method - enriches a specific list you hand it (e.g. filtered by date)
+  /**
+   * Enriches a specific batch of sightings.
+   * Uses a geo-cache for efficiency and handles individual request failures gracefully.
+   * 
+   * @param sightings The array of Sighting objects to enrich.
+   */
   async enrichSightings(sightings: Sighting[]): Promise<void> {
     if (sightings.length === 0) return;
 
