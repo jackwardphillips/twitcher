@@ -9,14 +9,14 @@
 - [x] Task: Verify tests pass and code coverage is maintained.
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Robust Enrichment' (Protocol in workflow.md) 461908c
 
-## Phase 2: Safe eBird Alert Parsing (`ebird-parser.ts`)
+## Phase 2: Safe eBird Alert Parsing (`ebird-parser.ts`) [checkpoint: ca83d8a]
 
 - [x] Task: Create failing tests for `parseEBirdAlert` with malformed email bodies (missing regex matches for species, location, or date). b7b406d
 - [x] Task: Modify `parseEBirdAlert` to remove all `!` assertions on regex match results. e57fa64
 - [x] Task: Implement explicit checks for regex match results; if a required field is missing, log a warning and skip the record. e57fa64
 - [x] Task: Implement date validation to ensure extracted strings are valid before passing to `new Date()`. e57fa64
 - [x] Task: Verify tests pass and code coverage is maintained. e57fa64
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Safe eBird Alert Parsing' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Safe eBird Alert Parsing' (Protocol in workflow.md) ca83d8a
 
 ## Phase 3: Final Integration and Quality Gate
 
