@@ -2,6 +2,7 @@ import { MatchEngine } from './match-engine.js';
 import { prisma } from './db.js';
 import { RegionService } from './region-service.js';
 import type { Sighting } from '@prisma/client';
+import type { EbirdObservation } from './ebird-client.js';
 
 export class EnrichmentService {
   private static readonly STATE_MAPPINGS: Record<string, string> = {
@@ -69,7 +70,7 @@ export class EnrichmentService {
       }
     }
 
-    const geoCache = new Map<string, any[]>();
+    const geoCache = new Map<string, EbirdObservation[]>();
     const failedGeoSearch: Sighting[] = [];
 
     for (const sighting of withCoords) {
@@ -77,10 +78,15 @@ export class EnrichmentService {
       if (coords) {
         const key = `${coords[1]},${coords[2]}`;
         if (!geoCache.has(key)) {
-          const observations = await this.matchEngine.ebirdClient.getNearbyNotableObservations(
-            parseFloat(coords[1]!), parseFloat(coords[2]!), 10, 30
-          );
-          geoCache.set(key, observations);
+          try {
+            const observations = await this.matchEngine.ebirdClient.getNearbyNotableObservations(
+              parseFloat(coords[1]!), parseFloat(coords[2]!), 10, 30
+            );
+            geoCache.set(key, observations);
+          } catch (error) {
+            console.error(`Failed to fetch nearby notable observations for ${key}:`, error);
+            geoCache.set(key, []); // Mark as empty to avoid retrying in this batch
+          }
         }
 
         const match = this.matchEngine.selectBestMatch(geoCache.get(key)!, sighting.species, sighting.location, sighting.date);
@@ -104,12 +110,16 @@ export class EnrichmentService {
     }
 
     for (const [regionCode, sightings] of regionGroups.entries()) {
-      console.log(`Fetching notable observations for region: ${regionCode}...`);
-      const observations = await this.matchEngine.ebirdClient.getNotableObservations(regionCode, 30);
-      console.log(`Found ${observations.length} notable observations in ${regionCode}. Matching ${sightings.length} sightings...`);
-      for (const sighting of sightings) {
-        const match = this.matchEngine.selectBestMatch(observations, sighting.species, sighting.location, sighting.date);
-        if (match) await this.applyMatch(sighting.id, match);
+      try {
+        console.log(`Fetching notable observations for region: ${regionCode}...`);
+        const observations = await this.matchEngine.ebirdClient.getNotableObservations(regionCode, 30);
+        console.log(`Found ${observations.length} notable observations in ${regionCode}. Matching ${sightings.length} sightings...`);
+        for (const sighting of sightings) {
+          const match = this.matchEngine.selectBestMatch(observations, sighting.species, sighting.location, sighting.date);
+          if (match) await this.applyMatch(sighting.id, match);
+        }
+      } catch (error) {
+        console.error(`Failed to enrich sightings for region ${regionCode}:`, error);
       }
       await new Promise(resolve => setTimeout(resolve, 200));
     }
@@ -155,7 +165,7 @@ export class EnrichmentService {
     return null;
   }
 
-  private async applyMatch(sightingId: number, match: any): Promise<void> {
+  private async applyMatch(sightingId: number, match: EbirdObservation): Promise<void> {
     await prisma.sighting.update({
       where: { id: sightingId },
       data: {
