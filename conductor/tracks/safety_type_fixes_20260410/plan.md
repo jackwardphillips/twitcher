@@ -18,9 +18,9 @@
 - [x] Task: Verify tests pass and code coverage is maintained. e57fa64
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Safe eBird Alert Parsing' (Protocol in workflow.md) ca83d8a
 
-## Phase 3: Final Integration and Quality Gate
+## Phase 3: Final Integration and Quality Gate [checkpoint: 301d53c]
 
-- [~] Task: Run all backend tests to ensure no regressions.
-- [ ] Task: Verify that all public API signatures remain unchanged.
-- [ ] Task: Conduct a final self-review against the Quality Gates in `workflow.md`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Final Integration' (Protocol in workflow.md)
+- [x] Task: Run all backend tests to ensure no regressions. e57fa64
+- [x] Task: Verify that all public API signatures remain unchanged. 301d53c
+- [x] Task: Conduct a final self-review against the Quality Gates in `workflow.md`. 301d53c
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Final Integration' (Protocol in workflow.md) 301d53c
