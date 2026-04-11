@@ -35,8 +35,13 @@ async function main() {
   
   console.log(`Parsed ${sightings.length} sightings from sample email.`);
   
-  // Clear DB first
-  await prisma.sighting.deleteMany();
+  // Clear DB first (only if --force is provided, otherwise we might accidentally wipe dev data)
+  if (process.argv.includes('--force')) {
+      console.log('Clearing existing sightings (--force provided)...');
+      await prisma.sighting.deleteMany();
+  } else {
+      console.log('Skipping DB clear (use --force to wipe before ingestion).');
+  }
   
   // Save sightings
   for (const s of sightings) {

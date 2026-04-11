@@ -8,6 +8,7 @@ export interface IngestionResult {
   skipped: number;
   failed: number;
   status: 'success' | 'no_new_emails' | 'imap_error';
+  enrichmentStatus?: 'success' | 'partial_failure' | 'failed' | 'not_requested';
   error?: string;
 }
 
@@ -24,9 +25,12 @@ export class IngestionService {
       let ingested = 0;
       let skipped = 0;
       let failed = 0;
+      let enrichmentAttempted = 0;
+      let enrichmentSucceeded = 0;
+      let enrichmentFailed = 0;
 
       if (emails.length === 0) {
-        return { ingested, skipped, failed, status: 'no_new_emails' };
+        return { ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
       }
 
       for (const email of emails) {
@@ -55,7 +59,12 @@ export class IngestionService {
           try {
             const sightings = parseEBirdAlert(email.rawBody);
             if (sightings.length > 0) {
-              await saveSightings(sightings, enrich);
+              const enrichment = await saveSightings(sightings, enrich);
+              if (enrichment) {
+                enrichmentAttempted += enrichment.attempted;
+                enrichmentSucceeded += enrichment.succeeded;
+                enrichmentFailed += enrichment.failed;
+              }
             }
             
             await db.incomingEmail.update({
@@ -72,12 +81,23 @@ export class IngestionService {
             failed++;
           }
         } catch (error) {
-          console.error(`Failed to ingest email ${email.messageId}:`, error);
+          console.error(`Failed to ingest email:`, error);
           failed++;
         }
       }
 
-      return { ingested, skipped, failed, status: 'success' };
+      let enrichmentStatus: IngestionResult['enrichmentStatus'] = 'not_requested';
+      if (enrich) {
+        if (enrichmentFailed === 0) {
+          enrichmentStatus = 'success';
+        } else if (enrichmentSucceeded === 0 && enrichmentAttempted > 0) {
+          enrichmentStatus = 'failed';
+        } else {
+          enrichmentStatus = 'partial_failure';
+        }
+      }
+
+      return { ingested, skipped, failed, status: 'success', enrichmentStatus };
     } catch (error) {
       console.error('Ingestion failed:', error);
       return { 

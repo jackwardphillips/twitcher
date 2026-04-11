@@ -119,7 +119,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log('Running startup email ingestion...');
     try {
       const results = await triggerIngestion();
-      console.log('Startup ingestion complete:', results.status);
+      console.log(`Startup ingestion complete: ${results.status} (enrichment: ${results.enrichmentStatus})`);
     } catch (error) {
       console.error('Startup ingestion failed:', error);
     }

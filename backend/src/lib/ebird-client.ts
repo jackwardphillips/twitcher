@@ -34,24 +34,40 @@ export class EbirdClient {
 
   constructor(private apiKey: string) {}
 
-  private async get(path: string, params: Record<string, string | number | boolean> = {}) {
+  private async get(path: string, params: Record<string, string | number | boolean> = {}, retries = 3) {
     const url = new URL(`${this.baseUrl}${path}`);
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, String(value));
     });
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        'x-ebirdapitoken': this.apiKey,
-      },
-    });
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await fetch(url.toString(), {
+          headers: {
+            'x-ebirdapitoken': this.apiKey,
+          },
+        });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`eBird API error ${response.status}: ${errorText}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`eBird API error ${response.status}: ${errorText}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        const isLastRetry = i === retries - 1;
+        const isNetworkError = error instanceof Error && 
+          (error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'));
+        
+        if (isLastRetry || !isNetworkError) {
+          throw error;
+        }
+        
+        const delay = Math.pow(2, i) * 1000;
+        console.warn(`eBird API request failed (attempt ${i + 1}/${retries}), retrying in ${delay}ms...`, error instanceof Error ? error.message : error);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
-
-    return response.json();
   }
 
   async getNotableObservations(regionCode: string, back: number = 14): Promise<EbirdObservation[]> {

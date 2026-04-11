@@ -68,9 +68,11 @@ export class EnrichmentService {
    * 
    * @param sightings The array of Sighting objects to enrich.
    */
-  async enrichSightings(sightings: Sighting[]): Promise<void> {
-    if (sightings.length === 0) return;
+  async enrichSightings(sightings: Sighting[]): Promise<{ attempted: number; succeeded: number; failed: number }> {
+    if (sightings.length === 0) return { attempted: 0, succeeded: 0, failed: 0 };
 
+    let succeeded = 0;
+    let failed = 0;
     const withCoords: Sighting[] = [];
     const withoutCoords: Sighting[] = [];
 
@@ -96,7 +98,7 @@ export class EnrichmentService {
             );
             geoCache.set(key, observations);
           } catch (error) {
-            console.error(`Failed to fetch nearby notable observations for ${key}:`, error);
+            console.error(`Failed to fetch nearby notable observations for ${key}:`, error instanceof Error ? error.message : error);
             geoCache.set(key, []); // Mark as empty to avoid retrying in this batch
           }
         }
@@ -104,6 +106,7 @@ export class EnrichmentService {
         const match = this.matchEngine.selectBestMatch(geoCache.get(key)!, sighting.species, sighting.location, sighting.date);
         if (match) {
           await this.applyMatch(sighting.id, match);
+          succeeded++;
         } else {
           failedGeoSearch.push(sighting);
         }
@@ -118,23 +121,33 @@ export class EnrichmentService {
       if (regionCode) {
         if (!regionGroups.has(regionCode)) regionGroups.set(regionCode, []);
         regionGroups.get(regionCode)!.push(sighting);
+      } else {
+        failed++; // Could not determine region
       }
     }
 
-    for (const [regionCode, sightings] of regionGroups.entries()) {
+    for (const [regionCode, regionSightings] of regionGroups.entries()) {
       try {
         console.log(`Fetching notable observations for region: ${regionCode}...`);
         const observations = await this.matchEngine.ebirdClient.getNotableObservations(regionCode, 30);
-        console.log(`Found ${observations.length} notable observations in ${regionCode}. Matching ${sightings.length} sightings...`);
-        for (const sighting of sightings) {
+        console.log(`Found ${observations.length} notable observations in ${regionCode}. Matching ${regionSightings.length} sightings...`);
+        for (const sighting of regionSightings) {
           const match = this.matchEngine.selectBestMatch(observations, sighting.species, sighting.location, sighting.date);
-          if (match) await this.applyMatch(sighting.id, match);
+          if (match) {
+            await this.applyMatch(sighting.id, match);
+            succeeded++;
+          } else {
+            failed++;
+          }
         }
       } catch (error) {
-        console.error(`Failed to enrich sightings for region ${regionCode}:`, error);
+        console.error(`Failed to enrich sightings for region ${regionCode}:`, error instanceof Error ? error.message : error);
+        failed += regionSightings.length;
       }
       await new Promise(resolve => setTimeout(resolve, 200));
     }
+
+    return { attempted: sightings.length, succeeded, failed };
   }
 
   private async extractDetailedRegionCode(location: string): Promise<string | null> {
