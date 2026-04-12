@@ -95,6 +95,33 @@ body {
   gap: 1.5rem;
 }
 
+.rarity-filter {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.rarity-filter button {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+  font-family: var(--font-data);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.rarity-filter button.active {
+  background: var(--clr-rust);
+  color: white;
+  border-color: var(--clr-rust);
+}
+
 .filter-btn {
   padding: 0.6rem 1.2rem;
   border-radius: 4px;

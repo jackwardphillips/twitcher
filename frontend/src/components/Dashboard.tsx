@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SightingMap } from './SightingMap.js';
 import { filterByProximity } from '../lib/geo-utils.js';
 import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js';
-import { RarityFilter, RarityCode } from './RarityFilter.js';
+import { RarityFilter, type RarityCode } from './RarityFilter.js';
 
 interface Sighting {
   id: number;
