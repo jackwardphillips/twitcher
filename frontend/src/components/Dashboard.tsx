@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SightingMap } from './SightingMap.js';
 import { filterByProximity } from '../lib/geo-utils.js';
 import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js';
+import { RarityFilter, RarityCode } from './RarityFilter.js';
 
 interface Sighting {
   id: number;
@@ -38,6 +39,9 @@ const Dashboard: React.FC = () => {
   const [nearMe, setNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+
+  // Rarity Filter state
+  const [selectedRarities, setSelectedRarities] = useState<RarityCode[]>([3, 4, 5, 6]);
 
   useEffect(() => {
     // Fetch sightings
@@ -88,15 +92,30 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleToggleRarity = (rarity: RarityCode) => {
+    setSelectedRarities((prev) => {
+      if (prev.includes(rarity)) {
+        // Empty-state guard: cannot deselect last code
+        if (prev.length === 1) return prev;
+        return prev.filter((r) => r !== rarity);
+      } else {
+        return [...prev, rarity].sort();
+      }
+    });
+  };
+
   const getRarityColor = (sighting: Sighting) => {
     // If rarity is 0 or not found in map, default to code 5 color
     const rarity = sighting.rarity === 0 ? 5 : sighting.rarity;
     return getRarityUtilityColor(rarity);
   };
 
-  const displayedSightings = (nearMe && userLocation) 
-    ? filterByProximity(sightings, userLocation.lat, userLocation.lng, 50)
-    : sightings;
+  const displayedSightings = sightings
+    .filter((s) => selectedRarities.includes((s.rarity === 0 ? 5 : s.rarity) as RarityCode))
+    .filter((s) => {
+      if (!nearMe || !userLocation) return true;
+      return filterByProximity([s], userLocation.lat, userLocation.lng, 50).length > 0;
+    });
 
   if (loading) return <div>Loading sightings...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -121,6 +140,10 @@ const Dashboard: React.FC = () => {
           )}
         </div>
         <div className="controls">
+          <RarityFilter 
+            selectedRarities={selectedRarities} 
+            onToggleRarity={handleToggleRarity} 
+          />
           <button 
             className={`filter-btn ${nearMe ? 'active' : ''}`}
             onClick={handleToggleNearMe}
@@ -167,7 +190,7 @@ const Dashboard: React.FC = () => {
         ))}
         {displayedSightings.length === 0 && (
           <div className="no-results">
-            No rare birds reported within 50km of your location.
+            {nearMe ? 'No rare birds reported within 50km of your location.' : 'No rare birds reported.'}
           </div>
         )}
       </div>
