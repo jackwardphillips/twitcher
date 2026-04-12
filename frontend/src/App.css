@@ -39,14 +39,14 @@ body {
 }
 
 .dashboard-header {
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .dashboard h1 {
@@ -54,14 +54,16 @@ body {
   font-weight: 900;
   color: var(--clr-rust);
   margin: 0;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .header-main {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1rem;
+  justify-content: center;
 }
 
 .ingestion-status {
@@ -98,6 +100,7 @@ body {
 .rarity-filter {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .rarity-filter.inline-layout {
@@ -113,33 +116,35 @@ body {
   border: 1px solid var(--border);
   background: white;
   cursor: pointer;
-  font-family: var(--font-data);
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 4px;
   color: var(--text-secondary);
 }
 
 .rarity-btn:hover:not(.last-active) {
-  border-color: var(--clr-rust);
-  background: rgba(196, 98, 45, 0.05);
+  background: color-mix(in srgb, var(--rarity-color), white 85%);
+  border-color: var(--rarity-color);
+  color: var(--text-primary);
 }
 
 .rarity-btn.active, .rarity-option.active {
   background: var(--rarity-color);
   color: white;
-  border-color: var(--rarity-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-color: var(--border);
+  box-shadow: inset 0 0 0 2px white;
 }
 
 .rarity-btn.active:hover:not(.last-active) {
-  filter: brightness(0.9);
+  filter: brightness(1.1);
+  box-shadow: inset 0 0 0 2px white;
 }
 
 .rarity-btn.last-active, .rarity-option.last-active {
   cursor: not-allowed;
-  opacity: 0.8;
+  opacity: 1;
 }
 
 /* Mobile Dropdown Styling */

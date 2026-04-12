@@ -1,6 +1,6 @@
 export const RARITY_COLOR_MAP: Record<number, string> = {
   1: '#9e9e9e',
-  2: '#9e9e9e',
+  2: '#616161',
   3: '#7a9e7e',
   4: '#c9a84c',
   5: '#6b3fa0',
