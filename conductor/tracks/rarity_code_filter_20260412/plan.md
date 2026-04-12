@@ -5,7 +5,7 @@ This plan implements a multi-select rarity code filter (ABA codes 1-6) in the da
 ## Phase 1: Foundation & State Management
 Define the rarity filter state and filtering logic in the `Dashboard` component.
 
-- [ ] Task: Create `RarityFilter` component shell and types.
+- [x] Task: Create `RarityFilter` component shell and types. fec3392
     - [ ] Define `RarityCode` type (1-6).
     - [ ] Create `RarityFilterProps` interface.
 - [ ] Task: Implement TDD for `Dashboard` filtering logic.
