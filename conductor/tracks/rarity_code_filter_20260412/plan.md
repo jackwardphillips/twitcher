@@ -2,7 +2,7 @@
 
 This plan implements a multi-select rarity code filter (ABA codes 1-6) in the dashboard header, with responsive behavior (inline on desktop, dropdown on mobile).
 
-## Phase 1: Foundation & State Management
+## Phase 1: Foundation & State Management [checkpoint: b05bd4b]
 Define the rarity filter state and filtering logic in the `Dashboard` component.
 
 - [x] Task: Create `RarityFilter` component shell and types. fec3392
@@ -17,7 +17,7 @@ Define the rarity filter state and filtering logic in the `Dashboard` component.
     - [ ] Add `selectedRarities` state.
     - [ ] Update `displayedSightings` to include rarity filtering.
     - [ ] Implement `handleToggleRarity` with empty-state guard.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & State Management' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation & State Management' (Protocol in workflow.md) b05bd4b
 
 ## Phase 2: UI Implementation (Desktop & Mobile)
 Build the responsive `RarityFilter` component with inline and dropdown modes.
