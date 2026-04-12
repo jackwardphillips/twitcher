@@ -35,7 +35,7 @@ Build the responsive `RarityFilter` component with inline and dropdown modes.
 - [x] Task: Integrate `RarityFilter` into `Dashboard.tsx`. 031d689
     - [ ] Place component between header title and \"Filter Near Me\" button.
     - [ ] Wire up `selectedRarities` and `handleToggleRarity`.
-- [ ] Task: Verify responsive behavior.
+- [x] Task: Verify responsive behavior. 84f0bc2
     - [ ] Test CSS media queries for < 600px breakpoint.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: UI Implementation' (Protocol in workflow.md)
 
