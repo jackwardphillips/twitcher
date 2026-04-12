@@ -13,7 +13,7 @@ Define the rarity filter state and filtering logic in the `Dashboard` component.
         - [ ] Default selection (3, 4, 5, 6).
         - [ ] Filtering sightings by rarity code.
         - [ ] Empty-state guard (cannot deselect last code).
-- [ ] Task: Implement state and filtering logic in `Dashboard.tsx`.
+- [x] Task: Implement state and filtering logic in `Dashboard.tsx`. 031d689
     - [ ] Add `selectedRarities` state.
     - [ ] Update `displayedSightings` to include rarity filtering.
     - [ ] Implement `handleToggleRarity` with empty-state guard.
@@ -32,7 +32,7 @@ Build the responsive `RarityFilter` component with inline and dropdown modes.
     - [ ] Add desktop layout: Inline toggle buttons styled with `RARITY_COLOR_MAP`.
     - [ ] Add mobile layout: Dropdown menu (active when viewport < 600px).
     - [ ] Ensure \"Field Journal\" styling (Playfair Display / Lora).
-- [ ] Task: Integrate `RarityFilter` into `Dashboard.tsx`.
+- [x] Task: Integrate `RarityFilter` into `Dashboard.tsx`. 031d689
     - [ ] Place component between header title and \"Filter Near Me\" button.
     - [ ] Wire up `selectedRarities` and `handleToggleRarity`.
 - [ ] Task: Verify responsive behavior.
