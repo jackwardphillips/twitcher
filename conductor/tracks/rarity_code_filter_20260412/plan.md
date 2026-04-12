@@ -22,7 +22,7 @@ Define the rarity filter state and filtering logic in the `Dashboard` component.
 ## Phase 2: UI Implementation (Desktop & Mobile)
 Build the responsive `RarityFilter` component with inline and dropdown modes.
 
-- [ ] Task: Implement TDD for `RarityFilter` UI component.
+- [x] Task: Implement TDD for `RarityFilter` UI component. 6d52a48
     - [ ] Write tests in `RarityFilter.test.tsx` for:
         - [ ] Correct rarity colors from `RARITY_COLOR_MAP` applied to each button.
         - [ ] Disabled/ignored state when only one code is selected.
