@@ -39,12 +39,12 @@ Build the responsive `RarityFilter` component with inline and dropdown modes.
     - [ ] Test CSS media queries for < 600px breakpoint.
 - [x] Task: Conductor - User Manual Verification 'Phase 2: UI Implementation' (Protocol in workflow.md) 11b7727
 
-## Phase 3: Verification & Polish
+## Phase 3: Verification & Polish [checkpoint: 9ca3aa2]
 Final end-to-end testing and styling refinements.
 
-- [x] Task: Run full test suite and verify coverage.
-    - [ ] Ensure `Dashboard.test.tsx` and `RarityFilter.test.tsx` pass.
-    - [ ] Verify >80% coverage for new code.
+- [x] Task: Run full test suite and verify coverage. 197b0c7
+    - [x] Ensure `Dashboard.test.tsx` and `RarityFilter.test.tsx` pass.
+    - [x] Verify >80% coverage for new code.
 - [x] Task: Styling and Polish. bc000ec
     - [x] Title alignment: Align title/subtitle block vertically with filter buttons.
     - [x] Button border: Add a white ring between color fill and brown outer border.
@@ -56,4 +56,4 @@ Final end-to-end testing and styling refinements.
     - [x] Verify card list updates on filter change.
     - [x] Verify map pins update on filter change.
     - [x] Verify mobile dropdown behavior.
-- [~] Task: Conductor - User Manual Verification 'Phase 3: Verification & Polish' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Verification & Polish' (Protocol in workflow.md) 9ca3aa2
