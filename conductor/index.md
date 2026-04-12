@@ -1,5 +1,6 @@
-# Track safety_type_fixes_20260410 Context
+# Conductor Project Index
 
-- [Specification](./spec.md)
-- [Implementation Plan](./plan.md)
-- [Metadata](./metadata.json)
+- [Product Definition](./product.md)
+- [Tech Stack](./tech-stack.md)
+- [Workflow](./workflow.md)
+- [Tracks Registry](./tracks.md)

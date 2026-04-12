@@ -52,8 +52,8 @@ Final end-to-end testing and styling refinements.
     - [x] Hover state: Lightened tint of rarity color, maintain legibility.
     - [x] Code 1 vs Code 2 colors: Code 2 darker gray than Code 1.
     - [x] Button font: Use Lora for buttons.
-- [~] Task: Manual end-to-end verification.
-    - [ ] Verify card list updates on filter change.
-    - [ ] Verify map pins update on filter change.
-    - [ ] Verify mobile dropdown behavior.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Verification & Polish' (Protocol in workflow.md)
+- [x] Task: Manual end-to-end verification. 5c7bf8a
+    - [x] Verify card list updates on filter change.
+    - [x] Verify map pins update on filter change.
+    - [x] Verify mobile dropdown behavior.
+- [~] Task: Conductor - User Manual Verification 'Phase 3: Verification & Polish' (Protocol in workflow.md)

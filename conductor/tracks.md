@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Rarity Code Filter**
+- [~] **Track: Rarity Code Filter**
 *Link: [./tracks/rarity_code_filter_20260412/](./tracks/rarity_code_filter_20260412/)*
