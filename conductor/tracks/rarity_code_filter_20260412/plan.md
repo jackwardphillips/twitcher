@@ -19,7 +19,7 @@ Define the rarity filter state and filtering logic in the `Dashboard` component.
     - [ ] Implement `handleToggleRarity` with empty-state guard.
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation & State Management' (Protocol in workflow.md) b05bd4b
 
-## Phase 2: UI Implementation (Desktop & Mobile)
+## Phase 2: UI Implementation (Desktop & Mobile) [checkpoint: 11b7727]
 Build the responsive `RarityFilter` component with inline and dropdown modes.
 
 - [x] Task: Implement TDD for `RarityFilter` UI component. 6d52a48
@@ -37,7 +37,7 @@ Build the responsive `RarityFilter` component with inline and dropdown modes.
     - [ ] Wire up `selectedRarities` and `handleToggleRarity`.
 - [x] Task: Verify responsive behavior. 84f0bc2
     - [ ] Test CSS media queries for < 600px breakpoint.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: UI Implementation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: UI Implementation' (Protocol in workflow.md) 11b7727
 
 ## Phase 3: Verification & Polish
 Final end-to-end testing and styling refinements.
