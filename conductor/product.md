@@ -24,6 +24,7 @@ A centralized, web-based dashboard designed for ABA rare bird seekers and effici
 - **Rarity Alert Dashboard:** A summarized, interactive list of recent ABA code 4 and 5 bird sightings.
 - **ABA Rarity Lookup:** Integrated ABA Checklist for accurate rarity code identification (1-6) across all species.
 - **Interactive Map:** A top-down geospatial view of sightings with rarity-coded markers.
+- **Rarity Code Filter (Added 2026-04-12):** Multi-select filter for ABA rarity codes 1-6, allowing users to toggle visibility of different rarity tiers across the dashboard and map.
 - **"Near Me" Filter:** One-touch filtering to see sightings within a 50km radius of the user's current location.
 - **Sighting Streaks:** Visual indicators of how many consecutive days a species has been reported at a specific location.
 - **Automated Email Ingestion:** Active IMAP polling for eBird alerts (ABA Rarities) to automatically ingest and parse sightings.
