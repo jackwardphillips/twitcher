@@ -111,7 +111,11 @@ const Dashboard: React.FC = () => {
   };
 
   const displayedSightings = sightings
-    .filter((s) => selectedRarities.includes((s.rarity === 0 ? 5 : s.rarity) as RarityCode))
+    .filter((s): s is Sighting & { rarity: RarityCode } => {
+      // Fallback for rarity 0 to code 5
+      const rarity = (s.rarity === 0 ? 5 : s.rarity) as RarityCode;
+      return selectedRarities.includes(rarity);
+    })
     .filter((s) => {
       if (!nearMe || !userLocation) return true;
       return filterByProximity([s], userLocation.lat, userLocation.lng, 50).length > 0;

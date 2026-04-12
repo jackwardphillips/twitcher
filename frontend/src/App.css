@@ -25,38 +25,38 @@
 }
 
 body {
+  -webkit-font-smoothing: antialiased;
   background-color: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-body);
   margin: 0;
-  -webkit-font-smoothing: antialiased;
 }
 
 .app-container {
-  max-width: 1200px;
   margin: 0 auto;
+  max-width: 1200px;
   padding: 0; /* Remove padding for full-bleed map */
 }
 
 .dashboard-header {
-  padding: 1.5rem 2rem;
+  align-items: center;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   flex-wrap: wrap;
   gap: 1.5rem;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
 }
 
 .dashboard h1 {
-  font-family: var(--font-display);
-  font-weight: 900;
   color: var(--clr-rust);
-  margin: 0;
+  font-family: var(--font-display);
   font-size: 2.2rem;
+  font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1.1;
+  margin: 0;
 }
 
 .header-main {
@@ -67,18 +67,18 @@ body {
 }
 
 .ingestion-status {
-  font-family: var(--font-data);
-  font-size: 0.75rem;
+  align-items: center;
   color: var(--text-muted);
   display: flex;
-  align-items: center;
+  font-family: var(--font-data);
+  font-size: 0.75rem;
   gap: 0.5rem;
 }
 
 .status-label {
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .status-value {
@@ -87,20 +87,20 @@ body {
 
 .ingestion-error {
   color: var(--clr-berry);
-  font-weight: 600;
   cursor: help;
+  font-weight: 600;
 }
 
 .controls {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 1.5rem;
 }
 
 .rarity-filter {
+  align-items: center;
   display: flex;
   gap: 0.5rem;
-  align-items: center;
 }
 
 .rarity-filter.inline-layout {
@@ -108,20 +108,20 @@ body {
 }
 
 .rarity-btn, .rarity-option {
-  width: 2.2rem;
-  height: 2.2rem;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
   background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
   cursor: pointer;
+  display: flex;
   font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: 600;
+  height: 2.2rem;
+  justify-content: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 6px;
-  color: var(--text-secondary);
+  width: 2.2rem;
 }
 
 .rarity-btn:hover:not(.last-active) {
@@ -132,14 +132,14 @@ body {
 
 .rarity-btn.active, .rarity-option.active {
   background: var(--rarity-color);
-  color: white;
   border-color: var(--border);
   box-shadow: inset 0 0 0 3px white;
+  color: white;
 }
 
 .rarity-btn.active:hover:not(.last-active) {
-  filter: brightness(1.1);
   box-shadow: inset 0 0 0 3px white;
+  filter: brightness(1.1);
 }
 
 .rarity-btn.last-active, .rarity-option.last-active {
@@ -153,34 +153,34 @@ body {
 }
 
 .sr-only {
-  position: absolute;
-  width: 1px;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
   height: 1px;
-  padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  padding: 0;
+  position: absolute;
+  width: 1px;
 }
 
 .dropdown-trigger {
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  border: 1px solid var(--border);
+  align-items: center;
   background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
   color: var(--text-primary);
-  font-family: var(--font-body);
-  font-weight: 600;
   cursor: pointer;
   display: flex;
-  align-items: center;
+  font-family: var(--font-body);
+  font-weight: 600;
   gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
 }
 
 .dropdown-trigger:after {
+  color: var(--text-muted);
   content: '▼';
   font-size: 0.7rem;
-  color: var(--text-muted);
 }
 
 .custom-dropdown:hover .dropdown-menu {
@@ -188,19 +188,19 @@ body {
 }
 
 .dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  min-width: 150px;
-  padding: 0.5rem;
-  margin: 0.25rem 0 0;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 4px;
   box-shadow: var(--shadow-md);
+  display: none;
+  left: 0;
   list-style: none;
+  margin: 0.25rem 0 0;
+  min-width: 150px;
+  padding: 0.5rem;
+  position: absolute;
+  top: 100%;
+  z-index: 1000;
 }
 
 .dropdown-menu li {
@@ -212,21 +212,21 @@ body {
 }
 
 .rarity-option {
-  width: 100%;
+  height: auto;
   justify-content: flex-start;
   padding: 0.5rem 1rem;
-  height: auto;
+  width: 100%;
 }
 
 .filter-btn {
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  border: 1px solid var(--clr-sage);
   background: transparent;
+  border: 1px solid var(--clr-sage);
+  border-radius: 4px;
   color: var(--clr-sage);
+  cursor: pointer;
   font-family: var(--font-body);
   font-weight: 600;
-  cursor: pointer;
+  padding: 0.6rem 1.2rem;
   transition: all 0.2s ease;
 }
 
@@ -246,28 +246,28 @@ body {
 }
 
 .no-results {
-  text-align: center;
-  padding: 4rem 2rem;
   color: var(--text-muted);
   font-style: italic;
   font-size: 1.2rem;
+  padding: 4rem 2rem;
+  text-align: center;
 }
 
 .sightings-list {
   display: flex;
   flex-direction: column;
   gap: 0; /* Stacked cards with dividers */
-  padding: 0 1rem 4rem 1rem;
-  max-width: 800px;
   margin: 0 auto;
+  max-width: 800px;
+  padding: 0 1rem 4rem 1rem;
 }
 
 .sighting-card {
   background: var(--bg-surface);
-  padding: 2rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   border-bottom: 1px solid var(--border);
+  padding: 2rem;
   position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Left border for rarity placeholder - will be refined in next task */
@@ -276,46 +276,46 @@ body {
 }
 
 .sighting-card:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
   z-index: 10;
 }
 
 .sighting-card h3 {
-  margin: 0 0 0.25rem 0;
+  color: var(--clr-rust);
   font-family: var(--font-display);
+  font-size: 1.8rem;
   font-weight: 700;
   font-style: italic;
-  color: var(--clr-rust);
-  font-size: 1.8rem;
+  margin: 0 0 0.25rem 0;
 }
 
 .scientific-name {
-  font-family: var(--font-body);
-  font-style: italic;
   color: var(--text-secondary);
-  margin-bottom: 1.5rem;
+  font-family: var(--font-body);
   font-size: 1rem;
+  font-style: italic;
+  margin-bottom: 1.5rem;
 }
 
 .streak-badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
   background: transparent;
-  color: var(--clr-gold);
+  border: 1px solid var(--clr-gold);
   border-radius: 0;
+  color: var(--clr-gold);
+  display: inline-block;
   font-family: var(--font-data);
   font-size: 0.75rem;
   font-weight: 700;
   margin-bottom: 1rem;
+  padding: 0.2rem 0.6rem;
   text-transform: uppercase;
-  border: 1px solid var(--clr-gold);
 }
 
 .sighting-details p {
-  margin: 0.5rem 0;
   font-size: 1rem;
   line-height: 1.5;
+  margin: 0.5rem 0;
 }
 
 .sighting-details strong {
@@ -324,31 +324,31 @@ body {
 }
 
 .comments {
-  margin-top: 1.5rem;
-  padding: 1rem;
   background: rgba(196, 98, 45, 0.03);
   border-left: 2px solid var(--clr-gold);
-  font-style: italic;
-  font-size: 1rem;
   color: var(--text-primary);
+  font-size: 1rem;
+  font-style: italic;
   line-height: 1.6;
+  margin-top: 1.5rem;
+  padding: 1rem;
 }
 
 .links {
-  margin-top: 1.5rem;
   display: flex;
   gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .links a {
-  color: var(--clr-sky);
-  text-decoration: none;
-  font-family: var(--font-data);
-  font-weight: 500;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   border-bottom: 1px solid transparent;
+  color: var(--clr-sky);
+  font-family: var(--font-data);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
   transition: border-color 0.2s;
 }
 
@@ -375,8 +375,8 @@ body {
   }
 
   .controls {
-    width: 100%;
     justify-content: space-between;
+    width: 100%;
   }
   
   .filter-btn {
