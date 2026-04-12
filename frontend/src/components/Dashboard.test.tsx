@@ -22,6 +22,7 @@ describe('Dashboard', () => {
       longitude: -70.0,
       date: new Date().toISOString(),
       observer: 'Observer 1',
+      rarity: 3,
     },
     {
       id: 2,
@@ -31,8 +32,101 @@ describe('Dashboard', () => {
       longitude: -110.0,
       date: new Date().toISOString(),
       observer: 'Observer 2',
+      rarity: 1,
     },
   ];
+
+  describe('Rarity Filtering', () => {
+    it('defaults to showing rarities 3, 4, 5, 6', async () => {
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          ...mockSightings,
+          { id: 3, species: 'Rarity 4 Bird', rarity: 4, location: 'Loc', latitude: 0, longitude: 0, date: new Date().toISOString(), observer: 'O' },
+          { id: 4, species: 'Rarity 2 Bird', rarity: 2, location: 'Loc', latitude: 0, longitude: 0, date: new Date().toISOString(), observer: 'O' },
+        ],
+      } as Response);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
+      } as Response);
+
+      render(<Dashboard />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Near Bird')).toBeInTheDocument(); // Rarity 3
+        expect(screen.getByText('Rarity 4 Bird')).toBeInTheDocument(); // Rarity 4
+        expect(screen.queryByText('Far Bird')).not.toBeInTheDocument(); // Rarity 1
+        expect(screen.queryByText('Rarity 2 Bird')).not.toBeInTheDocument(); // Rarity 2
+      });
+    });
+
+    it('filters sightings when rarity toggles are clicked', async () => {
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSightings,
+      } as Response);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
+      } as Response);
+
+      render(<Dashboard />);
+
+      await waitFor(() => expect(screen.getByText('Near Bird')).toBeInTheDocument());
+      expect(screen.queryByText('Far Bird')).not.toBeInTheDocument();
+
+      // Enable Rarity 1 (Far Bird)
+      // Note: We'll need to find the button. For now let's assume it has text "1" or similar.
+      // After implementing RarityFilter, we can be more specific.
+      const rarity1Btn = await screen.findByRole('button', { name: /1/ });
+      fireEvent.click(rarity1Btn);
+
+      await waitFor(() => {
+        expect(screen.getByText('Far Bird')).toBeInTheDocument();
+      });
+
+      // Disable Rarity 3 (Near Bird)
+      const rarity3Btn = await screen.findByRole('button', { name: /3/ });
+      fireEvent.click(rarity3Btn);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Near Bird')).not.toBeInTheDocument();
+      });
+    });
+
+    it('prevents deselecting the last active rarity code', async () => {
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSightings,
+      } as Response);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lastIngestedEmailDate: null, lastRun: null }),
+      } as Response);
+
+      render(<Dashboard />);
+
+      await waitFor(() => expect(screen.getByText('Near Bird')).toBeInTheDocument());
+
+      // Deselect 4, 5, 6 (only 3 left)
+      fireEvent.click(await screen.findByRole('button', { name: /4/ }));
+      fireEvent.click(await screen.findByRole('button', { name: /5/ }));
+      fireEvent.click(await screen.findByRole('button', { name: /6/ }));
+
+      // Try to deselect 3
+      const rarity3Btn = await screen.findByRole('button', { name: /3/ });
+      fireEvent.click(rarity3Btn);
+
+      // Should still be visible because it was the last one
+      await waitFor(() => {
+        expect(screen.getByText('Near Bird')).toBeInTheDocument();
+      });
+    });
+  });
 
   it('renders a list of sightings with streak badges', async () => {
     const sightingsWithStreak = [
