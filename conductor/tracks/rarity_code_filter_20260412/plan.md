@@ -42,10 +42,17 @@ Build the responsive `RarityFilter` component with inline and dropdown modes.
 ## Phase 3: Verification & Polish
 Final end-to-end testing and styling refinements.
 
-- [ ] Task: Run full test suite and verify coverage.
+- [x] Task: Run full test suite and verify coverage.
     - [ ] Ensure `Dashboard.test.tsx` and `RarityFilter.test.tsx` pass.
     - [ ] Verify >80% coverage for new code.
-- [ ] Task: Manual end-to-end verification.
+- [x] Task: Styling and Polish. bc000ec
+    - [x] Title alignment: Align title/subtitle block vertically with filter buttons.
+    - [x] Button border: Add a white ring between color fill and brown outer border.
+    - [x] Disabled state color: Keep active state color even when disabled.
+    - [x] Hover state: Lightened tint of rarity color, maintain legibility.
+    - [x] Code 1 vs Code 2 colors: Code 2 darker gray than Code 1.
+    - [x] Button font: Use Lora for buttons.
+- [~] Task: Manual end-to-end verification.
     - [ ] Verify card list updates on filter change.
     - [ ] Verify map pins update on filter change.
     - [ ] Verify mobile dropdown behavior.
