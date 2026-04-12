@@ -28,7 +28,7 @@ Build the responsive `RarityFilter` component with inline and dropdown modes.
         - [ ] Disabled/ignored state when only one code is selected.
         - [ ] Correct callbacks fire on toggle.
         - [ ] Desktop inline layout vs. Mobile dropdown behavior (using mock matchMedia or viewport sizing).
-- [ ] Task: Implement `RarityFilter` component UI.
+- [x] Task: Implement `RarityFilter` component UI. 84f0bc2
     - [ ] Add desktop layout: Inline toggle buttons styled with `RARITY_COLOR_MAP`.
     - [ ] Add mobile layout: Dropdown menu (active when viewport < 600px).
     - [ ] Ensure \"Field Journal\" styling (Playfair Display / Lora).
