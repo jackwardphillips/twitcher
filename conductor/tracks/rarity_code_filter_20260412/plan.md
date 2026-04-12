@@ -8,7 +8,7 @@ Define the rarity filter state and filtering logic in the `Dashboard` component.
 - [x] Task: Create `RarityFilter` component shell and types. fec3392
     - [ ] Define `RarityCode` type (1-6).
     - [ ] Create `RarityFilterProps` interface.
-- [ ] Task: Implement TDD for `Dashboard` filtering logic.
+- [x] Task: Implement TDD for `Dashboard` filtering logic. 68ef710
     - [ ] Write tests in `Dashboard.test.tsx` for:
         - [ ] Default selection (3, 4, 5, 6).
         - [ ] Filtering sightings by rarity code.
