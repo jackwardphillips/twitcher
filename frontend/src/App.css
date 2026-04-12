@@ -134,12 +134,12 @@ body {
   background: var(--rarity-color);
   color: white;
   border-color: var(--border);
-  box-shadow: inset 0 0 0 2px white;
+  box-shadow: inset 0 0 0 3px white;
 }
 
 .rarity-btn.active:hover:not(.last-active) {
   filter: brightness(1.1);
-  box-shadow: inset 0 0 0 2px white;
+  box-shadow: inset 0 0 0 3px white;
 }
 
 .rarity-btn.last-active, .rarity-option.last-active {
