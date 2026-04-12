@@ -57,3 +57,6 @@ Final end-to-end testing and styling refinements.
     - [x] Verify map pins update on filter change.
     - [x] Verify mobile dropdown behavior.
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Verification & Polish' (Protocol in workflow.md) 9ca3aa2
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions ff0f567
