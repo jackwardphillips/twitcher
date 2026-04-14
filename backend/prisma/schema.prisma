@@ -9,14 +9,20 @@ datasource db {
   provider = "sqlite"
 }
 
+enum IncidentStatus {
+  OPEN
+  CLOSED
+  PERMANENTLY_CLOSED
+}
+
 model Sighting {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   species        String
   scientificName String?
   location       String
   date           DateTime
   observer       String
-  rarity         Int      @default(0) // ABA code (e.g., 4 or 5)
+  rarity         Int       @default(0) // ABA code (e.g., 4 or 5)
   details        String?
   mapUrl         String?
   checklistUrl   String?
@@ -26,8 +32,32 @@ model Sighting {
   locId          String?
   speciesCode    String?
   howMany        Int?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  incidentId     String?
+  incident       Incident? @relation(fields: [incidentId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Incident {
+  id             String         @id @default(uuid())
+  scientificName String
+  commonName     String
+  status         IncidentStatus @default(OPEN)
+  minLat         Float
+  maxLat         Float
+  minLng         Float
+  maxLng         Float
+  firstSeen      DateTime
+  lastSeen       DateTime
+  closedAt       DateTime?
+  sightingCount  Int            @default(1)
+  primaryCounty  String?
+  primaryState   String?
+  primaryCountry String?
+  statesCovered  String // JSON array of unique state/province names
+  sightings      Sighting[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model RarityCode {
