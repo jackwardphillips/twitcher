@@ -22,11 +22,11 @@ Implement the core logic for cleaning scientific names and clustering sightings.
     - [x] Implement logic to find matching `OPEN` (first) or `CLOSED` (second) incidents for a new sighting.
     - [x] **Ensure `PERMANENTLY_CLOSED` incidents are NEVER matched.**
     - [x] **Handle non-enriched sightings (missing lat/lng) gracefully (e.g., create a new incident or skip clustering).**
-- [~] Task: Implement `IncidentService` for lifecycle management.
-    - [ ] Write tests for OPEN/CLOSE/REOPEN logic.
-    - [ ] Implement logic to update cached fields (`sightingCount`, `lastSeen`, `bounding box`, etc.) when a sighting is added.
-    - [ ] Implement `closeInactiveIncidents()` check for the startup/ingestion script.
-- [ ] Task: Conductor - User Manual Verification 'Core Logic' (Protocol in workflow.md)
+- [x] Task: Implement `IncidentService` for lifecycle management. 4fbb67a
+    - [x] Write tests for OPEN/CLOSE/REOPEN logic.
+    - [x] Implement logic to update cached fields (`sightingCount`, `lastSeen`, `bounding box`, etc.) when a sighting is added.
+    - [x] Implement `closeInactiveIncidents()` check for the startup/ingestion script.
+- [x] Task: Conductor - User Manual Verification 'Core Logic' (Protocol in workflow.md)
 
 ## Phase 3: Ingestion Integration
 Integrate the clustering logic into the existing email ingestion pipeline.
