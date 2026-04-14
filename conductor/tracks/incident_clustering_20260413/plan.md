@@ -1,6 +1,6 @@
 # Implementation Plan: Incident Model & Clustering
 
-## Phase 1: Database & Model Setup
+## Phase 1: Database & Model Setup [checkpoint: 791cce3]
 Update the Prisma schema and prepare the database for the new `Incident` model.
 
 - [x] Task: Update `schema.prisma` to include `Incident` model and `Sighting` relationship. b8d79f3
