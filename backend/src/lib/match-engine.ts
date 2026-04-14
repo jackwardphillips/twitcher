@@ -1,6 +1,7 @@
 import { EbirdClient } from './ebird-client.js';
 import type { EbirdObservation } from './ebird-client.js';
 import type { Sighting } from '@prisma/client';
+import { calculateDistance } from './geo-utils.js';
 
 export class MatchEngine {
   constructor(public ebirdClient: EbirdClient) {}
@@ -88,7 +89,7 @@ export class MatchEngine {
       // Distance score (if coordinates present)
       let distanceScore = 0;
       if (targetCoords) {
-        const dist = this.calculateDistance(targetCoords.lat, targetCoords.lng, c.lat, c.lng);
+        const dist = calculateDistance(targetCoords.lat, targetCoords.lng, c.lat, c.lng);
         // Score: higher is better. 0-5 points based on proximity (0-10km)
         distanceScore = Math.max(0, 5 - (dist / 2));
       }
@@ -118,22 +119,6 @@ export class MatchEngine {
     }
 
     return best.candidate;
-  }
-
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Radius of the earth in km
-    const dLat = this.deg2rad(lat2 - lat1);
-    const dLon = this.deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  private deg2rad(deg: number): number {
-    return deg * (Math.PI / 180);
   }
 
   private normalizeSpecies(name: string): string {
