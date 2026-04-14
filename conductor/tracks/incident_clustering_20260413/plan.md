@@ -17,12 +17,12 @@ Implement the core logic for cleaning scientific names and clustering sightings.
 - [x] Task: Implement `normalizeScientificName(raw: string): string` in a service. 6747f41
     - [x] Write tests for regex-based stripping of parentheses (e.g., `Lonchura malacca (Exotic: Naturalized)` -> `Lonchura malacca`).
     - [x] Implement the normalization logic.
-- [~] Task: Implement `ClusteringService` for proximity-based matching.
-    - [ ] Write tests for 10km proximity check against individual sighting coordinates.
-    - [ ] Implement logic to find matching `OPEN` (first) or `CLOSED` (second) incidents for a new sighting.
-    - [ ] **Ensure `PERMANENTLY_CLOSED` incidents are NEVER matched.**
-    - [ ] **Handle non-enriched sightings (missing lat/lng) gracefully (e.g., create a new incident or skip clustering).**
-- [ ] Task: Implement `IncidentService` for lifecycle management.
+- [x] Task: Implement `ClusteringService` for proximity-based matching. 03e016f
+    - [x] Write tests for 10km proximity check against individual sighting coordinates.
+    - [x] Implement logic to find matching `OPEN` (first) or `CLOSED` (second) incidents for a new sighting.
+    - [x] **Ensure `PERMANENTLY_CLOSED` incidents are NEVER matched.**
+    - [x] **Handle non-enriched sightings (missing lat/lng) gracefully (e.g., create a new incident or skip clustering).**
+- [~] Task: Implement `IncidentService` for lifecycle management.
     - [ ] Write tests for OPEN/CLOSE/REOPEN logic.
     - [ ] Implement logic to update cached fields (`sightingCount`, `lastSeen`, `bounding box`, etc.) when a sighting is added.
     - [ ] Implement `closeInactiveIncidents()` check for the startup/ingestion script.
