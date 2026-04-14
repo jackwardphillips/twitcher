@@ -3,13 +3,13 @@
 ## Phase 1: Database & Model Setup
 Update the Prisma schema and prepare the database for the new `Incident` model.
 
-- [ ] Task: Update `schema.prisma` to include `Incident` model and `Sighting` relationship.
-    - [ ] Create `IncidentStatus` enum (`OPEN`, `CLOSED`, `PERMANENTLY_CLOSED`).
-    - [ ] Add `Incident` model with all specified fields.
-    - [ ] Add `incidentId` optional foreign key to `Sighting` model.
-- [ ] Task: Generate and apply Prisma migration.
-    - [ ] Run `npx prisma migrate dev --name add_incident_model`.
-- [ ] Task: Conductor - User Manual Verification 'Database Setup' (Protocol in workflow.md)
+- [x] Task: Update `schema.prisma` to include `Incident` model and `Sighting` relationship. b8d79f3
+    - [x] Create `IncidentStatus` enum (`OPEN`, `CLOSED`, `PERMANENTLY_CLOSED`).
+    - [x] Add `Incident` model with all specified fields.
+    - [x] Add `incidentId` optional foreign key to `Sighting` model.
+- [x] Task: Generate and apply Prisma migration. 2e4d19a
+    - [x] Run `npx prisma migrate dev --name add_incident_model`.
+- [x] Task: Conductor - User Manual Verification 'Database Setup' (Protocol in workflow.md)
 
 ## Phase 2: Core Clustering Logic
 Implement the core logic for cleaning scientific names and clustering sightings.
