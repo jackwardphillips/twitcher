@@ -14,10 +14,10 @@ Update the Prisma schema and prepare the database for the new `Incident` model.
 ## Phase 2: Core Clustering Logic
 Implement the core logic for cleaning scientific names and clustering sightings.
 
-- [ ] Task: Implement `normalizeScientificName(raw: string): string` in a service.
-    - [ ] Write tests for regex-based stripping of parentheses (e.g., `Lonchura malacca (Exotic: Naturalized)` -> `Lonchura malacca`).
-    - [ ] Implement the normalization logic.
-- [ ] Task: Implement `ClusteringService` for proximity-based matching.
+- [x] Task: Implement `normalizeScientificName(raw: string): string` in a service. 6747f41
+    - [x] Write tests for regex-based stripping of parentheses (e.g., `Lonchura malacca (Exotic: Naturalized)` -> `Lonchura malacca`).
+    - [x] Implement the normalization logic.
+- [~] Task: Implement `ClusteringService` for proximity-based matching.
     - [ ] Write tests for 10km proximity check against individual sighting coordinates.
     - [ ] Implement logic to find matching `OPEN` (first) or `CLOSED` (second) incidents for a new sighting.
     - [ ] **Ensure `PERMANENTLY_CLOSED` incidents are NEVER matched.**
