@@ -1,4 +1,5 @@
-import { PrismaClient, Incident, Sighting, IncidentStatus } from '@prisma/client';
+import { PrismaClient, IncidentStatus } from '@prisma/client';
+import type { Incident, Sighting } from '@prisma/client';
 import { calculateDistance } from './geo-utils.js';
 
 /**

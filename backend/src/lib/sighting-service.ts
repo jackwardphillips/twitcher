@@ -1,9 +1,10 @@
-import type { Sighting } from './ebird-parser.js';
+import type { Sighting as SightingData } from './ebird-parser.js';
 import { prisma } from './db.js';
 import { EbirdClient } from './ebird-client.js';
 import { MatchEngine } from './match-engine.js';
 import { EnrichmentService } from './enrichment-service.js';
 import { RegionService } from './region-service.js';
+import { findMatchingIncident, createIncident, addSightingToIncident, normalizeScientificName } from './incident-service.js';
 import 'dotenv/config';
 
 // Initialize services for background enrichment
@@ -18,7 +19,7 @@ export interface EnrichmentResult {
   failed: number;
 }
 
-export async function saveSightings(sightings: Sighting[], enrich = true): Promise<EnrichmentResult | null> {
+export async function saveSightings(sightings: SightingData[], enrich = true): Promise<EnrichmentResult | null> {
   // Fetch rarity codes for all species in this batch
   const uniqueScientificNames = [...new Set(sightings.map(s => s.scientificName))].filter(Boolean) as string[];
   const rarityRecords = await prisma.rarityCode.findMany({
@@ -27,22 +28,47 @@ export async function saveSightings(sightings: Sighting[], enrich = true): Promi
 
   const rarityMap = new Map(rarityRecords.map(r => [r.scientificName, r.abaCode]));
 
-  for (const sighting of sightings) {
-    const rarity = sighting.scientificName ? (rarityMap.get(sighting.scientificName) ?? 0) : 0;
+  for (const sightingData of sightings) {
+    const rarity = sightingData.scientificName ? (rarityMap.get(sightingData.scientificName) ?? 0) : 0;
 
-    await prisma.sighting.create({
+    // Parse coordinates from mapUrl if available (eBird alerts usually have this)
+    let latitude = null;
+    let longitude = null;
+    if (sightingData.mapUrl) {
+      const coords = sightingData.mapUrl.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (coords) {
+        latitude = parseFloat(coords[1]!);
+        longitude = parseFloat(coords[2]!);
+      }
+    }
+
+    const sighting = await prisma.sighting.create({
       data: {
-        species: sighting.species,
-        scientificName: sighting.scientificName,
-        location: sighting.location,
-        date: sighting.date,
-        observer: sighting.observer,
+        species: sightingData.species,
+        scientificName: sightingData.scientificName,
+        location: sightingData.location,
+        date: sightingData.date,
+        observer: sightingData.observer,
         rarity: rarity,
-        details: sighting.comments,
-        mapUrl: sighting.mapUrl,
-        checklistUrl: sighting.checklistUrl,
+        details: sightingData.comments,
+        mapUrl: sightingData.mapUrl,
+        checklistUrl: sightingData.checklistUrl,
+        latitude,
+        longitude,
       },
     });
+
+    // Clustering Logic
+    if (sighting.latitude !== null && sighting.longitude !== null) {
+      const normScientific = normalizeScientificName(sighting.scientificName || sighting.species);
+      const matchingIncident = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude);
+      
+      if (matchingIncident) {
+        await addSightingToIncident(prisma, matchingIncident, sighting);
+      } else {
+        await createIncident(prisma, sighting);
+      }
+    }
   }
 
   // Automatically trigger background enrichment for all unenriched sightings in the last 3 days

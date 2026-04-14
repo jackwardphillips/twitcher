@@ -1,6 +1,7 @@
 import { MatchEngine } from './match-engine.js';
 import { prisma } from './db.js';
 import { RegionService } from './region-service.js';
+import { findMatchingIncident, createIncident, addSightingToIncident, normalizeScientificName } from './incident-service.js';
 import type { Sighting } from '@prisma/client';
 import type { EbirdObservation } from './ebird-client.js';
 
@@ -191,7 +192,7 @@ export class EnrichmentService {
   }
 
   private async applyMatch(sightingId: number, match: EbirdObservation): Promise<void> {
-    await prisma.sighting.update({
+    const sighting = await prisma.sighting.update({
       where: { id: sightingId },
       data: {
         latitude: match.lat,
@@ -202,5 +203,17 @@ export class EnrichmentService {
         howMany: match.howMany,
       },
     });
+
+    // Clustering Logic - if not already clustered
+    if (!sighting.incidentId && sighting.latitude !== null && sighting.longitude !== null) {
+      const normScientific = normalizeScientificName(sighting.scientificName || sighting.species);
+      const matchingIncident = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude);
+      
+      if (matchingIncident) {
+        await addSightingToIncident(prisma, matchingIncident, sighting);
+      } else {
+        await createIncident(prisma, sighting);
+      }
+    }
   }
 }

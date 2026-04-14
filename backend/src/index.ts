@@ -5,6 +5,7 @@ import { prisma } from './lib/db.js';
 import { IngestionService } from './lib/ingestion-service.js';
 import type { IngestionResult } from './lib/ingestion-service.js';
 import { ImapClient } from './lib/imap-client.js';
+import { closeInactiveIncidents } from './lib/incident-service.js';
 import 'dotenv/config';
 
 const app = express();
@@ -26,7 +27,11 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   const imapClient = new ImapClient(imapConfig);
   const ingestionService = new IngestionService(imapClient);
   
+  // Close inactive incidents before and after ingestion to ensure status is up to date
+  await closeInactiveIncidents(prisma);
   const results = await ingestionService.ingest(undefined, enrich);
+  await closeInactiveIncidents(prisma);
+  
   lastIngestionResult = results;
   return results;
 }

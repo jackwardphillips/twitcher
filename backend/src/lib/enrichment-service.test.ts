@@ -74,6 +74,55 @@ describe('EnrichmentService', () => {
     expect(enriched?.howMany).toBe(2);
   });
 
+  it('should cluster a sighting after enrichment', async () => {
+    // Clean up incidents
+    await prisma.incident.deleteMany({});
+
+    const sighting = await prisma.sighting.create({
+      data: {
+        species: 'Tricolored Munia',
+        scientificName: 'Lonchura malacca',
+        location: 'Montgomery, PA, US',
+        date: new Date('2026-04-01T10:00:00Z'),
+        observer: 'John Doe',
+      },
+    });
+
+    const mockMatch: EbirdObservation = {
+      speciesCode: 'trimun',
+      comName: 'Tricolored Munia',
+      sciName: 'Lonchura malacca',
+      locId: 'L123',
+      locName: 'Test Park',
+      obsDt: '2026-04-01 10:00',
+      lat: 40.0,
+      lng: -75.0,
+      subId: 'S123',
+      howMany: 1,
+      obsValid: true,
+      obsReviewed: true,
+      locationPrivate: false,
+    };
+
+    (matchEngine.findMatch as any).mockResolvedValue(mockMatch);
+
+    await enrichmentService.enrichSighting(sighting.id);
+
+    // Verify Sighting was updated
+    const enriched = await prisma.sighting.findUnique({
+      where: { id: sighting.id }
+    });
+    expect(enriched?.latitude).toBe(40.0);
+
+    // Verify Incident was created
+    const incident = await prisma.incident.findFirst({
+      where: { scientificName: 'Lonchura malacca' }
+    });
+    expect(incident).not.toBeNull();
+    expect(enriched?.incidentId).toBe(incident?.id);
+    expect(incident?.sightingCount).toBe(1);
+  });
+
   it('should mark a sighting as checked even if no match found (to avoid infinite retry)', async () => {
     const sighting = await prisma.sighting.create({
       data: {
