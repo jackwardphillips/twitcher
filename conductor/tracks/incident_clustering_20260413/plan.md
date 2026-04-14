@@ -11,7 +11,7 @@ Update the Prisma schema and prepare the database for the new `Incident` model.
     - [x] Run `npx prisma migrate dev --name add_incident_model`.
 - [x] Task: Conductor - User Manual Verification 'Database Setup' (Protocol in workflow.md)
 
-## Phase 2: Core Clustering Logic
+## Phase 2: Core Clustering Logic [checkpoint: 1e93436]
 Implement the core logic for cleaning scientific names and clustering sightings.
 
 - [x] Task: Implement `normalizeScientificName(raw: string): string` in a service. 6747f41
