@@ -147,11 +147,11 @@ describe('EnrichmentService', () => {
   });
 
   it('should enrich all unenriched sightings', async () => {
-    await prisma.sighting.createMany({
-      data: [
-        { species: 'A', location: 'Victoria, British Columbia', date: new Date(), observer: '1' },
-        { species: 'B', location: 'Portland, Maine', date: new Date(), observer: '2' },
-      ],
+    await prisma.sighting.create({
+      data: { species: 'A', location: 'Victoria, British Columbia', date: new Date(), observer: '1' }
+    });
+    await prisma.sighting.create({
+      data: { species: 'B', location: 'Portland, Maine', date: new Date(), observer: '2' }
     });
 
     (matchEngine.ebirdClient.getNotableObservations as any).mockResolvedValue([]);
