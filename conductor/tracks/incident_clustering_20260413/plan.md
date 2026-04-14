@@ -31,11 +31,11 @@ Implement the core logic for cleaning scientific names and clustering sightings.
 ## Phase 3: Ingestion Integration
 Integrate the clustering logic into the existing email ingestion pipeline.
 
-- [ ] Task: Update `IngestionService` to use `ClusteringService`.
-    - [ ] Write integration tests for sighting ingestion with clustering.
-    - [ ] Update the `createSighting` flow to link to or create an `Incident`.
-- [ ] Task: Add incident status check to the startup script.
-    - [ ] Ensure `closeInactiveIncidents()` is called during startup.
+- [x] Task: Update `IngestionService` to use `ClusteringService`. 967e4ed
+    - [x] Write integration tests for sighting ingestion with clustering.
+    - [x] Update the createSighting flow to link to or create an Incident.
+- [x] Task: Add incident status check to the startup script. 967e4ed
+    - [x] Ensure `closeInactiveIncidents()` is called during startup.
 - [ ] Task: Conductor - User Manual Verification 'Ingestion Integration' (Protocol in workflow.md)
 
 ## Phase 4: Historical Data Migration
