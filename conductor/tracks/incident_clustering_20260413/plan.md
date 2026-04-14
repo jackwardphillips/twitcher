@@ -38,13 +38,13 @@ Integrate the clustering logic into the existing email ingestion pipeline.
     - [x] Ensure `closeInactiveIncidents()` is called during startup.
 - [ ] Task: Conductor - User Manual Verification 'Ingestion Integration' (Protocol in workflow.md)
 
-## Phase 4: Historical Data Migration
+## Phase 4: Historical Data Migration [checkpoint: ea8a20b]
 Create and run the script to retroactively cluster existing sightings.
 
-- [ ] Task: Create `scripts/migrate-incidents.ts`.
-    - [ ] Fetch all existing sightings ordered by `obsDt` (oldest first).
-    - [ ] Iterate through sightings and apply the clustering logic.
-    - [ ] Write tests for the migration script using a test database.
-- [ ] Task: Run migration script on local dev database.
-    - [ ] Verify that sightings are correctly clustered into incidents.
-- [ ] Task: Conductor - User Manual Verification 'Migration' (Protocol in workflow.md)
+- [x] Task: Create `scripts/migrate-incidents.ts`. ea8a20b
+    - [x] Fetch all existing sightings ordered by `obsDt` (oldest first).
+    - [x] Iterate through sightings and apply the clustering logic.
+    - [x] Write tests for the migration script using a test database.
+- [x] Task: Run migration script on local dev database. ea8a20b
+    - [x] Verify that sightings are correctly clustered into incidents.
+- [x] Task: Conductor - User Manual Verification 'Migration' (Protocol in workflow.md)
