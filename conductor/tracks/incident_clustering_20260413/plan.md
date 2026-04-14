@@ -28,7 +28,7 @@ Implement the core logic for cleaning scientific names and clustering sightings.
     - [x] Implement `closeInactiveIncidents()` check for the startup/ingestion script.
 - [x] Task: Conductor - User Manual Verification 'Core Logic' (Protocol in workflow.md)
 
-## Phase 3: Ingestion Integration
+## Phase 3: Ingestion Integration [checkpoint: 26c468a]
 Integrate the clustering logic into the existing email ingestion pipeline.
 
 - [x] Task: Update `IngestionService` to use `ClusteringService`. 967e4ed
