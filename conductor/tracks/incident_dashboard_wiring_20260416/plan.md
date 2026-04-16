@@ -15,24 +15,24 @@ Goal: Implement the `GET /api/incidents` endpoint with all necessary data for th
 - [x] Task: Create integration test for `/api/incidents` in `backend/src/index.test.ts` 3738019
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Backend API' (Protocol in workflow.md) d88171d
 
-## Phase 2: Frontend Data Source
+## Phase 2: Frontend Data Source [checkpoint: f2a7579]
 Goal: Switch the dashboard to fetch and use incident data.
 
-- [ ] Task: Update `Incident` interface in `frontend/src/components/Dashboard.tsx`
-    - [ ] Define the shape matching the backend response.
-- [ ] Task: Update `fetch` logic in `Dashboard.tsx`
-    - [ ] Change endpoint from `/api/sightings` to `/api/incidents`.
-    - [ ] Update state to hold `Incident` objects.
-- [ ] Task: Update `Dashboard` render logic to map over incidents
-    - [ ] Update the card component to display incident-specific fields (sightingCount, activeDays, etc.).
-    - [ ] Change streak badge text to "Active X days".
-    - [ ] Omit observer and details fields as per spec.
-    - [ ] Ensure `latestMapUrl` and `latestChecklistUrl` are used for links.
-- [ ] Task: Update `SightingMap.tsx` to handle incidents
-    - [ ] Accept `Incident` array instead of `Sighting` array.
-    - [ ] Use `centroidLat` and `centroidLng` for markers.
-    - [ ] Implement fallback logic for missing centroids (county/state center).
-- [ ] Task: Update `Dashboard.test.tsx` to reflect incident-based data
+- [x] Task: Update `Incident` interface in `frontend/src/components/Dashboard.tsx` f2a7579
+    - [x] Define the shape matching the backend response.
+- [x] Task: Update `fetch` logic in `Dashboard.tsx` f2a7579
+    - [x] Change endpoint from `/api/sightings` to `/api/incidents`.
+    - [x] Update state to hold `Incident` objects.
+- [x] Task: Update `Dashboard` render logic to map over incidents f2a7579
+    - [x] Update the card component to display incident-specific fields (sightingCount, activeDays, etc.).
+    - [x] Change streak badge text to "Active X days".
+    - [x] Omit observer and details fields as per spec.
+    - [x] Ensure `latestMapUrl` and `latestChecklistUrl` are used for links.
+- [x] Task: Update `SightingMap.tsx` to handle incidents f2a7579
+    - [x] Accept `Incident` array instead of `Sighting` array.
+    - [x] Use `centroidLat` and `centroidLng` for markers.
+    - [x] Implement fallback logic for missing centroids (county/state center).
+- [x] Task: Update `Dashboard.test.tsx` to reflect incident-based data f2a7579
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Frontend Data Source' (Protocol in workflow.md)
 
 ## Phase 3: Filter & Proximity Verification
