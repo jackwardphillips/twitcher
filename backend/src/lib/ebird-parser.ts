@@ -63,20 +63,55 @@ export function parseEBirdAlert(content: string): Sighting[] {
     }
 
     // Match species line: Species Name (Scientific Name) (Count) [CONFIRMED]
-    const speciesMatch = line.match(/^(.+?) \((.+?)\) \((\d+)\)( CONFIRMED)?$/);
+    // Handles multiple parenthetical groups like: Species (Subspecies) (Scientific) (Count)
+    const speciesMatch = line.match(/^(.+?) (\(.+\)) \((\d+)\)( CONFIRMED)?$/);
     
     if (speciesMatch) {
       const species = speciesMatch[1] ?? '';
-      const scientificName = speciesMatch[2] ?? '';
+      const parenContent = speciesMatch[2] ?? ''; // Content like "(Subspecies) (Scientific)"
       const countStr = speciesMatch[3] ?? '0';
       const count = parseInt(countStr, 10);
       const confirmed = !!speciesMatch[4];
+
+      // Split multiple parens: "(A) (B)" -> ["A", "B"]
+      const parens = parenContent.match(/\((.+?)\)/g)?.map(p => p.slice(1, -1)) || [];
+      
+      let scientificName = '';
+      let extraSpeciesInfo = '';
+      if (parens.length === 1) {
+        scientificName = parens[0] || '';
+      } else if (parens.length > 1) {
+        // If multiple, usually the last one before the count is the scientific name,
+        // UNLESS the last one is exotic status like "Exotic: Naturalized"
+        const last = parens[parens.length - 1] || '';
+        const isStatus = last.toLowerCase().includes('exotic') || 
+                         last.toLowerCase().includes('established') || 
+                         last.toLowerCase().includes('provisional');
+        
+        if (isStatus) {
+          scientificName = parens[parens.length - 2] || '';
+          // Everything before the scientific name goes into species info
+          const extra = parens.slice(0, parens.length - 2);
+          if (extra.length > 0) {
+            extraSpeciesInfo = extra.map(p => `(${p})`).join(' ');
+          }
+        } else {
+          scientificName = last;
+          // Everything before the scientific name goes into species info
+          const extra = parens.slice(0, parens.length - 1);
+          if (extra.length > 0) {
+            extraSpeciesInfo = extra.map(p => `(${p})`).join(' ');
+          }
+        }
+      }
 
       if (!species || !scientificName || isNaN(count)) {
         console.warn(`Skipping bird record due to malformed species line: ${line}`);
         i++;
         continue;
       }
+      
+      const fullSpeciesName = extraSpeciesInfo ? `${species} ${extraSpeciesInfo}` : species;
       
       let observer = '';
       let date: Date | null = null;
@@ -100,7 +135,7 @@ export function parseEBirdAlert(content: string): Sighting[] {
               date = tempDate;
               observer = reportedMatch[2] ?? '';
             } else {
-              console.warn(`Invalid date found in record for ${species}: ${dateStr}`);
+              console.warn(`Invalid date found in record for ${fullSpeciesName}: ${dateStr}`);
             }
           }
         } else if (detailLine.startsWith('- Map: ')) {
@@ -122,9 +157,9 @@ export function parseEBirdAlert(content: string): Sighting[] {
       }
 
       // Validation: Required fields are species, location, date
-      if (species && location && date && isValidDate(date)) {
+      if (fullSpeciesName && location && date && isValidDate(date)) {
         sightings.push({
-          species,
+          species: fullSpeciesName,
           scientificName,
           count,
           confirmed,
@@ -137,10 +172,10 @@ export function parseEBirdAlert(content: string): Sighting[] {
         });
       } else {
         const missing = [];
-        if (!species) missing.push('species');
+        if (!fullSpeciesName) missing.push('species');
         if (!location) missing.push('location');
         if (!date) missing.push('date');
-        console.warn(`Skipping bird record for ${species || 'unknown species'} due to missing required fields: ${missing.join(', ')}`);
+        console.warn(`Skipping bird record for ${fullSpeciesName || 'unknown species'} due to missing required fields: ${missing.join(', ')}`);
       }
     } else {
       i++;

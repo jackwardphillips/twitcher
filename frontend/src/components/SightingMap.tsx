@@ -38,7 +38,7 @@ export const SightingMap = ({ incidents }: SightingMapProps) => {
             <Popup>
               <strong>{incident.commonName}</strong><br />
               {incident.locationName}<br />
-              <small>Active {incident.activeDays} days ({incident.sightingCount} reports)</small>
+              <small>Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'} ({incident.sightingCount} reports)</small>
             </Popup>
           </Marker>
         ))}

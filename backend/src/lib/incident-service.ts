@@ -4,12 +4,23 @@ import { calculateDistance } from './geo-utils.js';
 
 /**
  * Normalizes a scientific name by stripping parenthetical qualifiers and trimming whitespace.
+ * If the resulting name is only one word, it fallbacks to the common name if provided.
  * Example: "Lonchura malacca (Exotic: Naturalized)" -> "Lonchura malacca"
  */
-export function normalizeScientificName(raw: string): string {
-  if (!raw) return '';
+export function normalizeScientificName(raw: string, commonName?: string): string {
+  if (!raw) return commonName || '';
   // Remove everything from the first parenthesis onwards, and any stray parentheses
-  return raw.replace(/\s*\(.*$/g, '').replace(/[()]/g, '').trim();
+  const cleaned = raw.replace(/\s*\(.*$/g, '').replace(/[()]/g, '').trim();
+  
+  // Valid scientific names for species are binomial (at least 2 words).
+  // If we only have one word, it's likely a miscaptured subspecies or status.
+  if (!cleaned.includes(' ') && commonName) {
+    // If common name is also one word (unlikely but possible), just return it.
+    // We want to avoid returning things like "Mexican" or "Exotic" as scientific names.
+    return commonName;
+  }
+  
+  return cleaned;
 }
 
 /**
@@ -231,7 +242,7 @@ export async function getOpenIncidents(prisma: PrismaClient) {
 
     return {
       ...incident,
-      scientificName: normalizeScientificName(incident.scientificName),
+      scientificName: normalizeScientificName(incident.scientificName, incident.commonName),
       abaCode,
       centroidLat: (incident.minLat + incident.maxLat) / 2,
       centroidLng: (incident.minLng + incident.maxLng) / 2,

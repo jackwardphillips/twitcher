@@ -64,4 +64,33 @@ Pink-footed Goose (Anser brachyrhynchus) (1) CONFIRMED
       comments: 'Continuing - just as we arrived it flew a lap overhead with some Canadas then landed out of view to SE of the road, down over the hill. A few minutes later it flew back over and landed fairly close to the road, on the N side. Originally found March 26 by Ruth Fogler. Photos.',
     });
   });
+
+  it('should parse species lines with multiple parenthetical groups correctly', () => {
+    const multiParenSample = `
+Mangrove Yellow Warbler (Greater Antillean) (Setophaga petechia [albicollis Group]) (2)
+- Reported Mar 26, 2026 11:15 by Castin Cousino
+- Everglades NP--Flamingo, Monroe, Florida
+- Map: http://maps.google.com/?q=25.1416,-80.9255
+
+Cattle Tyrant (Machetornis rixosa) (Exotic: Provisional) (1) CONFIRMED
+- Reported Mar 23, 2026 16:54 by Julian Dane
+- downtown Corpus Christi, Nueces, Texas
+- Map: http://maps.google.com/?q=27.7951,-97.3942
+`;
+    const sightings = parseEBirdAlert(multiParenSample);
+    expect(sightings).toHaveLength(2);
+    
+    expect(sightings[0]).toMatchObject({
+      species: 'Mangrove Yellow Warbler (Greater Antillean)',
+      scientificName: 'Setophaga petechia [albicollis Group]',
+      count: 2
+    });
+
+    expect(sightings[1]).toMatchObject({
+      species: 'Cattle Tyrant',
+      scientificName: 'Machetornis rixosa',
+      count: 1,
+      confirmed: true
+    });
+  });
 });
