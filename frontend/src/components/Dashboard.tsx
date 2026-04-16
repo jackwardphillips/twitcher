@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { SightingMap } from './SightingMap.js';
-import { filterByProximity } from '../lib/geo-utils.js';
+import { calculateDistance } from '../lib/geo-utils.js';
 import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js';
 import { RarityFilter, type RarityCode } from './RarityFilter.js';
 
-interface Sighting {
-  id: number;
-  species: string;
-  scientificName?: string;
-  location: string;
-  latitude: number | null;
-  longitude: number | null;
-  date: string;
-  observer: string;
-  rarity: number;
-  details?: string;
-  mapUrl?: string;
-  checklistUrl?: string;
-  streak?: number;
+export interface Incident {
+  id: string;
+  scientificName: string;
+  commonName: string;
+  abaCode: number | null;
+  centroidLat: number;
+  centroidLng: number;
+  locationName: string;
+  firstSeen: string;
+  lastSeen: string;
+  sightingCount: number;
+  activeDays: number;
+  latestMapUrl: string | null;
+  latestChecklistUrl: string | null;
 }
 
 interface IngestionStatus {
@@ -30,7 +30,7 @@ interface IngestionStatus {
 }
 
 const Dashboard: React.FC = () => {
-  const [sightings, setSightings] = useState<Sighting[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ingestionStatus, setIngestionStatus] = useState<IngestionStatus | null>(null);
@@ -44,14 +44,14 @@ const Dashboard: React.FC = () => {
   const [selectedRarities, setSelectedRarities] = useState<RarityCode[]>([3, 4, 5, 6]);
 
   useEffect(() => {
-    // Fetch sightings
-    fetch('/api/sightings')
+    // Fetch incidents
+    fetch('/api/incidents')
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch sightings');
+        if (!res.ok) throw new Error('Failed to fetch incidents');
         return res.json();
       })
       .then((data) => {
-        setSightings(data);
+        setIncidents(data);
         setLoading(false);
       })
       .catch((err) => {
@@ -104,21 +104,22 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const getRarityColor = (sighting: Sighting) => {
-    // If rarity is 0 or not found in map, default to code 5 color
-    const rarity = sighting.rarity === 0 ? 5 : sighting.rarity;
-    return getRarityUtilityColor(rarity);
+  const getRarityColor = (incident: Incident) => {
+    // Fallback for missing abaCode to code 5
+    const rarity = (incident.abaCode === null || incident.abaCode === 0) ? 5 : incident.abaCode;
+    return getRarityUtilityColor(rarity as RarityCode);
   };
 
-  const displayedSightings = sightings
-    .filter((s): s is Sighting & { rarity: RarityCode } => {
-      // Fallback for rarity 0 to code 5
-      const rarity = (s.rarity === 0 ? 5 : s.rarity) as RarityCode;
+  const displayedIncidents = incidents
+    .filter((incident): incident is Incident & { abaCode: RarityCode } => {
+      // Fallback for missing abaCode to code 5
+      const rarity = (incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode) as RarityCode;
       return selectedRarities.includes(rarity);
     })
-    .filter((s) => {
+    .filter((incident) => {
       if (!nearMe || !userLocation) return true;
-      return filterByProximity([s], userLocation.lat, userLocation.lng, 50).length > 0;
+      const dist = calculateDistance(userLocation.lat, userLocation.lng, incident.centroidLat, incident.centroidLng);
+      return dist <= 50;
     });
 
   if (loading) return <div>Loading sightings...</div>;
@@ -128,7 +129,7 @@ const Dashboard: React.FC = () => {
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-main">
-          <h1>Rare Bird Dashboard</h1>
+          <h1>twitcher</h1>
           {ingestionStatus?.lastIngestedEmailDate && (
             <div className="ingestion-status">
               <span className="status-label">Last email ingested:</span>
@@ -158,41 +159,36 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <SightingMap sightings={displayedSightings} />
+      <SightingMap incidents={displayedIncidents} />
       
       <div className="sightings-list">
-        {displayedSightings.map((sighting) => (
+        {displayedIncidents.map((incident) => (
           <div 
-            key={sighting.id} 
+            key={incident.id} 
             className="sighting-card"
-            style={{ borderLeftColor: getRarityColor(sighting) }}
+            style={{ borderLeftColor: getRarityColor(incident) }}
           >
             <div className="card-header">
-              {sighting.streak && sighting.streak > 1 && (
-                <span className="streak-badge">Seen {sighting.streak} days in a row</span>
-              )}
-              <h3>{sighting.species}</h3>
-              <p className="scientific-name">{sighting.scientificName}</p>
+              <span className="streak-badge">Active {incident.activeDays} days</span>
+              <h3>{incident.commonName}</h3>
+              <p className="scientific-name">{incident.scientificName}</p>
             </div>
             
             <div className="sighting-details">
-              <p><strong>Location:</strong> {sighting.location}</p>
-              <p><strong>Date:</strong> {new Date(sighting.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</p>
-              <p><strong>Observer:</strong> {sighting.observer}</p>
+              <p><strong>Location:</strong> {incident.locationName}</p>
+              <p><strong>Reports:</strong> {incident.sightingCount} sightings</p>
+              <p><strong>First Seen:</strong> {new Date(incident.firstSeen).toLocaleDateString([], { dateStyle: 'medium' })}</p>
+              <p><strong>Last Seen:</strong> {new Date(incident.lastSeen).toLocaleDateString([], { dateStyle: 'medium' })}</p>
             </div>
             
-            {sighting.details && (
-              <p className="comments" style={{ borderLeftColor: getRarityColor(sighting) }}>{sighting.details}</p>
-              )}
-            
             <div className="links">
-              {sighting.mapUrl && <a href={sighting.mapUrl} target="_blank" rel="noopener noreferrer">eBird Map</a>}
-              {sighting.checklistUrl && <a href={sighting.checklistUrl} target="_blank" rel="noopener noreferrer">Checklist</a>}
+              {incident.latestMapUrl && <a href={incident.latestMapUrl} target="_blank" rel="noopener noreferrer">eBird Map</a>}
+              {incident.latestChecklistUrl && <a href={incident.latestChecklistUrl} target="_blank" rel="noopener noreferrer">Latest Checklist</a>}
               <a href="https://discord.com" target="_blank" rel="noopener noreferrer">Discuss</a>
             </div>
           </div>
         ))}
-        {displayedSightings.length === 0 && (
+        {displayedIncidents.length === 0 && (
           <div className="no-results">
             {nearMe ? 'No rare birds reported within 50km of your location.' : 'No rare birds reported.'}
           </div>

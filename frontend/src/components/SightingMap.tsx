@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { type Incident } from './Dashboard.js';
 
 // Fix for default icon issues with Leaflet + Webpack/Vite
 // @ts-ignore
@@ -11,24 +12,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-interface Sighting {
-  id: number;
-  species: string;
-  location: string;
-  latitude: number | null;
-  longitude: number | null;
-  date: string;
-  observer: string;
-}
-
 interface SightingMapProps {
-  sightings: Sighting[];
+  incidents: Incident[];
 }
 
-export const SightingMap = ({ sightings }: SightingMapProps) => {
-  const sightingsWithCoords = sightings.filter(s => s.latitude !== null && s.longitude !== null);
-
-  // Default center if no sightings (North America)
+export const SightingMap = ({ incidents }: SightingMapProps) => {
+  // Default center if no incidents (North America)
   const defaultCenter: [number, number] = [45, -95];
   const defaultZoom = 3;
 
@@ -44,12 +33,12 @@ export const SightingMap = ({ sightings }: SightingMapProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {sightingsWithCoords.map(s => (
-          <Marker key={s.id} position={[s.latitude!, s.longitude!]}>
+        {incidents.map(incident => (
+          <Marker key={incident.id} position={[incident.centroidLat, incident.centroidLng]}>
             <Popup>
-              <strong>{s.species}</strong><br />
-              {s.location}<br />
-              <small>{new Date(s.date).toLocaleDateString()} by {s.observer}</small>
+              <strong>{incident.commonName}</strong><br />
+              {incident.locationName}<br />
+              <small>Active {incident.activeDays} days ({incident.sightingCount} reports)</small>
             </Popup>
           </Marker>
         ))}

@@ -13,26 +13,32 @@ describe('Dashboard', () => {
     });
   });
 
-  const mockSightings = [
+  const mockIncidents = [
     {
-      id: 1,
-      species: 'Near Bird',
-      location: 'Near Location',
-      latitude: 45.0,
-      longitude: -70.0,
-      date: new Date().toISOString(),
-      observer: 'Observer 1',
-      rarity: 3,
+      id: 'inc-1',
+      scientificName: 'Species 1',
+      commonName: 'Near Bird',
+      abaCode: 3,
+      centroidLat: 45.0,
+      centroidLng: -70.0,
+      locationName: 'Near Location',
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      sightingCount: 5,
+      activeDays: 3,
     },
     {
-      id: 2,
-      species: 'Far Bird',
-      location: 'Far Location',
-      latitude: 30.0,
-      longitude: -110.0,
-      date: new Date().toISOString(),
-      observer: 'Observer 2',
-      rarity: 3,
+      id: 'inc-2',
+      scientificName: 'Species 2',
+      commonName: 'Far Bird',
+      abaCode: 3,
+      centroidLat: 30.0,
+      centroidLng: -110.0,
+      locationName: 'Far Location',
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      sightingCount: 2,
+      activeDays: 1,
     },
   ];
 
@@ -42,10 +48,10 @@ describe('Dashboard', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => [
-          ...mockSightings,
-          { id: 3, species: 'Rarity 4 Bird', rarity: 4, location: 'Loc', latitude: 0, longitude: 0, date: new Date().toISOString(), observer: 'O' },
-          { id: 4, species: 'Rarity 1 Bird', rarity: 1, location: 'Loc', latitude: 0, longitude: 0, date: new Date().toISOString(), observer: 'O' },
-          { id: 5, species: 'Rarity 2 Bird', rarity: 2, location: 'Loc', latitude: 0, longitude: 0, date: new Date().toISOString(), observer: 'O' },
+          ...mockIncidents,
+          { id: 'inc-3', commonName: 'Rarity 4 Bird', abaCode: 4, centroidLat: 0, centroidLng: 0, locationName: 'Loc', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), sightingCount: 1, activeDays: 1 },
+          { id: 'inc-4', commonName: 'Rarity 1 Bird', abaCode: 1, centroidLat: 0, centroidLng: 0, locationName: 'Loc', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), sightingCount: 1, activeDays: 1 },
+          { id: 'inc-5', commonName: 'Rarity 2 Bird', abaCode: 2, centroidLat: 0, centroidLng: 0, locationName: 'Loc', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), sightingCount: 1, activeDays: 1 },
         ],
       } as Response);
       mockFetch.mockResolvedValueOnce({
@@ -63,15 +69,15 @@ describe('Dashboard', () => {
       });
     });
 
-    it('filters sightings when rarity toggles are clicked', async () => {
-      const sightingsWithRarity1 = [
-        ...mockSightings,
-        { id: 4, species: 'Rarity 1 Bird', rarity: 1, location: 'Loc', latitude: 0, longitude: 0, date: new Date().toISOString(), observer: 'O' },
+    it('filters incidents when rarity toggles are clicked', async () => {
+      const incidentsWithRarity1 = [
+        ...mockIncidents,
+        { id: 'inc-4', commonName: 'Rarity 1 Bird', abaCode: 1, centroidLat: 0, centroidLng: 0, locationName: 'Loc', firstSeen: new Date().toISOString(), lastSeen: new Date().toISOString(), sightingCount: 1, activeDays: 1 },
       ];
       const mockFetch = vi.mocked(fetch);
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => sightingsWithRarity1,
+        json: async () => incidentsWithRarity1,
       } as Response);
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -104,7 +110,7 @@ describe('Dashboard', () => {
       const mockFetch = vi.mocked(fetch);
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockSightings,
+        json: async () => mockIncidents,
       } as Response);
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -131,18 +137,18 @@ describe('Dashboard', () => {
     });
   });
 
-  it('renders a list of sightings with streak badges', async () => {
-    const sightingsWithStreak = [
+  it('renders a list of incidents with activity badges', async () => {
+    const incidentsWithActivity = [
       {
-        ...mockSightings[0],
-        streak: 3,
+        ...mockIncidents[0],
+        activeDays: 5,
       },
     ];
 
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => sightingsWithStreak,
+      json: async () => incidentsWithActivity,
     } as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -156,7 +162,7 @@ describe('Dashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Near Bird')).toBeInTheDocument();
-      expect(screen.getByText(/Seen 3 days in a row/i)).toBeInTheDocument();
+      expect(screen.getByText(/Active 5 days/i)).toBeInTheDocument();
       expect(screen.getByText(/Last email ingested:/i)).toBeInTheDocument();
       expect(screen.getByText(/Apr 1, 2026/i)).toBeInTheDocument();
     });
@@ -166,7 +172,7 @@ describe('Dashboard', () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockSightings,
+      json: async () => mockIncidents,
     } as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -183,11 +189,11 @@ describe('Dashboard', () => {
     });
   });
 
-  it('filters sightings when "Near Me" is toggled', async () => {
+  it('filters incidents when "Near Me" is toggled', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockSightings,
+      json: async () => mockIncidents,
     } as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -230,7 +236,7 @@ describe('Dashboard', () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockSightings,
+      json: async () => mockIncidents,
     } as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -288,7 +294,7 @@ describe('Dashboard', () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockSightings,
+      json: async () => mockIncidents,
     } as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -313,7 +319,7 @@ describe('Dashboard', () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => mockSightings,
+      json: async () => mockIncidents,
     } as Response);
     mockFetch.mockResolvedValueOnce({
       ok: true,
