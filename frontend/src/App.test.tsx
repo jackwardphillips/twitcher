@@ -10,10 +10,10 @@ describe('App', () => {
     }));
   });
 
-  it('renders the Rare Bird Dashboard header', async () => {
+  it('renders the twitcher header', async () => {
     render(<App />)
     await waitFor(() => {
-      expect(screen.getByText(/Rare Bird Dashboard/i)).toBeInTheDocument()
+      expect(screen.getByText(/twitcher/i)).toBeInTheDocument()
     });
   })
 })

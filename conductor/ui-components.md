@@ -22,41 +22,57 @@ This file is the **living contract** between data/logic tracks and the frontend.
 
 ## Component Table
 
-### `SightingCard` / Incident Card
-*Gemini: verify exact file path in `frontend/src/` before proceeding*
+### `Dashboard` / `IncidentCard` (inlined)
+*File: `frontend/src/components/Dashboard.tsx`*
 
 | Field | Status | Data Source | Notes |
 |---|---|---|---|
-| Species common name | live | eBird email parser | |
-| Rarity color badge | hardcoded | — | ABA codes landed in DB (aba_checklist_integration track); needs wiring to `AbaSpecies.code` → color system |
-| Rarity code label (e.g. "Code 4") | unknown | — | Gemini: verify whether this is displayed at all |
-| Location string | live | eBird email parser | |
-| Date last seen | live | eBird email parser | |
-| Observer name | live | eBird email parser | |
-| Streak indicator (e.g. "3 days in a row") | live | streak logic, ebird_enrichment track | |
+| Species common name | live | `Incident.commonName` | |
+| Species scientific name | live | `Incident.scientificName` | Normalized to binomial |
+| Rarity color border | live | `Incident.abaCode` → `rarity-utils.ts` | |
+| Active days badge | live | `Incident.activeDays` | Calculated from first/last seen |
+| Location string | live | `Incident.locationName` | |
+| Reports count | live | `Incident.sightingCount` | |
+| First seen date | live | `Incident.firstSeen` | |
+| Last seen date | live | `Incident.lastSeen` | |
+| eBird Map link | live | `Incident.latestMapUrl` | |
+| Latest Checklist link | live | `Incident.latestChecklistUrl` | |
+| Discuss link | hardcoded | static Discord link | |
 
 ---
 
 ### `SightingMap` / Map Component
-*Gemini: verify exact file path in `frontend/src/` before proceeding*
+*File: `frontend/src/components/SightingMap.tsx`*
 
 | Field | Status | Data Source | Notes |
 |---|---|---|---|
-| Sighting pins rendered | live | enriched lat/lng from eBird API | |
-| Pin color by rarity code | hardcoded | — | ABA codes in DB; needs wiring. Same fix as card rarity badge |
-| Click pin → focus card | live | ebird_enrichment track | |
-| "Near Me" radius filter | live | browser Geolocation API | |
+| Incident pins rendered | live | `Incident.centroidLat`, `Incident.centroidLng` | |
+| Pin color by rarity code | hardcoded | — | Currently uses default Leaflet blue markers. |
+| Popup: Species name | live | `Incident.commonName` | |
+| Popup: Location | live | `Incident.locationName` | |
+| Popup: Active days | live | `Incident.activeDays` | |
+| "Near Me" radius filter | live | browser Geolocation API | 50km radius |
 | Basemap style | live | Leaflet default tiles | |
 
 ---
 
-### `Dashboard` / Top-level layout
-*Gemini: verify whether this is `App.tsx`, `Dashboard.tsx`, or both*
+### `RarityFilter`
+*File: `frontend/src/components/RarityFilter.tsx`*
 
 | Field | Status | Data Source | Notes |
 |---|---|---|---|
-| Ingestion status / last email date | live | `/api/ingestion-status` | Added in startup_email_ingestion track |
-| IMAP error warning indicator | live | `/api/ingestion-status` | Added in startup_email_ingestion track |
+| Rarity buttons (3, 4, 5, 6) | live | static list in component | Filters `Dashboard` state |
+| Button colors | live | `rarity-utils.ts` | |
+
+---
+
+### `Dashboard` Header
+*File: `frontend/src/components/Dashboard.tsx`*
+
+| Field | Status | Data Source | Notes |
+|---|---|---|---|
+| Ingestion status | live | `/api/ingestion-status` | Shows last email date |
+| IMAP error warning | live | `/api/ingestion-status` | Shows connection issue if failed |
 
 ---
 

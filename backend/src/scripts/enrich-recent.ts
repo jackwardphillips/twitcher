@@ -25,7 +25,11 @@ async function main() {
     return;
   }
 
-  const ebirdClient = new EbirdClient('bdrmipf050fq');
+  if (!process.env.EBIRD_API_KEY) {
+    console.error('ERROR: EBIRD_API_KEY is not set in backend/.env');
+    process.exit(1);
+  }
+  const ebirdClient = new EbirdClient(process.env.EBIRD_API_KEY);
   const matchEngine = new MatchEngine(ebirdClient);
   const regionService = new RegionService();
   const enrichmentService = new EnrichmentService(matchEngine, regionService);

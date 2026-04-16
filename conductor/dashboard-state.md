@@ -15,42 +15,42 @@ Its purpose is to give any track — especially data/logic tracks that don't tou
 ---
 
 ## Current State
-*Last updated: aba_checklist_integration track (approx. 2026-04-03)*
-
-> **Gemini: before beginning T1 (or whichever is the next queued track), verify this section against the actual running app and correct anything that is stale.**
+*Last updated: Documentation update (2026-04-16)*
 
 ### Layout
 - The page has a **map at the top** (Leaflet, full-width) and a **scrollable vertical card list below**.
 - The overall aesthetic is the **"Field Journal" design system**: parchment background, rust/sage/gold palette, Playfair Display / Lora typography.
 
 ### Map
-- Displays **pins for all enriched sightings** that have lat/lng coordinates from the eBird API.
-- Pin colors are **hardcoded** — they do not yet reflect ABA rarity codes from the database.
-- Clicking a pin focuses the corresponding card in the list below.
-- A **"Near Me" toggle** filters pins to within 50km of the user's browser-detected location.
+- Displays **pins for all filtered incidents** based on their geographical centroids.
+- Pin colors are **currently default blue markers** (not yet wired to rarity codes).
+- A **"Near Me" toggle** filters incidents to within 50km of the user's browser-detected location using incident centroids.
+- Popups display species name, location, active days, and report count.
 
-### Sighting Cards
-Each card in the vertical stack currently displays:
-- Species common name (live)
-- Location string (live)
-- Date of sighting (live)
-- Observer name (live)
-- Streak indicator, e.g. "Seen 3 days in a row" (live)
-- Rarity color badge/border (hardcoded — color is a static default, not driven by ABA code from the database even though ABA codes are now stored)
+### Incident Cards
+The dashboard uses an **incident-based view**. Each card in the vertical stack displays:
+- **Common Name** (live, normalized)
+- **Scientific Name** (live, normalized binomial)
+- **Location Name** (live, format: `{primaryState}, {primaryCountry}`)
+- **Active Badge**, e.g. "Active 3 days" (live, calculated from first/last seen dates)
+- **Reports Count**, e.g. "72 sightings" (live)
+- **First Seen / Last Seen dates** (live)
+- **Rarity Color Border** (live, driven by ABA codes 3-6; defaults to code 5 for unknown rarities)
+- **Links** to the latest eBird Map and Checklist for that incident.
 
-Cards do **not** yet display: photos, state record counts, lifer checkmarks, Gemini summaries, or MisID flags.
-
-### Dashboard Header / Status Bar
-- Displays **"Last Email Ingested: [date/time]"** pulled from `/api/ingestion-status`.
-- Displays a **subtle warning indicator** if the last IMAP ingestion attempt failed.
+### Dashboard Header / Controls
+- Displays **"twitcher"** title.
+- Displays **"Last email ingested: [date/time]"** pulled from `/api/ingestion-status`.
+- Includes a **Rarity Filter** allowing users to toggle visibility of ABA codes 3, 4, 5, and 6.
+- Includes a **"Filter Near Me"** toggle.
 
 ### Detail View
-- **Does not yet exist.** Clicking a card does not open a drill-down view. (T10 dependency.)
+- **Does not yet exist.** Clicking a card does not open a drill-down view.
 
-### Data Freshness
-- Email ingestion runs **automatically on backend startup** and can be triggered manually via `POST /api/ingest`.
-- Sightings in the DB currently come from email ingestion only.
-- Sighting enrichment process adds data like lat/lng coordinates from the eBird API.
+### Data Model & Freshness
+- Data is served via `GET /api/incidents`, which returns clustered sightings grouped by species and proximity (10km).
+- Scientific names are normalized to binomials (Genus species) to ensure consistency across subspecies and mangled alert data.
+- Email ingestion runs automatically on backend startup.
 
 ---
 
@@ -60,6 +60,10 @@ Cards do **not** yet display: photos, state record counts, lifer checkmarks, Gem
 |---|---|---|
 | rarity_dashboard_20260325 | 2026-03-25 | Initial dashboard, card list, email parser |
 | ebird_enrichment_20260331 | 2026-03-31 | Map added, lat/lng enrichment, streak logic, Field Journal UI |
-| aba_checklist_integration_20260403 | 2026-04-03 | ABA codes in DB, lookup service — UI not yet updated |
+| aba_checklist_integration_20260403 | 2026-04-03 | ABA codes in DB, lookup service |
 | automated_email_ingestion_20260404 | 2026-04-04 | IMAP polling wired up |
 | startup_email_ingestion_20260407 | 2026-04-07 | Startup ingestion, backfill script, ingestion status in dashboard header |
+| incident_clustering_20260413 | 2026-04-13 | Sighting clustering into Incidents (10km/species), Incident model in DB |
+| rarity_code_filter_20260412 | 2026-04-12 | Rarity filter UI component added |
+| incident_dashboard_wiring_20260416 | 2026-04-16 | Dashboard switched to /api/incidents; live rarity colors on cards; binomial normalization; active days display |
+| Documentation update | 2026-04-16 | Updated tracks.md with all archived tracks, updated tech-stack.md, corrected map pin status. |

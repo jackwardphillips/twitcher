@@ -9,14 +9,20 @@ import { calculateDistance } from './geo-utils.js';
  */
 export function normalizeScientificName(raw: string, commonName?: string): string {
   if (!raw) return commonName || '';
-  // Remove everything from the first parenthesis onwards, and any stray parentheses
+
+  // 1. Try to find a valid binomial (Genus species) within the string.
+  // This helps with mangled names like "Mexican) (Setophaga petechia [castaneiceps Group]"
+  const binomialMatch = raw.match(/([A-Z][a-z]+ [a-z]+)/);
+  if (binomialMatch) {
+    return binomialMatch[1];
+  }
+
+  // 2. Fallback to the old method of cleaning parentheses
   const cleaned = raw.replace(/\s*\(.*$/g, '').replace(/[()]/g, '').trim();
   
   // Valid scientific names for species are binomial (at least 2 words).
   // If we only have one word, it's likely a miscaptured subspecies or status.
   if (!cleaned.includes(' ') && commonName) {
-    // If common name is also one word (unlikely but possible), just return it.
-    // We want to avoid returning things like "Mexican" or "Exotic" as scientific names.
     return commonName;
   }
   
@@ -86,7 +92,7 @@ export async function createIncident(
   prisma: PrismaClient,
   sighting: Sighting
 ): Promise<Incident> {
-  const normScientific = normalizeScientificName(sighting.scientificName || sighting.species);
+  const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
   
   // Extract location components if possible (format: "Location, County, State, Country")
   const parts = sighting.location.split(',').map(p => p.trim());

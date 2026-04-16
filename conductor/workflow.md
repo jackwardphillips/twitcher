@@ -150,27 +150,52 @@ Before marking any task complete, verify:
 
 ## Development Commands
 
-**AI AGENT INSTRUCTION: This section should be adapted to the project's specific language, framework, and build tools.**
-
 ### Setup
 ```bash
-# Example: Commands to set up the development environment (e.g., install dependencies, configure database)
-# e.g., for a Node.js project: npm install
-# e.g., for a Go project: go mod tidy
+# Install root dependencies
+npm install
+
+# Install backend dependencies and generate Prisma client
+cd backend
+npm install
+npx.cmd prisma generate
+
+# Install frontend dependencies
+cd ../frontend
+npm install
 ```
 
 ### Daily Development
 ```bash
-# Example: Commands for common daily tasks (e.g., start dev server, run tests, lint, format)
-# e.g., for a Node.js project: npm run dev, npm test, npm run lint
-# e.g., for a Go project: go run main.go, go test ./..., go fmt ./...
+# Run both backend and frontend in development mode (from root)
+npm.cmd run dev
+
+# Run backend only
+cd backend
+npm.cmd run dev
+
+# Run frontend only
+cd frontend
+npm.cmd run dev
+
+# Run backend tests
+cd backend
+npm.cmd test
+
+# Run frontend tests
+cd frontend
+npm.cmd test
 ```
 
 ### Before Committing
 ```bash
-# Example: Commands to run all pre-commit checks (e.g., format, lint, type check, run tests)
-# e.g., for a Node.js project: npm run check
-# e.g., for a Go project: make check (if a Makefile exists)
+# Run all tests
+cd backend && npm.cmd test
+cd ../frontend && npm.cmd test
+
+# Check Prisma schema
+cd backend
+npx.cmd prisma validate
 ```
 
 ## Testing Requirements
