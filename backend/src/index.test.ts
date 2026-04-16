@@ -17,4 +17,17 @@ describe('API Server', () => {
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
+
+  it('should return a list of enriched incidents', async () => {
+    const response = await request(app).get('/api/incidents');
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    if (response.body.length > 0) {
+      const incident = response.body[0];
+      expect(incident).toHaveProperty('abaCode');
+      expect(incident).toHaveProperty('centroidLat');
+      expect(incident).toHaveProperty('centroidLng');
+      expect(incident).toHaveProperty('activeDays');
+    }
+  });
 });

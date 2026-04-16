@@ -5,7 +5,7 @@ import { prisma } from './lib/db.js';
 import { IngestionService } from './lib/ingestion-service.js';
 import type { IngestionResult } from './lib/ingestion-service.js';
 import { ImapClient } from './lib/imap-client.js';
-import { closeInactiveIncidents } from './lib/incident-service.js';
+import { closeInactiveIncidents, getOpenIncidents } from './lib/incident-service.js';
 import 'dotenv/config';
 
 const app = express();
@@ -113,6 +113,16 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
     res.json(sightingsWithStreaks);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch sightings' });
+  }
+});
+
+app.get('/api/incidents', async (req: Request, res: Response) => {
+  try {
+    const incidents = await getOpenIncidents(prisma);
+    res.json(incidents);
+  } catch (error) {
+    console.error('Failed to fetch incidents:', error);
+    res.status(500).json({ error: 'Failed to fetch incidents' });
   }
 });
 
