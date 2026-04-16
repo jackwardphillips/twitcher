@@ -11,8 +11,8 @@ Goal: Implement the `GET /api/incidents` endpoint with all necessary data for th
     - [x] Include `latestMapUrl` and `latestChecklistUrl` from the most recent sighting.
     - [x] Calculate `activeDays` (difference between `firstSeen` and `lastSeen` in days, inclusive).
 - [x] Task: Create unit tests for `getOpenIncidents` in `backend/src/lib/incident-service.test.ts` d0fdc36
-- [ ] Task: Register `GET /api/incidents` in `backend/src/index.ts`
-- [ ] Task: Create integration test for `/api/incidents` in `backend/src/index.test.ts`
+- [x] Task: Register `GET /api/incidents` in `backend/src/index.ts` 3738019
+- [x] Task: Create integration test for `/api/incidents` in `backend/src/index.test.ts` 3738019
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend API' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Data Source
