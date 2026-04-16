@@ -169,7 +169,7 @@ const Dashboard: React.FC = () => {
             style={{ borderLeftColor: getRarityColor(incident) }}
           >
             <div className="card-header">
-              <span className="streak-badge">Active {incident.activeDays} days</span>
+              <span className="streak-badge">Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}</span>
               <h3>{incident.commonName}</h3>
               <p className="scientific-name">{incident.scientificName}</p>
             </div>

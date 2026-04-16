@@ -8,9 +8,8 @@ import { calculateDistance } from './geo-utils.js';
  */
 export function normalizeScientificName(raw: string): string {
   if (!raw) return '';
-  // Remove content within parentheses and the parentheses themselves
-  // Handle nested or multiple sets by using global flag
-  return raw.replace(/\s*\(.*?\)/g, '').trim();
+  // Remove everything from the first parenthesis onwards, and any stray parentheses
+  return raw.replace(/\s*\(.*$/g, '').replace(/[()]/g, '').trim();
 }
 
 /**
@@ -232,10 +231,11 @@ export async function getOpenIncidents(prisma: PrismaClient) {
 
     return {
       ...incident,
+      scientificName: normalizeScientificName(incident.scientificName),
       abaCode,
       centroidLat: (incident.minLat + incident.maxLat) / 2,
       centroidLng: (incident.minLng + incident.maxLng) / 2,
-      locationName: `${incident.primaryCounty}, ${incident.primaryState}`,
+      locationName: `${incident.primaryState}, ${incident.primaryCountry}`,
       latestMapUrl: latestSighting?.mapUrl || null,
       latestChecklistUrl: latestSighting?.checklistUrl || null,
       activeDays

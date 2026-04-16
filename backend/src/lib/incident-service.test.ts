@@ -47,6 +47,7 @@ describe('IncidentService', () => {
         sightingCount: 5,
         primaryCounty: 'Montgomery',
         primaryState: 'PA',
+        primaryCountry: 'US',
         sightings: [
           { id: 5, date: new Date('2026-04-15T10:00:00Z'), mapUrl: 'map5', checklistUrl: 'check5' }
         ]
@@ -78,7 +79,7 @@ describe('IncidentService', () => {
       expect(enriched.abaCode).toBe(1);
       expect(enriched.centroidLat).toBe(40.1);
       expect(enriched.centroidLng).toBe(-74.9);
-      expect(enriched.locationName).toBe('Montgomery, PA');
+      expect(enriched.locationName).toBe('PA, US');
       expect(enriched.latestMapUrl).toBe('map5');
       expect(enriched.latestChecklistUrl).toBe('check5');
       expect(enriched.activeDays).toBe(6); // 10th to 15th inclusive is 6 days
@@ -141,6 +142,11 @@ describe('IncidentService', () => {
 
     it('should handle multiple sets of parentheses (though unlikely)', () => {
       expect(normalizeScientificName('Species name (extra) (info)')).toBe('Species name');
+    });
+
+    it('should handle stray parentheses', () => {
+      expect(normalizeScientificName('Lonchura malacca) (Exotic: Naturalized')).toBe('Lonchura malacca');
+      expect(normalizeScientificName('Machetornis rixosa) (Exotic: Provisional')).toBe('Machetornis rixosa');
     });
 
     it('should handle empty or null-like input gracefully', () => {
