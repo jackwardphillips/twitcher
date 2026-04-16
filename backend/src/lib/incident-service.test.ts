@@ -4,7 +4,8 @@ import {
   findMatchingIncident, 
   createIncident, 
   addSightingToIncident,
-  closeInactiveIncidents
+  closeInactiveIncidents,
+  getOpenIncidents
 } from './incident-service';
 import { IncidentStatus } from '@prisma/client';
 
@@ -19,10 +20,111 @@ const prismaMock = {
   sighting: {
     update: vi.fn(),
   },
+  rarityCode: {
+    findMany: vi.fn(),
+  },
   $transaction: vi.fn((cb) => cb(prismaMock)),
 };
 
 describe('IncidentService', () => {
+  describe('getOpenIncidents', () => {
+    beforeEach(() => {
+      vi.resetAllMocks();
+    });
+
+    it('should fetch only OPEN incidents and enrich them with rarity and summary data', async () => {
+      const mockIncident = {
+        id: 'inc-1',
+        scientificName: 'Turdus migratorius',
+        commonName: 'American Robin',
+        status: 'OPEN',
+        minLat: 40.0,
+        maxLat: 40.2,
+        minLng: -75.0,
+        maxLng: -74.8,
+        firstSeen: new Date('2026-04-10T10:00:00Z'),
+        lastSeen: new Date('2026-04-15T10:00:00Z'),
+        sightingCount: 5,
+        primaryCounty: 'Montgomery',
+        primaryState: 'PA',
+        sightings: [
+          { id: 5, date: new Date('2026-04-15T10:00:00Z'), mapUrl: 'map5', checklistUrl: 'check5' }
+        ]
+      };
+
+      const mockRarity = {
+        scientificName: 'Turdus migratorius',
+        abaCode: 1
+      };
+
+      prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
+      prismaMock.rarityCode.findMany.mockResolvedValue([mockRarity]);
+
+      const result = await getOpenIncidents(prismaMock as any);
+
+      expect(prismaMock.incident.findMany).toHaveBeenCalledWith({
+        where: { status: 'OPEN' },
+        include: {
+          sightings: {
+            orderBy: { date: 'desc' },
+            take: 1
+          }
+        }
+      });
+
+      expect(result).toHaveLength(1);
+      const enriched = result[0];
+      expect(enriched.id).toBe('inc-1');
+      expect(enriched.abaCode).toBe(1);
+      expect(enriched.centroidLat).toBe(40.1);
+      expect(enriched.centroidLng).toBe(-74.9);
+      expect(enriched.locationName).toBe('Montgomery, PA');
+      expect(enriched.latestMapUrl).toBe('map5');
+      expect(enriched.latestChecklistUrl).toBe('check5');
+      expect(enriched.activeDays).toBe(6); // 10th to 15th inclusive is 6 days
+    });
+
+    it('should use scientificName normalization for rarity lookup', async () => {
+       const mockIncident = {
+        id: 'inc-1',
+        scientificName: 'Lonchura malacca',
+        status: 'OPEN',
+        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
+        firstSeen: new Date(), lastSeen: new Date(),
+        sightings: []
+      };
+
+      // In the database, rarity might be stored with the same scientific name
+      const mockRarity = {
+        scientificName: 'Lonchura malacca',
+        abaCode: 4
+      };
+
+      prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
+      prismaMock.rarityCode.findMany.mockResolvedValue([mockRarity]);
+
+      const result = await getOpenIncidents(prismaMock as any);
+      expect(result[0].abaCode).toBe(4);
+    });
+
+    it('should handle incidents without matching rarity codes gracefully', async () => {
+      const mockIncident = {
+        id: 'inc-1',
+        scientificName: 'Unknown species',
+        status: 'OPEN',
+        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
+        firstSeen: new Date(), lastSeen: new Date(),
+        sightings: []
+      };
+
+      prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
+      prismaMock.rarityCode.findMany.mockResolvedValue([]);
+
+      const result = await getOpenIncidents(prismaMock as any);
+      expect(result[0].abaCode).toBeNull();
+    });
+  });
+
   describe('normalizeScientificName', () => {
     it('should strip parenthetical qualifiers from scientific names', () => {
       expect(normalizeScientificName('Lonchura malacca (Exotic: Naturalized)')).toBe('Lonchura malacca');

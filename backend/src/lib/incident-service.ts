@@ -193,3 +193,52 @@ export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void
     }
   }
 }
+
+/**
+ * Fetches all OPEN incidents enriched with rarity data and summary fields.
+ */
+export async function getOpenIncidents(prisma: PrismaClient) {
+  const incidents = await prisma.incident.findMany({
+    where: { status: IncidentStatus.OPEN },
+    include: {
+      sightings: {
+        orderBy: { date: 'desc' },
+        take: 1
+      }
+    }
+  });
+
+  const rarityCodes = await prisma.rarityCode.findMany();
+  
+  // Create a map for faster lookup by scientific name (normalized)
+  const rarityMap = new Map<string, number>();
+  rarityCodes.forEach(r => {
+    if (r.scientificName) {
+      rarityMap.set(normalizeScientificName(r.scientificName), r.abaCode);
+    }
+    // Also map by common name as a fallback if needed, but scientific is primary
+    if (r.commonName) {
+      rarityMap.set(r.commonName, r.abaCode);
+    }
+  });
+
+  return incidents.map(incident => {
+    const latestSighting = incident.sightings[0];
+    const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
+
+    // activeDays is difference between firstSeen and lastSeen inclusive
+    const diffTime = Math.abs(incident.lastSeen.getTime() - incident.firstSeen.getTime());
+    const activeDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    return {
+      ...incident,
+      abaCode,
+      centroidLat: (incident.minLat + incident.maxLat) / 2,
+      centroidLng: (incident.minLng + incident.maxLng) / 2,
+      locationName: `${incident.primaryCounty}, ${incident.primaryState}`,
+      latestMapUrl: latestSighting?.mapUrl || null,
+      latestChecklistUrl: latestSighting?.checklistUrl || null,
+      activeDays
+    };
+  });
+}
