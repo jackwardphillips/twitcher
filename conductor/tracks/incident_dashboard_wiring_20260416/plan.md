@@ -1,6 +1,6 @@
 # Implementation Plan - Incident Dashboard Wiring
 
-## Phase 1: Backend API
+## Phase 1: Backend API [checkpoint: d88171d]
 Goal: Implement the `GET /api/incidents` endpoint with all necessary data for the dashboard.
 
 - [x] Task: Implement `getOpenIncidents` in `backend/src/lib/incident-service.ts` d0fdc36
@@ -13,7 +13,7 @@ Goal: Implement the `GET /api/incidents` endpoint with all necessary data for th
 - [x] Task: Create unit tests for `getOpenIncidents` in `backend/src/lib/incident-service.test.ts` d0fdc36
 - [x] Task: Register `GET /api/incidents` in `backend/src/index.ts` 3738019
 - [x] Task: Create integration test for `/api/incidents` in `backend/src/index.test.ts` 3738019
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend API' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Backend API' (Protocol in workflow.md) d88171d
 
 ## Phase 2: Frontend Data Source
 Goal: Switch the dashboard to fetch and use incident data.
