@@ -73,7 +73,7 @@ Output Format: 1–2 sentences of plain prose. If no useful signal exists, retur
 `;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,7 +86,8 @@ Output Format: 1–2 sentences of plain prose. If no useful signal exists, retur
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`);
+      const errorData = await response.json() as any;
+      throw new Error(`Gemini API error: ${response.statusText} - ${JSON.stringify(errorData)}`);
     }
 
     const data = await response.json() as any;
@@ -95,14 +96,47 @@ Output Format: 1–2 sentences of plain prose. If no useful signal exists, retur
     await prisma.incident.update({
       where: { id: incidentId },
       data: {
-        geminiSummary: summary || incident.geminiSummary, // Retain old if new is empty? Spec says: "Fallback: If no new signal is found in recent comments, retain the old summary. If no useful signal exists at all, return an empty string."
-        // Actually, if Gemini returns empty, we might want to keep the old one if it was better.
-        // But the prompt says "return an empty string if no useful signal exists".
-        // Let's follow: "If no new signal is found in recent comments, retain the old summary."
+        geminiSummary: summary || incident.geminiSummary,
         summaryGeneratedAt: now
       }
     });
   } catch (error) {
     console.error(`Failed to summarize incident ${incidentId}:`, error);
   }
+}
+
+/**
+ * Runs a summarization cycle for all active incidents (sightings in the last 7 days).
+ */
+export async function runSummarizationCycle(prisma: PrismaClient): Promise<void> {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const activeIncidents = await prisma.incident.findMany({
+    where: {
+      lastSeen: {
+        gte: sevenDaysAgo,
+      },
+      status: {
+        in: ['OPEN', 'CLOSED']
+      }
+    },
+    include: {
+      sightings: {
+        take: 1,
+        orderBy: { date: 'desc' }
+      }
+    }
+  });
+
+  console.log(`Starting summarization cycle for ${activeIncidents.length} incidents...`);
+
+  for (const incident of activeIncidents) {
+    console.log(`Processing summary for: ${incident.commonName}...`);
+    await summarizeIncident(prisma, incident.id);
+    // 4 second delay to respect free tier RPM limits (15 RPM)
+    await new Promise(resolve => setTimeout(resolve, 4000));
+  }
+
+  console.log('Summarization cycle complete.');
 }
