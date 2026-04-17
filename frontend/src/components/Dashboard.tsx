@@ -18,6 +18,7 @@ export interface Incident {
   activeDays: number;
   latestMapUrl: string | null;
   latestChecklistUrl: string | null;
+  geminiSummary?: string | null;
 }
 
 interface IngestionStatus {
