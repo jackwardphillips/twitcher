@@ -6,6 +6,7 @@ import { IngestionService } from './lib/ingestion-service.js';
 import type { IngestionResult } from './lib/ingestion-service.js';
 import { ImapClient } from './lib/imap-client.js';
 import { closeInactiveIncidents, getOpenIncidents } from './lib/incident-service.js';
+import { runSummarizationCycle } from './lib/summarization-service.js';
 import 'dotenv/config';
 
 const app = express();
@@ -31,6 +32,11 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   await closeInactiveIncidents(prisma);
   const results = await ingestionService.ingest(undefined, enrich);
   await closeInactiveIncidents(prisma);
+
+  // Trigger summarization cycle in the background
+  runSummarizationCycle(prisma).catch(err => {
+    console.error('Background summarization cycle failed:', err);
+  });
   
   lastIngestionResult = results;
   return results;
