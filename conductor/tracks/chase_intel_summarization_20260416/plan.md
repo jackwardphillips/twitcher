@@ -19,9 +19,9 @@
     - [x] Implement Gemini API client wrapper with fallback for missing key.
     - [x] Implement `summarizeIncident(incidentId: string)` core logic.
     - [x] **Task:** Implement de-duplication logic: skip summarization if `summaryGeneratedAt` is already set to the current date.
-- [ ] Task: Implement Summarization Background Runner
-    - [ ] Write tests for triggering summarization after ingestion.
-    - [ ] Implement non-blocking background trigger in `ingestion-service.ts`.
+- [x] Task: Implement Summarization Background Runner 73b5d80
+    - [x] Write tests for triggering summarization after ingestion.
+    - [x] Implement non-blocking background trigger in `ingestion-service.ts`.
 - [ ] Task: Conductor - User Manual Verification 'Summarization Service' (Protocol in workflow.md)
 
 ## Phase 3: Frontend Implementation
