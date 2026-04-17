@@ -28,10 +28,10 @@
 
 - [x] Task: Update Frontend Incident Types 273c6b4
     - [x] Update `Incident` type definition in `frontend/src/lib/types.ts` (or equivalent).
-- [ ] Task: Update `IncidentCard` component and tests
-    - [ ] Write tests for rendering `geminiSummary` when present.
-    - [ ] Implement UI rendering with "Subtle & Distinct" styling (italic, smaller font).
-    - [ ] Ensure summary is hidden if null or empty.
+- [x] Task: Update `IncidentCard` component and tests 5a448e7
+    - [x] Write tests for rendering `geminiSummary` when present.
+    - [x] Implement UI rendering with "Subtle & Distinct" styling (italic, smaller font).
+    - [x] Ensure summary is hidden if null or empty.
 - [ ] Task: Conductor - User Manual Verification 'Frontend Display' (Protocol in workflow.md)
 
 ## Phase 4: Backfill & Prompt Tuning
