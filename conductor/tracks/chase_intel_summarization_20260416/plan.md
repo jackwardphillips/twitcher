@@ -1,6 +1,6 @@
 # Implementation Plan: Chase Intel Summarization
 
-## Phase 1: Database Schema & Infrastructure
+## Phase 1: Database Schema & Infrastructure [checkpoint: a21b2b7]
 
 - [x] Task: Update Incident model in `schema.prisma` b57bacf
     - [x] Add `geminiSummary String?`
