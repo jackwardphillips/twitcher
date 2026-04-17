@@ -10,7 +10,7 @@
     - [x] Add `GEMINI_API_KEY` placeholder to `.env.example`
 - [ ] Task: Conductor - User Manual Verification 'Schema & Infra' (Protocol in workflow.md)
 
-## Phase 2: Summarization Service Implementation (Backend)
+## Phase 2: Summarization Service Implementation (Backend) [checkpoint: c2c1b38]
 
 - [x] Task: Create `summarization-service.ts` and unit tests d132f17
     - [x] Write tests for comment aggregation (last 7 days).
