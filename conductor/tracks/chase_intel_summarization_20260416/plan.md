@@ -26,8 +26,8 @@
 
 ## Phase 3: Frontend Implementation
 
-- [ ] Task: Update Frontend Incident Types
-    - [ ] Update `Incident` type definition in `frontend/src/lib/types.ts` (or equivalent).
+- [x] Task: Update Frontend Incident Types 273c6b4
+    - [x] Update `Incident` type definition in `frontend/src/lib/types.ts` (or equivalent).
 - [ ] Task: Update `IncidentCard` component and tests
     - [ ] Write tests for rendering `geminiSummary` when present.
     - [ ] Implement UI rendering with "Subtle & Distinct" styling (italic, smaller font).
