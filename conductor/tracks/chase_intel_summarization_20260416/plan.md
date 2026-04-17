@@ -2,10 +2,10 @@
 
 ## Phase 1: Database Schema & Infrastructure
 
-- [ ] Task: Update Incident model in `schema.prisma`
-    - [ ] Add `geminiSummary String?`
-    - [ ] Add `summaryGeneratedAt DateTime?`
-    - [ ] Run `npx.cmd prisma migrate dev --name add_chase_intel_summary`
+- [x] Task: Update Incident model in `schema.prisma` b57bacf
+    - [x] Add `geminiSummary String?`
+    - [x] Add `summaryGeneratedAt DateTime?`
+    - [x] Run `npx.cmd prisma migrate dev --name add_chase_intel_summary`
 - [ ] Task: Configure Gemini API in `.env`
     - [ ] Add `GEMINI_API_KEY` placeholder to `.env.example`
 - [ ] Task: Conductor - User Manual Verification 'Schema & Infra' (Protocol in workflow.md)
