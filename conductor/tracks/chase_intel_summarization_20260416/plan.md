@@ -12,13 +12,13 @@
 
 ## Phase 2: Summarization Service Implementation (Backend)
 
-- [ ] Task: Create `summarization-service.ts` and unit tests
-    - [ ] Write tests for comment aggregation (last 7 days).
-    - [ ] Implement `getRecentComments(incidentId: string)` logic.
-    - [ ] Write tests for prompt construction (handling existing summary).
-    - [ ] Implement Gemini API client wrapper with fallback for missing key.
-    - [ ] Implement `summarizeIncident(incidentId: string)` core logic.
-    - [ ] **Task:** Implement de-duplication logic: skip summarization if `summaryGeneratedAt` is already set to the current date.
+- [x] Task: Create `summarization-service.ts` and unit tests d132f17
+    - [x] Write tests for comment aggregation (last 7 days).
+    - [x] Implement `getRecentComments(incidentId: string)` logic.
+    - [x] Write tests for prompt construction (handling existing summary).
+    - [x] Implement Gemini API client wrapper with fallback for missing key.
+    - [x] Implement `summarizeIncident(incidentId: string)` core logic.
+    - [x] **Task:** Implement de-duplication logic: skip summarization if `summaryGeneratedAt` is already set to the current date.
 - [ ] Task: Implement Summarization Background Runner
     - [ ] Write tests for triggering summarization after ingestion.
     - [ ] Implement non-blocking background trigger in `ingestion-service.ts`.
