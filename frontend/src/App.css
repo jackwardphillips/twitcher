@@ -295,7 +295,17 @@ body {
   font-family: var(--font-body);
   font-size: 1rem;
   font-style: italic;
+  margin-bottom: 0.5rem; /* Reduced to make room for summary */
+}
+
+.gemini-summary {
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.4;
   margin-bottom: 1.5rem;
+  max-width: 90%;
 }
 
 .streak-badge {

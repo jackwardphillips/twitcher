@@ -173,6 +173,9 @@ const Dashboard: React.FC = () => {
               <span className="streak-badge">Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}</span>
               <h3>{incident.commonName}</h3>
               <p className="scientific-name">{incident.scientificName}</p>
+              {incident.geminiSummary && (
+                <p className="gemini-summary"><em>{incident.geminiSummary}</em></p>
+              )}
             </div>
             
             <div className="sighting-details">
