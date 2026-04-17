@@ -24,7 +24,7 @@
     - [x] Implement non-blocking background trigger in `ingestion-service.ts`.
 - [ ] Task: Conductor - User Manual Verification 'Summarization Service' (Protocol in workflow.md)
 
-## Phase 3: Frontend Implementation
+## Phase 3: Frontend Implementation [checkpoint: 5a448e7]
 
 - [x] Task: Update Frontend Incident Types 273c6b4
     - [x] Update `Incident` type definition in `frontend/src/lib/types.ts` (or equivalent).
