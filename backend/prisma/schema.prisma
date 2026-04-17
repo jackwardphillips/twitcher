@@ -55,6 +55,8 @@ model Incident {
   primaryState   String?
   primaryCountry String?
   statesCovered  String // JSON array of unique state/province names
+  geminiSummary  String?
+  summaryGeneratedAt DateTime?
   sightings      Sighting[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
