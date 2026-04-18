@@ -33,10 +33,12 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   const results = await ingestionService.ingest(undefined, enrich);
   await closeInactiveIncidents(prisma);
 
-  // Trigger summarization cycle in the background
-  runSummarizationCycle(prisma).catch(err => {
-    console.error('Background summarization cycle failed:', err);
-  });
+  // Trigger summarization cycle in the background if new data was ingested
+  if (results.ingested > 0) {
+    runSummarizationCycle(prisma).catch(err => {
+      console.error('Background summarization cycle failed:', err);
+    });
+  }
   
   lastIngestionResult = results;
   return results;

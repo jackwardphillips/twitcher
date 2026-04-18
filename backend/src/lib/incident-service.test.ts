@@ -337,7 +337,7 @@ describe('IncidentService', () => {
       vi.useRealTimers();
     });
 
-    it('should close incidents inactive for > 5 days', async () => {
+    it('should close incidents inactive for > 3 days', async () => {
       const activeIncident = {
         id: 'inc-active',
         status: 'OPEN',
@@ -346,7 +346,7 @@ describe('IncidentService', () => {
       const inactiveIncident = {
         id: 'inc-inactive',
         status: 'OPEN',
-        lastSeen: new Date('2026-04-10T10:00:00Z') // 10 days ago
+        lastSeen: new Date('2026-04-16T10:00:00Z') // 4 days ago
       };
 
       prismaMock.incident.findMany.mockResolvedValueOnce([activeIncident, inactiveIncident]);

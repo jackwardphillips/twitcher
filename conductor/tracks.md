@@ -6,12 +6,12 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 # Active Tracks
 
-- [x] **Track: Chase Intel Summarization**
-*Link: [./tracks/chase_intel_summarization_20260416/](./tracks/chase_intel_summarization_20260416/)*
-
 ---
 
 # Archived Tracks
+
+- [x] **Track: Chase Intel Summarization**
+*Link: [./tracks/chase_intel_summarization_20260416/](./tracks/chase_intel_summarization_20260416/)*
 
 - [x] **Track: Incident Dashboard Wiring (2026-04-16)**
 *Link: [./archive/incident_dashboard_wiring_20260416/](./archive/incident_dashboard_wiring_20260416/)*

@@ -67,6 +67,13 @@ describe('Sighting Service', () => {
       { scientificName: 'Anser fabalis', abaCode: 4 }
     ]);
 
+    (prisma.sighting.create as any).mockImplementation(({ data }: any) => Promise.resolve({
+      id: Math.floor(Math.random() * 1000),
+      ...data,
+      latitude: data.latitude || null,
+      longitude: data.longitude || null,
+    }));
+
     await saveSightings(mockSightings);
 
     expect(prisma.sighting.create).toHaveBeenCalledTimes(2);

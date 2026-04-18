@@ -30,6 +30,21 @@ export async function getRecentComments(prisma: PrismaClient, incidentId: string
 }
 
 /**
+ * Helper to extract summary text from either OpenAI-style (Groq) or Gemini-style responses.
+ */
+function extractSummaryFromResponse(data: any): string | undefined {
+  // Groq / OpenAI format
+  if (data.choices?.[0]?.message?.content !== undefined) {
+    return data.choices[0].message.content;
+  }
+  // Gemini format
+  if (data.candidates?.[0]?.content?.parts?.[0]?.text !== undefined) {
+    return data.candidates[0].content.parts[0].text;
+  }
+  return undefined;
+}
+
+/**
  * Generates a concise chase intel summary using Groq or Gemini API.
  */
 export async function summarizeIncident(prisma: PrismaClient, incidentId: string): Promise<void> {
@@ -48,16 +63,7 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
 
   if (!incident) return;
 
-  // Skip if already summarized today
   const now = new Date();
-  if (incident.summaryGeneratedAt) {
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const lastGen = new Date(incident.summaryGeneratedAt.getFullYear(), incident.summaryGeneratedAt.getMonth(), incident.summaryGeneratedAt.getDate());
-    if (lastGen.getTime() === today.getTime()) {
-      return;
-    }
-  }
-
   const comments = await getRecentComments(prisma, incidentId);
 
   // Skip if no comments and no prior summary
@@ -66,10 +72,10 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
   }
 
   const prompt = `
-  Write a 1-sentence field note summarizing where and how birders have been finding this bird. 
+  Write a 1-2 sentence field note summarizing where and how birders have been finding this bird. 
   Focus on named locations (trails, landmarks, habitat features) and any consistent behavior that aids finding it.
   Exclude: coordinates, weather conditions, time of day, ID descriptions, and content-free phrases like "still present."
-  Max 25 words. If no useful signal exists, return an empty string.
+  Max 50 words. If no useful signal exists, return an empty string.
 
   Existing summary: "${incident.geminiSummary || ''}"
   Recent comments (last 7 days): "${comments}"
@@ -100,8 +106,11 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
 
       if (response.ok) {
         const data = await response.json() as any;
-        summary = data.choices?.[0]?.message?.content?.trim() || '';
-        success = true;
+        const text = extractSummaryFromResponse(data);
+        if (text !== undefined) {
+          summary = text.trim();
+          success = true;
+        }
       } else {
         const errorData = await response.json() as any;
         console.warn(`Groq API error: ${response.status} - ${JSON.stringify(errorData)}`);
@@ -130,8 +139,11 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
 
       if (response.ok) {
         const data = await response.json() as any;
-        summary = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-        success = true;
+        const text = extractSummaryFromResponse(data);
+        if (text !== undefined) {
+          summary = text.trim();
+          success = true;
+        }
       } else {
         const errorData = await response.json() as any;
         console.warn(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);

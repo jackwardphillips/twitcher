@@ -170,12 +170,12 @@ export async function addSightingToIncident(
 
 /**
  * Checks all OPEN and CLOSED incidents and updates their status based on inactivity.
- * - OPEN -> CLOSED: No new sightings for 5 days.
+ * - OPEN -> CLOSED: No new sightings for 3 days.
  * - CLOSED -> PERMANENTLY_CLOSED: No new sightings for 4 months since closedAt.
  */
 export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void> {
   const now = new Date();
-  const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
   const fourMonthsAgo = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000);
 
   const openIncidents = await prisma.incident.findMany({
@@ -183,7 +183,7 @@ export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void
   });
 
   for (const incident of openIncidents) {
-    if (incident.lastSeen < fiveDaysAgo) {
+    if (incident.lastSeen < threeDaysAgo) {
       await prisma.incident.update({
         where: { id: incident.id },
         data: {

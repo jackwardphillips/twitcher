@@ -140,18 +140,31 @@ describe('SummarizationService', () => {
       });
     });
 
-    it('should not re-summarize if already summarized today', async () => {
+    it('should re-summarize even if already summarized today', async () => {
        const mockIncident = { 
          id: 'inc-1', 
          geminiSummary: 'Today summary', 
          summaryGeneratedAt: new Date('2026-04-20T08:00:00Z') // Same day
        };
        prismaMock.incident.findUnique.mockResolvedValue(mockIncident);
+       prismaMock.sighting.findMany.mockResolvedValue([{ details: 'New info' }]);
+       
+       global.fetch = vi.fn().mockResolvedValue({
+         ok: true,
+         json: async () => ({
+           choices: [{ message: { content: 'Updated summary' } }]
+         })
+       });
 
        await summarizeIncident(prismaMock as any, 'inc-1');
 
-       expect(prismaMock.sighting.findMany).not.toHaveBeenCalled();
-       expect(prismaMock.incident.update).not.toHaveBeenCalled();
+       expect(prismaMock.incident.update).toHaveBeenCalledWith({
+         where: { id: 'inc-1' },
+         data: {
+           geminiSummary: 'Updated summary',
+           summaryGeneratedAt: new Date('2026-04-20T10:00:00Z'),
+         }
+       });
     });
   });
 
