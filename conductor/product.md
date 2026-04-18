@@ -29,8 +29,9 @@ A centralized, web-based dashboard designed for ABA rare bird seekers and effici
 - **Sighting Streaks:** Visual indicators of how many consecutive days a species has been reported at a specific location.
 - **Incident-Based Clustering (Added 2026-04-14):** Automatically groups multiple sightings of the same species in the same area (within 10km) into a single "Incident" for a higher-level view and better tracking of rarity stay durations.
 - **Automated Email Ingestion:** Active IMAP polling for eBird alerts (ABA Rarities) to automatically ingest and parse sightings.
+- **Chase Intel Summaries (Added 2026-04-16):** AI-generated (Groq/Gemini) 1-2 sentence summaries of observer comments, highlighting precise location cues and behavioral patterns to help birders plan their chase.
 - **Platform Integration:** Direct links or snippets from Discord community discussions.
-- **Automated Bird Research:** Automated web searching to gather additional information, photos, and context for rare species.
+- **Automated Bird Research:** Automated web searching and AI summarization to gather additional information, photos, and context for rare species.
 
 ## Technical Preferences
 - **Platform:** Web-Based Application for easy access across devices.
