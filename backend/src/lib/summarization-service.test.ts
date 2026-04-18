@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getRecentComments, summarizeIncident } from './summarization-service';
+import { getRecentComments, summarizeIncident, runSummarizationCycle } from './summarization-service';
 
 // Mock Prisma
 const prismaMock = {
@@ -8,6 +8,7 @@ const prismaMock = {
   },
   incident: {
     findUnique: vi.fn(),
+    findMany: vi.fn(),
     update: vi.fn(),
   },
 };
@@ -126,6 +127,39 @@ describe('SummarizationService', () => {
 
        expect(prismaMock.sighting.findMany).not.toHaveBeenCalled();
        expect(prismaMock.incident.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('runSummarizationCycle', () => {
+    beforeEach(() => {
+      vi.resetAllMocks();
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-20T10:00:00Z'));
+    });
+
+    it('should call summarizeIncident for all active incidents', async () => {
+      const activeIncidents = [{ id: 'inc-1' }, { id: 'inc-2' }];
+      prismaMock.incident.findMany.mockResolvedValue(activeIncidents);
+      
+      // We need to mock summarizeIncident or at least its dependencies
+      prismaMock.incident.findUnique.mockResolvedValue({ id: 'inc-1', geminiSummary: null, summaryGeneratedAt: null });
+      prismaMock.sighting.findMany.mockResolvedValue([]); // No comments to actually trigger AI call in this test
+      
+      await runSummarizationCycle(prismaMock as any);
+
+      expect(prismaMock.incident.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: {
+          lastSeen: {
+            gte: new Date('2026-04-13T10:00:00Z'),
+          },
+          status: {
+            in: ['OPEN', 'CLOSED']
+          }
+        }
+      }));
+      
+      // Should have checked both incidents
+      expect(prismaMock.incident.findUnique).toHaveBeenCalledTimes(2);
     });
   });
 });
