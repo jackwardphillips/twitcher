@@ -66,13 +66,13 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
   }
 
   const prompt = `
-Summarize the recent chase intel for this bird sighting based on the following observer comments.
-Existing summary (for context/refinement): "${incident.geminiSummary || ''}"
-Recent comments (last 7 days): "${comments}"
+  Write a 1-sentence field note summarizing where and how birders have been finding this bird. 
+  Focus on named locations (trails, landmarks, habitat features) and any consistent behavior that aids finding it.
+  Exclude: coordinates, weather conditions, time of day, ID descriptions, and content-free phrases like "still present."
+  Max 25 words. If no useful signal exists, return an empty string.
 
-Instruction: Extract precise location cues (trails, landmarks, distances), timing patterns, and behavioral context.
-Noise Filter: Ignore content-free phrases like "continuing," "still present," or "seen today."
-Output Format: 1–2 sentences of plain prose. If no useful signal exists, return an empty string.
+  Existing summary: "${incident.geminiSummary || ''}"
+  Recent comments (last 7 days): "${comments}"
 `;
 
   let summary = '';

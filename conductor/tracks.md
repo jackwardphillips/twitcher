@@ -6,7 +6,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 # Active Tracks
 
-- [ ] **Track: Chase Intel Summarization**
+- [~] **Track: Chase Intel Summarization**
 *Link: [./tracks/chase_intel_summarization_20260416/](./tracks/chase_intel_summarization_20260416/)*
 
 ---
