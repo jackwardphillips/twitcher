@@ -34,9 +34,9 @@ Automate the generation of concise (1–2 sentence) "chase intel" summaries for 
 
 ## Non-Functional Requirements
 - **API Management:** 
-    - `GEMINI_API_KEY` must be stored in `.env` and never hardcoded.
-    - If `GEMINI_API_KEY` is not configured, the summarization service must skip summarization silently and log a warning. The ingestion flow must remain unaffected.
-- **Model:** Use `gemini-2.0-flash` for high speed and low cost.
+    - `GROQ_API_KEY` or `GEMINI_API_KEY` must be stored in `.env` and never hardcoded.
+    - If no API key is configured, the summarization service must skip summarization silently and log a warning. The ingestion flow must remain unaffected.
+- **Model:** Use `llama-3.3-70b-versatile` via Groq for high speed, or `gemini-2.0-flash` as a fallback.
 - **Resilience:** Log summarization failures on a per-incident basis without interrupting the broader ingestion or summarization process. Failed incidents will naturally be retried during the next ingestion cycle.
 
 ## Acceptance Criteria

@@ -18,6 +18,7 @@
 ## Integration & Automation
 - **imapflow:** Lightweight IMAP client for polling eBird alert emails.
 - **Native Fetch API:** Used for handling HTTP requests to eBird and other external APIs on both frontend and backend.
+- **Groq API:** High-performance AI inference for incident summarization (OpenAI-compatible).
 - **Concurrently:** For simultaneous execution of backend and frontend development services.
 
 ## Deployment

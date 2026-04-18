@@ -36,9 +36,9 @@
 
 ## Phase 4: Backfill & Prompt Tuning
 
-- [ ] Task: Create Backfill Script
-    - [ ] Implement `scripts/backfill-summaries.ts` to process all active incidents.
-- [ ] Task: Prompt Tuning & Final Validation
-    - [ ] Run summarization on real data.
-    - [ ] Adjust prompt instructions based on Gemini 2.0 Flash output quality.
+- [x] Task: Create Backfill Script d254d61
+    - [x] Implement `scripts/backfill-summaries.ts` to process all active incidents.
+- [x] Task: Prompt Tuning & Final Validation d254d61
+    - [x] Run summarization on real data.
+    - [x] Adjust prompt instructions based on Gemini 2.0 Flash output quality.
 - [ ] Task: Conductor - User Manual Verification 'Backfill & Tuning' (Protocol in workflow.md)
