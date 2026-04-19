@@ -168,7 +168,7 @@ const Dashboard: React.FC = () => {
         {displayedIncidents.map((incident) => (
           <div 
             key={incident.id} 
-            className="sighting-card"
+            className="sighting-card sighting-card-horizontal"
             style={{ borderLeftColor: getRarityColor(incident) }}
           >
             <div className="card-header">

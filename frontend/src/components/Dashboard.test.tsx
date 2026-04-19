@@ -44,6 +44,9 @@ describe('Dashboard', () => {
     const paragraph = summaryElement.closest('p');
     expect(paragraph).toBeInTheDocument();
     expect(paragraph?.className).toContain('gemini-summary');
+    
+    const card = summaryElement.closest('.sighting-card');
+    expect(card?.className).toContain('sighting-card-horizontal');
   });
 
   it('does not render geminiSummary when absent', async () => {
