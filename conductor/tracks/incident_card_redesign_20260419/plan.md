@@ -2,7 +2,7 @@
 
 Redesign the incident card to a horizontal layout with photo slot and sighting histogram.
 
-## Phase 1: Backend Data Enrichment
+## Phase 1: Backend Data Enrichment [checkpoint: e8de754]
 Add `dailyCounts` to the `/api/incidents` response.
 
 - [x] **Task: Update Incident type and service to include daily counts** 5747dc4
@@ -11,7 +11,7 @@ Add `dailyCounts` to the `/api/incidents` response.
     - [ ] **Green**: Modify `getOpenIncidents` in `backend/src/lib/incident-service.ts` to calculate and return `dailyCounts` (past 21 days).
     - [ ] Commit: `feat(backend): add dailyCounts to getOpenIncidents` xxxxxx
 
-- [ ] **Checkpoint: Backend provides daily sighting counts**
+- [x] **Checkpoint: Backend provides daily sighting counts** e8de754
 
 ## Phase 2: Frontend Infrastructure & Types
 Update frontend types and prepare CSS.
