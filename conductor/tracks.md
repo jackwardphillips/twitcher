@@ -6,6 +6,9 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 # Active Tracks
 
+- [~] **Track: Incident Card Redesign**
+*Link: [./tracks/incident_card_redesign_20260419/](./tracks/incident_card_redesign_20260419/)*
+
 ---
 
 # Archived Tracks
