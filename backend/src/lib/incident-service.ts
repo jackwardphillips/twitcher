@@ -218,8 +218,7 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     where: { status: IncidentStatus.OPEN },
     include: {
       sightings: {
-        orderBy: { date: 'desc' },
-        take: 1
+        orderBy: { date: 'desc' }
       }
     }
   });
@@ -238,6 +237,9 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     }
   });
 
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+
   return incidents.map(incident => {
     const latestSighting = incident.sightings[0];
     const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
@@ -245,6 +247,25 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     // activeDays is difference between firstSeen and lastSeen inclusive
     const diffTime = Math.abs(incident.lastSeen.getTime() - incident.firstSeen.getTime());
     const activeDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    // Calculate dailyCounts for the past 21 days
+    const dailyCounts: { date: string; count: number }[] = [];
+    const sightingsByDate: Record<string, number> = {};
+    
+    incident.sightings.forEach(s => {
+      const dateStr = s.date.toISOString().split('T')[0];
+      sightingsByDate[dateStr] = (sightingsByDate[dateStr] || 0) + 1;
+    });
+
+    for (let i = 20; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      dailyCounts.push({
+        date: dateStr,
+        count: sightingsByDate[dateStr] || 0
+      });
+    }
 
     return {
       ...incident,
@@ -255,7 +276,8 @@ export async function getOpenIncidents(prisma: PrismaClient) {
       locationName: `${incident.primaryState}, ${incident.primaryCountry}`,
       latestMapUrl: latestSighting?.mapUrl || null,
       latestChecklistUrl: latestSighting?.checklistUrl || null,
-      activeDays
+      activeDays,
+      dailyCounts
     };
   });
 }

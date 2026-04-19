@@ -67,8 +67,7 @@ describe('IncidentService', () => {
         where: { status: 'OPEN' },
         include: {
           sightings: {
-            orderBy: { date: 'desc' },
-            take: 1
+            orderBy: { date: 'desc' }
           }
         }
       });
@@ -83,6 +82,9 @@ describe('IncidentService', () => {
       expect(enriched.latestMapUrl).toBe('map5');
       expect(enriched.latestChecklistUrl).toBe('check5');
       expect(enriched.activeDays).toBe(6); // 10th to 15th inclusive is 6 days
+      expect(enriched.dailyCounts).toBeDefined();
+      expect(Array.isArray(enriched.dailyCounts)).toBe(true);
+      // We'll define exactly what we expect in the Green phase, but for now, it should exist.
     });
 
     it('should use scientificName normalization for rarity lookup', async () => {
