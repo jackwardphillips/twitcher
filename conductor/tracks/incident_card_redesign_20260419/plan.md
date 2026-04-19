@@ -16,7 +16,7 @@ Add `dailyCounts` to the `/api/incidents` response.
 ## Phase 2: Frontend Infrastructure & Types
 Update frontend types and prepare CSS.
 
-- [ ] **Task: Update frontend types and mock data**
+- [~] **Task: Update frontend types and mock data**
     - [ ] **Red**: Update `frontend/src/components/Dashboard.test.tsx` (or new test) to expect `dailyCounts` and `photo` field on `Incident` type.
     - [ ] **Green**: Update `Incident` interface in `frontend/src/components/Dashboard.tsx`.
     - [ ] Commit: `feat(frontend): update Incident interface for redesign` xxxxxx
