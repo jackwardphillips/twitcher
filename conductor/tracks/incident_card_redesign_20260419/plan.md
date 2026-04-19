@@ -21,7 +21,7 @@ Update frontend types and prepare CSS.
     - [ ] **Green**: Update `Incident` interface in `frontend/src/components/Dashboard.tsx`.
     - [ ] Commit: `feat(frontend): update Incident interface for redesign` xxxxxx
 
-- [ ] **Task: Setup CSS for horizontal layout**
+- [~] **Task: Setup CSS for horizontal layout**
     - [ ] **Red**: Add a test in `frontend/src/components/Dashboard.test.tsx` that checks for the presence of the new CSS classes (e.g., `.sighting-card-horizontal`, `.photo-slot`) in the rendered output. This test should fail as the classes are not yet used or defined.
     - [ ] **Green**: Add new CSS classes to `frontend/src/App.css` for the horizontal grid and photo slot.
     - [ ] Commit: `feat(frontend): add CSS for horizontal incident card layout` xxxxxx
