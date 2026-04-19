@@ -5,7 +5,7 @@ Redesign the incident card to a horizontal layout with photo slot and sighting h
 ## Phase 1: Backend Data Enrichment
 Add `dailyCounts` to the `/api/incidents` response.
 
-- [~] **Task: Update Incident type and service to include daily counts**
+- [x] **Task: Update Incident type and service to include daily counts** 5747dc4
     - [ ] Create branch `conductor/incident_card_redesign_20260419`
     - [ ] **Red**: Update `backend/src/lib/incident-service.test.ts` to expect `dailyCounts` in `getOpenIncidents` return value.
     - [ ] **Green**: Modify `getOpenIncidents` in `backend/src/lib/incident-service.ts` to calculate and return `dailyCounts` (past 21 days).
