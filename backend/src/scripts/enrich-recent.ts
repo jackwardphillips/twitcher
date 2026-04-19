@@ -31,7 +31,7 @@ async function main() {
   }
   const ebirdClient = new EbirdClient(process.env.EBIRD_API_KEY);
   const matchEngine = new MatchEngine(ebirdClient);
-  const regionService = new RegionService();
+  const regionService = new RegionService(ebirdClient);
   const enrichmentService = new EnrichmentService(matchEngine, regionService);
 
   try {

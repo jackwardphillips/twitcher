@@ -1,4 +1,4 @@
-import { getRarityCode } from '../lib/rarity-service';
+import { prisma } from '../lib/db.js';
 
 async function main() {
   const birdsToTest = [
@@ -11,9 +11,23 @@ async function main() {
 
   console.log('Testing Rarity Service Lookup:');
   for (const bird of birdsToTest) {
-    const rarity = await getRarityCode(bird);
+    const rarityRecord = await prisma.rarityCode.findFirst({
+      where: {
+        OR: [
+          { commonName: bird },
+          { scientificName: bird },
+        ],
+      },
+    });
+    const rarity = rarityRecord?.abaCode ?? null;
     console.log(`- ${bird}: ${rarity === null ? 'Not Found' : `ABA Code ${rarity}`}`);
   }
+
+  await prisma.$disconnect();
 }
 
-main();
+main().catch(async (error) => {
+  console.error(error);
+  await prisma.$disconnect();
+  process.exit(1);
+});

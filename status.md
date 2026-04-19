@@ -128,14 +128,10 @@
 ## Known Bugs
 
 - The mobile rarity filter uses a hover-driven custom dropdown. That is fragile on touch devices and does not behave like a durable mobile control.
-- `backend/src/scripts/check-rarity-service.ts` imports a `getRarityCode` helper that does not exist in `backend/src/lib/rarity-service.ts`.
-- `backend/src/scripts/enrich-recent.ts` instantiates `RegionService` without the required `EbirdClient`, so the script is currently broken.
 
 ---
 
 ## Housekeeping Notes
 
-- `frontend/coverage/` is generated test output that is currently checked into the repository.
-- `frontend/src/assets/hero.png`, `frontend/src/assets/react.svg`, and `frontend/src/assets/vite.svg` appear to be unused assets.
 - `frontend/src/index.css` still contains a large amount of Vite starter styling that is mostly unrelated to the current dashboard.
 - `conductor/archive/incident_dashboard_wiring_20260416/spec.md` is still a placeholder (`test`) rather than a preserved archived spec.
