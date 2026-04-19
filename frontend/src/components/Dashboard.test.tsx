@@ -22,7 +22,9 @@ describe('Dashboard', () => {
       activeDays: 1,
       latestMapUrl: null,
       latestChecklistUrl: null,
-      geminiSummary: 'This bird is often found near lawns and gardens.'
+      geminiSummary: 'This bird is often found near lawns and gardens.',
+      dailyCounts: [{ date: new Date().toISOString().split('T')[0], count: 1 }],
+      photo: null
     };
 
     (global.fetch as any).mockResolvedValueOnce({
@@ -59,7 +61,9 @@ describe('Dashboard', () => {
       activeDays: 1,
       latestMapUrl: null,
       latestChecklistUrl: null,
-      geminiSummary: null
+      geminiSummary: null,
+      dailyCounts: [],
+      photo: null
     };
 
     (global.fetch as any).mockResolvedValueOnce({

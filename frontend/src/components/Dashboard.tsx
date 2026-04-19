@@ -19,6 +19,8 @@ export interface Incident {
   latestMapUrl: string | null;
   latestChecklistUrl: string | null;
   geminiSummary?: string | null;
+  dailyCounts: { date: string; count: number }[];
+  photo: { url: string; attribution: string } | null;
 }
 
 interface IngestionStatus {
