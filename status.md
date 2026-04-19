@@ -1,4 +1,4 @@
-# Twitcher — Project Tracks
+# Twitcher - Project Status
 
 ---
 
@@ -12,38 +12,38 @@
 | `root_quick_start_20260404` | 2026-04-04 | Root `npm start` launches frontend + backend concurrently |
 | `automated_email_ingestion_20260404` | 2026-04-04 | IMAP polling, deduplication, auto-parsing on ingest |
 | `startup_email_ingestion_20260407` | 2026-04-07 | Startup ingestion, backfill script, ingestion status in dashboard header |
-| `rarity_color_20260408` | 2026-04-08 | Rarity color wiring (both card locations); species common name cleaning |
-| `safety_type_fixes_20260410` | 2026-04-10 | Chore — codebase alignment with TypeScript style guidelines |
+| `rarity_color_20260408` | 2026-04-08 | Incident card rarity colors wired to ABA codes |
+| `safety_type_fixes_20260410` | 2026-04-10 | Parser and enrichment safety fixes |
 | `rarity_code_filter_20260412` | 2026-04-12 | Filter bar at top of dashboard to show/hide sightings by ABA code |
-| `incident_clustering_20260413` | 2026-04-13 | Incident model + 10km/species clustering; sightings grouped into Incident records |
-| `incident_dashboard_wiring_20260416` | 2026-04-16 | Dashboard switched to /api/incidents; live rarity colors; binomial normalization; active days display |
-| `chase_intel_summarization_20260416` | 2026-04-16 | Gemini comment summarization + misID flagging per incident |
+| `incident_clustering_20260413` | 2026-04-13 | Incident model + 10km/species clustering; sightings grouped into incident records |
+| `incident_dashboard_wiring_20260416` | 2026-04-16 | Dashboard switched to `/api/incidents`; live rarity colors; binomial normalization; active days display |
+| `chase_intel_summarization_20260416` | 2026-04-16 | Incident summary generation shipped; misID flagging is still not present in the UI or API |
 
 ---
 
 ## Queued
 
-### Foundation — Data Layer
+### Foundation - Data Layer
 
 - [x] **T1: ABA Species Code CSV Integration**
-  Ingest ABA checklist CSV into SQLite. Species lookup table with codes 1–6 and 4-letter alpha codes. Wire rarity codes to existing color system. Fuzzy name matching for eBird/ABA name divergence. Idempotent — re-runnable on annual taxonomy updates.
-  - ✅ `aba_checklist_integration_20260403` — CSV ingested, lookup service built
-  - ✅ `rarity_color_20260408` — color wiring + species common name cleaning complete
+  Ingest ABA checklist CSV into SQLite. Species lookup table with codes 1-6 and 4-letter alpha codes. Wire rarity codes to existing color system. Fuzzy name matching for eBird/ABA name divergence. Idempotent - re-runnable on annual taxonomy updates.
+  Done: `aba_checklist_integration_20260403`
+  Done: `rarity_color_20260408`
 
 - [x] **T2: Email Ingestion Pipeline**
   IMAP polling for eBird alert emails. Detect new emails from eBird, extract raw content, store for the existing parser. Idempotent via message ID deduplication. Leaves inbox untouched.
-  - ✅ `automated_email_ingestion_20260404` — IMAP polling, deduplication, auto-parsing
-  - ✅ `startup_email_ingestion_20260407` — startup ingestion, backfill script, status endpoint
+  Done: `automated_email_ingestion_20260404`
+  Done: `startup_email_ingestion_20260407`
 
 - [x] **T4: Species-Grouped Data Model ("Incident" Model)**
-  Refactor from sighting-per-record to incident-per-record. An incident is a cluster of sightings of the same species within ~10km of each other and within the active streak window — representing a single bird at a single location. Grouping key: `species + location_cluster + active_window`. Each incident aggregates: all sightings, observer comments, latest seen, total count, and bounding coordinates.
+  Refactor from sighting-per-record to incident-per-record. An incident is a cluster of sightings of the same species within ~10km of each other and within the active streak window - representing a single bird at a single location. Grouping key: `species + location_cluster + active_window`. Each incident aggregates all sightings, observer comments, latest seen, total count, and bounding coordinates.
 
   Handles two distinct cases:
-  - **Same species, different locations** (e.g. Tufted Duck in CA and NY): two separate incidents, two separate cards.
-  - **Same bird, border sightings** (e.g. Red-flanked Bluetail reported from both VA and MD within 10km): collapsed into one incident, one card, with both states noted.
+  Same species, different locations: two separate incidents.
+  Same bird, border sightings within 10km: one collapsed incident.
 
-  - ✅ `incident_clustering_20260413` — Incident model defined, clustering logic implemented
-  - ✅ `incident_dashboard_wiring_20260416` — Dashboard wired to /api/incidents, binomial normalization live
+  Done: `incident_clustering_20260413`
+  Done: `incident_dashboard_wiring_20260416`
   *Dependencies: T1, T2.*
 
 ---
@@ -55,14 +55,15 @@
   *Dependencies: T4.*
 
 - [~] **T6: Streak Tracking with Gap Tolerance**
-  Track consecutive sighting days per incident. A gap of ≤2 days does not break the streak.
-  - ✅ `ebird_enrichment_20260331` — basic consecutive-day streak logic built, displaying on cards
-  - ⬜ Gap tolerance (≤2 days) not yet implemented — build on existing logic, do not replace
+  Track consecutive sighting days per incident. A gap of <= 2 days does not break the streak.
+  Done: `ebird_enrichment_20260331` shipped basic consecutive-day streak logic and card display.
+  Remaining: Gap tolerance itself is still not implemented.
   *Dependencies: T4.*
 
-- [x] **T7: Gemini Comment Summarization + MisID Flagging**
-  Aggregate observer comments per incident via Gemini API. Produce 2–3 sentence summary: ID confidence, key field marks, caveats. Flag card as "under review" if comments dispute the original ID. Lazy generation on first card open. Cached per incident per day.
-  - ✅ `chase_intel_summarization_20260416` — Gemini summarization and misID flagging complete
+- [~] **T7: Chase Intel Summarization + MisID Flagging**
+  Aggregate observer comments per incident into a short summary and flag cards as under review when comments dispute the original ID.
+  Done: `chase_intel_summarization_20260416` shipped backend summarization plus summary text on cards.
+  Remaining: There is no misID / under-review flag in the current backend or frontend.
   *Dependencies: T4.*
 
 - [ ] **T8: Distance-Aware Rarity Relevance Filter**
@@ -78,11 +79,13 @@
   *Dependencies: T4.*
 
 - [~] **T10: One-Card-Per-Incident UI + Sighting Drill-Down**
-  Dashboard shows one card per incident: rarity badge, iNat photo, last seen, region, streak indicator, state record count, lifer checkmark (manually toggled by user), last updated timestamp. Clicking opens detail view: Gemini summary, all individual sightings with dates/locations, map inset, misID flag if present.
-  - ✅ `incident_dashboard_wiring_20260416` - Dashboard shows one card per incident, with common name, scientific name, rarity code, first seen, last seen, state, country, and number of observations.
-  *Dependencies: T4–T9.*
+  Dashboard shows one card per incident: rarity badge, iNat photo, last seen, region, streak indicator, state record count, lifer checkmark, and last updated timestamp. Clicking opens detail view with summary text, all individual sightings, map inset, and any misID status.
+  Done: `incident_dashboard_wiring_20260416` shipped one card per incident with common name, scientific name, rarity color styling, first seen, last seen, location, and sighting count.
+  Done: `chase_intel_summarization_20260416` added optional summary text on cards.
+  Remaining: no drill-down detail view, no photo integration, no lifer state, no state record count, and no misID flag.
+  *Dependencies: T4-T9.*
 
-- [ ] **T11: Map Overhaul — Basemap + Bird Pin Icons**
+- [ ] **T11: Map Overhaul - Basemap + Bird Pin Icons**
   Replace Leaflet with MapLibre or Mapbox GL JS. Decision must be made in spec and documented in `tech-stack.md` before implementation begins. Pins will display iNat species photos and be color-coded by rarity code. Species-specific silhouette fallback where no photo is available.
   *Dependencies: T1, T4, T9.*
 
@@ -94,11 +97,11 @@
   Browser push notifications for new incidents. Triggered on email ingestion or notable API poll completing. Configurable: always notify on code 4+, notify on code 3 only if within user-defined radius.
   *Dependencies: T8.*
 
-- [ ] **T13: Weekend Chase Planner — Weather**
-  Forward-looking weather summary (2–3 days) for a user-configured home location. Surface as a "chase conditions" indicator alongside active incidents. Weather API to be selected in spec and added to `tech-stack.md`.
+- [ ] **T13: Weekend Chase Planner - Weather**
+  Forward-looking weather summary (2-3 days) for a user-configured home location. Surface as a "chase conditions" indicator alongside active incidents. Weather API to be selected in spec and added to `tech-stack.md`.
   *Dependencies: T10.*
 
-- [ ] **T14: External Sources — Web Search Context**
+- [ ] **T14: External Sources - Web Search Context**
   Playwright web search for species context per incident: range info, ID tips, recent rare bird reports from around the web. Results surface in the detail card. Facebook groups: deep-link to group search only, no scraping.
   *Dependencies: T10.*
 
@@ -106,22 +109,33 @@
 
 ### Polish
 
-- [ ] **T15: UI Polish — Animations + Design System**
-  Systematic pass on the field journal aesthetic: card entrance animations, map transitions, hover states, loading skeletons, motion tokens. Includes "last updated" widget on the dashboard. Do last when all components are stable.
+- [ ] **T15: UI Polish - Animations + Design System**
+  Systematic pass on the field journal aesthetic: card entrance animations, map transitions, hover states, loading skeletons, motion tokens. Includes a "last updated" widget on the dashboard. Do last when all components are stable.
   *Dependencies: all tracks stable.*
 
 ---
 
 ## Deferred / Future
 
-- **County Record Counts:** County-level record tracking deferred until state records (T5) are stable. Will require EBD county-level filtering.
-- **County Radius Auto-Selection:** Auto-populate watched counties from user location + configurable radius. Build after T3 is stable.
-- **Taxonomy Update Tooling:** Annual manual process. Re-run ABA CSV ingestion script and EBD bootstrap for any split or lumped species. Document as a runbook rather than automated infrastructure.
-- **Macaulay Library Media:** No public API currently available. Deep-link to Macaulay media search as a stopgap. Revisit if a programmatic endpoint becomes available.
-- **eBird Notable API as Primary Ingestion:** Evaluated and deferred. Rate limit and geographic chunking concerns (e.g. California requires county-level subdivision) make email a cleaner primary source. eBird API retained as enrichment-only (match engine pulls coordinates and checklist IDs after ingestion).
+- County record counts: deferred until state records (T5) are stable
+- County radius auto-selection: build after a stable user-location preference model exists
+- Taxonomy update tooling: annual manual process and runbook
+- Macaulay Library media: no public API currently available
+- eBird notable API as primary ingestion: evaluated and deferred in favor of email-first ingestion
 
 ---
 
 ## Known Bugs
 
-*(none)*
+- The mobile rarity filter uses a hover-driven custom dropdown. That is fragile on touch devices and does not behave like a durable mobile control.
+- `backend/src/scripts/check-rarity-service.ts` imports a `getRarityCode` helper that does not exist in `backend/src/lib/rarity-service.ts`.
+- `backend/src/scripts/enrich-recent.ts` instantiates `RegionService` without the required `EbirdClient`, so the script is currently broken.
+
+---
+
+## Housekeeping Notes
+
+- `frontend/coverage/` is generated test output that is currently checked into the repository.
+- `frontend/src/assets/hero.png`, `frontend/src/assets/react.svg`, and `frontend/src/assets/vite.svg` appear to be unused assets.
+- `frontend/src/index.css` still contains a large amount of Vite starter styling that is mostly unrelated to the current dashboard.
+- `conductor/archive/incident_dashboard_wiring_20260416/spec.md` is still a placeholder (`test`) rather than a preserved archived spec.

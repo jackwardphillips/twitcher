@@ -33,7 +33,13 @@ export class IngestionService {
         return { ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
       }
 
+      console.log(`Found ${emails.length} emails to process.`);
+      let count = 0;
       for (const email of emails) {
+        count++;
+        if (count % 10 === 0 || count === emails.length) {
+          console.log(`Processing email ${count}/${emails.length}...`);
+        }
         try {
           const existing = await db.incomingEmail.findUnique({
             where: { messageId: email.messageId },
