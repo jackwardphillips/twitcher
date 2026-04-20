@@ -171,26 +171,58 @@ const Dashboard: React.FC = () => {
             className="sighting-card sighting-card-horizontal"
             style={{ borderLeftColor: getRarityColor(incident) }}
           >
-            <div className="card-header">
-              <span className="streak-badge">Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}</span>
-              <h3>{incident.commonName}</h3>
-              <p className="scientific-name">{incident.scientificName}</p>
+            <div className="photo-slot">
+              {/* Photo component will go here in Phase 3 */}
+            </div>
+            
+            <div className="card-content">
+              <div className="card-top-row">
+                <div className="species-info">
+                  <h3>{incident.commonName}</h3>
+                  <p className="scientific-name">{incident.scientificName}</p>
+                  <div className="location-container">
+                    <svg className="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <p className="location-info">{incident.locationName}</p>
+                  </div>
+                </div>
+                <div className="card-actions">
+                  <span 
+                    className="streak-badge"
+                    style={{ 
+                      '--rarity-color': getRarityColor(incident) 
+                    } as React.CSSProperties}
+                  >
+                    Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}
+                  </span>
+                </div>
+              </div>
+
               {incident.geminiSummary && (
-                <p className="gemini-summary"><em>{incident.geminiSummary}</em></p>
+                <blockquote 
+                  className="gemini-summary"
+                  style={{ borderLeftColor: getRarityColor(incident) }}
+                >
+                  {incident.geminiSummary}
+                </blockquote>
               )}
-            </div>
-            
-            <div className="sighting-details">
-              <p><strong>Location:</strong> {incident.locationName}</p>
-              <p><strong>Reports:</strong> {incident.sightingCount} sightings</p>
-              <p><strong>First Seen:</strong> {new Date(incident.firstSeen).toLocaleDateString([], { dateStyle: 'medium' })}</p>
-              <p><strong>Last Seen:</strong> {new Date(incident.lastSeen).toLocaleDateString([], { dateStyle: 'medium' })}</p>
-            </div>
-            
-            <div className="links">
-              {incident.latestMapUrl && <a href={incident.latestMapUrl} target="_blank" rel="noopener noreferrer">eBird Map</a>}
-              {incident.latestChecklistUrl && <a href={incident.latestChecklistUrl} target="_blank" rel="noopener noreferrer">Latest Checklist</a>}
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer">Discuss</a>
+
+              <div className="card-middle-row">
+                <div className="stat-item">
+                  <span className="stat-label">Reports</span>
+                  <span className="stat-value">{incident.sightingCount}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">First Seen</span>
+                  <span className="stat-value">{new Date(incident.firstSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Last Seen</span>
+                  <span className="stat-value">{new Date(incident.lastSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                </div>
+              </div>
             </div>
           </div>
         ))}
