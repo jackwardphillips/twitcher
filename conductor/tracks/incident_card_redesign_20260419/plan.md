@@ -34,7 +34,7 @@ Implement the new card layout and histogram.
     - [ ] **Green**: Create `frontend/src/components/PhotoSlot.tsx`.
     - [ ] Commit: `feat(frontend): implement PhotoSlot component` xxxxxx
 
-- [ ] **Task: Implement SightingHistogram component**
+- [~] **Task: Implement SightingHistogram component**
     - [ ] **Red**: Create `frontend/src/components/SightingHistogram.test.tsx`. **CRITICAL**: Tests must explicitly assert that tooltip content (date and count) is present in the DOM when a bar is hovered, not just that the component renders.
     - [ ] **Green**: Create `frontend/src/components/SightingHistogram.tsx`.
     - [ ] Commit: `feat(frontend): implement SightingHistogram component` xxxxxx
