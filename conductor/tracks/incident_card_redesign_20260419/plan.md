@@ -52,7 +52,7 @@ Ensure everything works as expected and meets aesthetic standards.
     - [x] Ensure mobile responsiveness (if applicable, or at least graceful degradation).
     - [x] Commit: `chore(frontend): final polish for incident card redesign` xxxxxx
 
-- [ ] **Checkpoint: Track Complete**
-    - [ ] Run full test suite.
-    - [ ] Update `conductor/ui-components.md` with the new card contract.
-    - [ ] Update `conductor/dashboard-state.md` if necessary.
+- [x] **Checkpoint: Track Complete**
+    - [x] Run full test suite.
+    - [x] Update `conductor/ui-components.md` with the new card contract.
+    - [x] Update `conductor/dashboard-state.md` if necessary.
