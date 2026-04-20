@@ -3,7 +3,10 @@ import { SightingMap } from './SightingMap.js';
 import { calculateDistance } from '../lib/geo-utils.js';
 import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js';
 import { RarityFilter, type RarityCode } from './RarityFilter.js';
+import { PhotoSlot } from './PhotoSlot.js';
+import { SightingHistogram } from './SightingHistogram.js';
 
+// ... (keep types and state definitions)
 export interface Incident {
   id: string;
   scientificName: string;
@@ -22,6 +25,7 @@ export interface Incident {
   dailyCounts: { date: string; count: number }[];
   photo: { url: string; attribution: string } | null;
 }
+// ...
 
 interface IngestionStatus {
   lastIngestedEmailDate: string | null;
@@ -172,7 +176,7 @@ const Dashboard: React.FC = () => {
             style={{ borderLeftColor: getRarityColor(incident) }}
           >
             <div className="photo-slot">
-              {/* Photo component will go here in Phase 3 */}
+              <PhotoSlot photo={incident.photo} />
             </div>
             
             <div className="card-content">
@@ -221,6 +225,13 @@ const Dashboard: React.FC = () => {
                 <div className="stat-item">
                   <span className="stat-label">Last Seen</span>
                   <span className="stat-value">{new Date(incident.lastSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                </div>
+                <div className="stat-item" style={{ marginLeft: 'auto', width: '120px' }}>
+                  <span className="stat-label">Activity</span>
+                  <SightingHistogram 
+                    dailyCounts={incident.dailyCounts} 
+                    rarityColor={getRarityColor(incident)} 
+                  />
                 </div>
               </div>
             </div>

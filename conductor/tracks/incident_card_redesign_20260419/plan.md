@@ -39,7 +39,7 @@ Implement the new card layout and histogram.
     - [ ] **Green**: Create `frontend/src/components/SightingHistogram.tsx`.
     - [ ] Commit: `feat(frontend): implement SightingHistogram component` xxxxxx
 
-- [ ] **Task: Refactor Dashboard to use new horizontal card**
+- [~] **Task: Refactor Dashboard to use new horizontal card**
     - [ ] **Red**: Update `frontend/src/components/Dashboard.test.tsx` to verify new structure (grid, presence of photo slot and histogram).
     - [ ] **Green**: Update `Dashboard.tsx` render logic to use the new horizontal layout, `PhotoSlot`, and `SightingHistogram`.
     - [ ] Commit: `feat(frontend): switch to horizontal incident card layout` xxxxxx
