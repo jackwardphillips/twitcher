@@ -29,7 +29,7 @@ Update frontend types and prepare CSS.
 ## Phase 3: Component Implementation
 Implement the new card layout and histogram.
 
-- [~] **Task: Implement PhotoSlot component**
+- [x] **Task: Implement PhotoSlot component**
     - [ ] **Red**: Create `frontend/src/components/PhotoSlot.test.tsx` to verify placeholder rendering and attribution hover.
     - [ ] **Green**: Create `frontend/src/components/PhotoSlot.tsx`.
     - [ ] Commit: `feat(frontend): implement PhotoSlot component` xxxxxx
