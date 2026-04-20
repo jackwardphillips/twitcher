@@ -25,6 +25,6 @@ describe('SightingHistogram', () => {
     const tooltip = await screen.findByTestId('histogram-tooltip');
     expect(tooltip).toBeInTheDocument();
     expect(tooltip).toHaveTextContent('Apr 10');
-    expect(tooltip).toHaveTextContent('5');
+    expect(tooltip).toHaveTextContent('5 sightings');
   });
 });

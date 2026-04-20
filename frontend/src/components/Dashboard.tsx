@@ -226,8 +226,7 @@ const Dashboard: React.FC = () => {
                   <span className="stat-label">Last Seen</span>
                   <span className="stat-value">{new Date(incident.lastSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                 </div>
-                <div className="stat-item" style={{ marginLeft: 'auto', width: '120px' }}>
-                  <span className="stat-label">Activity</span>
+                <div className="stat-item" style={{ marginLeft: 'auto', width: '240px' }}>
                   <SightingHistogram 
                     dailyCounts={incident.dailyCounts} 
                     rarityColor={getRarityColor(incident)} 
