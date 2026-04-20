@@ -47,7 +47,7 @@ Implement the new card layout and histogram.
 ## Phase 4: Validation & Cleanup
 Ensure everything works as expected and meets aesthetic standards.
 
-- [ ] **Task: Final visual verification and accessibility check**
+- [~] **Task: Final visual verification and accessibility check**
     - [ ] Verify hover states, rarity colors, and typography.
     - [ ] Ensure mobile responsiveness (if applicable, or at least graceful degradation).
     - [ ] Commit: `chore(frontend): final polish for incident card redesign` xxxxxx
