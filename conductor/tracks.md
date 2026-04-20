@@ -10,7 +10,10 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 # Archived Tracks
 
-- [x] **Track: Chase Intel Summarization**
+- [x] **Track: Incident Card Redesign (2026-04-19)**
+*Link: [./archive/incident_card_redesign_20260419/](./archive/incident_card_redesign_20260419/)*
+
+- [x] **Track: Chase Intel Summarization (2026-04-16)**
 *Link: [./archive/chase_intel_summarization_20260416/](./archive/chase_intel_summarization_20260416/)*
 
 - [x] **Track: Incident Dashboard Wiring (2026-04-16)**

@@ -22,7 +22,9 @@ describe('Dashboard', () => {
       activeDays: 1,
       latestMapUrl: null,
       latestChecklistUrl: null,
-      geminiSummary: 'This bird is often found near lawns and gardens.'
+      geminiSummary: 'This bird is often found near lawns and gardens.',
+      dailyCounts: [{ date: new Date().toISOString().split('T')[0], count: 1 }],
+      photo: null
     };
 
     (global.fetch as any).mockResolvedValueOnce({
@@ -39,9 +41,12 @@ describe('Dashboard', () => {
     render(<Dashboard />);
 
     const summaryElement = await screen.findByText(/This bird is often found near lawns and gardens/);
-    const paragraph = summaryElement.closest('p');
-    expect(paragraph).toBeInTheDocument();
-    expect(paragraph?.className).toContain('gemini-summary');
+    const blockquote = summaryElement.closest('blockquote');
+    expect(blockquote).toBeInTheDocument();
+    expect(blockquote?.className).toContain('gemini-summary');
+    
+    const card = summaryElement.closest('.sighting-card');
+    expect(card?.className).toContain('sighting-card-horizontal');
   });
 
   it('does not render geminiSummary when absent', async () => {
@@ -59,7 +64,9 @@ describe('Dashboard', () => {
       activeDays: 1,
       latestMapUrl: null,
       latestChecklistUrl: null,
-      geminiSummary: null
+      geminiSummary: null,
+      dailyCounts: [],
+      photo: null
     };
 
     (global.fetch as any).mockResolvedValueOnce({

@@ -22,23 +22,23 @@ This file is the **living contract** between data/logic tracks and the frontend.
 
 ## Component Table
 
-### `Dashboard` / `IncidentCard` (inlined)
-*File: `frontend/src/components/Dashboard.tsx`*
+### `PhotoSlot`
+*File: `frontend/src/components/PhotoSlot.tsx`*
 
 | Field | Status | Data Source | Notes |
 |---|---|---|---|
-| Species common name | live | `Incident.commonName` | |
-| Species scientific name | live | `Incident.scientificName` | Normalized to binomial |
-| Gemini summary text | live | `Incident.geminiSummary` | Only rendered when present and non-empty |
-| Rarity color border | live | `Incident.abaCode` -> `rarity-utils.ts` | Falls back to code 5 styling when rarity is missing |
-| Active days badge | live | `Incident.activeDays` | Calculated from first/last seen |
-| Location string | live | `Incident.locationName` | |
-| Reports count | live | `Incident.sightingCount` | |
-| First seen date | live | `Incident.firstSeen` | |
-| Last seen date | live | `Incident.lastSeen` | |
-| eBird Map link | live | `Incident.latestMapUrl` | |
-| Latest Checklist link | live | `Incident.latestChecklistUrl` | |
-| Discuss link | hardcoded | static Discord link | Not incident-specific yet |
+| Photo image | live | `Incident.photo.url` | |
+| Attribution text | live | `Incident.photo.attribution` | Displayed as hover overlay |
+| Placeholder state | live | `Incident.photo` is null | Shows bird silhouette silhouette SVG |
+
+### `SightingHistogram`
+*File: `frontend/src/components/SightingHistogram.tsx`*
+
+| Field | Status | Data Source | Notes |
+|---|---|---|---|
+| Daily count bars | live | `Incident.dailyCounts` | |
+| Tooltip data | live | `Incident.dailyCounts` | Shows date and sighting count on hover |
+| Rarity coloring | live | `Incident.abaCode` -> `rarity-utils.ts` | Used for bar colors |
 
 ---
 
