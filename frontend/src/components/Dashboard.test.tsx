@@ -41,9 +41,9 @@ describe('Dashboard', () => {
     render(<Dashboard />);
 
     const summaryElement = await screen.findByText(/This bird is often found near lawns and gardens/);
-    const paragraph = summaryElement.closest('p');
-    expect(paragraph).toBeInTheDocument();
-    expect(paragraph?.className).toContain('gemini-summary');
+    const blockquote = summaryElement.closest('blockquote');
+    expect(blockquote).toBeInTheDocument();
+    expect(blockquote?.className).toContain('gemini-summary');
     
     const card = summaryElement.closest('.sighting-card');
     expect(card?.className).toContain('sighting-card-horizontal');
