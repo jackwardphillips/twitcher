@@ -38,8 +38,9 @@ const SightingHistogram: React.FC<SightingHistogramProps> = ({ dailyCounts, rari
             height: d.count === 0 ? '0.75px' : `${(d.count / maxCount) * 100}%`,
             backgroundColor: d.count > 0 ? `${rarityColor}D9` : '#ccc',
             border: 'none',
-            borderRadius: d.count === 0 ? '0' : '2px 2px 0 0'
+            borderRadius: (d.count / maxCount) * 100 > 15 ? '2px 2px 0 0' : '0'
           }}
+
           onMouseEnter={() => setHovered(d)}
           onMouseMove={(e) => handleMouseMove(e, d)}
           onMouseLeave={() => setHovered(null)}
@@ -47,7 +48,22 @@ const SightingHistogram: React.FC<SightingHistogramProps> = ({ dailyCounts, rari
         ))}
       </div>
       {hovered && (
-        <div data-testid="histogram-tooltip" style={{ position: 'absolute', left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px`, background: '#333', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '10px', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+        <div 
+          data-testid="histogram-tooltip" 
+          style={{ 
+            position: 'absolute', 
+            left: `${tooltipPos.x}px`, 
+            top: `${tooltipPos.y}px`, 
+            background: 'rgba(253, 248, 240, 0.75)', 
+            color: '#6b5a3e', 
+            padding: '4px 8px', 
+            borderRadius: '4px', 
+            fontSize: '11px', 
+            whiteSpace: 'nowrap', 
+            pointerEvents: 'none',
+            boxShadow: '2px 2px 5px rgba(44, 36, 22, 0.1)'
+          }}
+        >
           {new Date(hovered.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}: {hovered.count} {hovered.count === 1 ? 'sighting' : 'sightings'}
         </div>
       )}
