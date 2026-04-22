@@ -9,7 +9,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: Bug - Mobile Rarity Filter**
 *Link: [./tracks/bug_mobile_rarity_filter/](./tracks/bug_mobile_rarity_filter/)*
 
-- [~] **Track: Bug - Incident Dates & Histogram Mismatch**
+- [x] **Track: Bug - Incident Dates & Histogram Mismatch**
 *Link: [./tracks/bug_incident_dates_histogram/](./tracks/bug_incident_dates_histogram/)*
 
 - [ ] **Track: Bug - Incident Clustering Logic**
