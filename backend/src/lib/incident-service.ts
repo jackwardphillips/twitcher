@@ -101,7 +101,7 @@ export async function createIncident(
   const primaryCountry = parts.length >= 1 ? parts[parts.length - 1] : null;
   const statesCovered = primaryState ? [primaryState] : [];
 
-  return await prisma.incident.create({
+  const incident = await prisma.incident.create({
     data: {
       scientificName: normScientific,
       commonName: sighting.species,
@@ -116,12 +116,16 @@ export async function createIncident(
       primaryCounty,
       primaryState,
       primaryCountry,
-      statesCovered: JSON.stringify(statesCovered),
-      sightings: {
-        connect: { id: sighting.id }
-      }
+      statesCovered: JSON.stringify(statesCovered)
     }
   });
+
+  await prisma.sighting.update({
+    where: { id: sighting.id },
+    data: { incidentId: incident.id }
+  });
+
+  return incident;
 }
 
 /**
@@ -158,6 +162,7 @@ export async function addSightingToIncident(
         maxLat: Math.max(incident.maxLat, sighting.latitude!),
         minLng: Math.min(incident.minLng, sighting.longitude!),
         maxLng: Math.max(incident.maxLng, sighting.longitude!),
+        firstSeen: sighting.date < incident.firstSeen ? sighting.date : incident.firstSeen,
         lastSeen: sighting.date > incident.lastSeen ? sighting.date : incident.lastSeen,
         sightingCount: incident.sightingCount + 1,
         statesCovered: JSON.stringify(currentStates),
@@ -211,6 +216,18 @@ export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void
 }
 
 /**
+ * Formats a date as YYYY-MM-DD using local time components.
+ * This ensures the calendar date is preserved regardless of timezone shifts.
+ */
+export function formatDate(date: Date): string {
+  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
  * Fetches all OPEN incidents enriched with rarity data and summary fields.
  */
 export async function getOpenIncidents(prisma: PrismaClient) {
@@ -238,29 +255,34 @@ export async function getOpenIncidents(prisma: PrismaClient) {
   });
 
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
+  const todayStr = formatDate(now);
+  const todayBasis = new Date(`${todayStr}T12:00:00`); // Use noon to avoid DST/timezone edge issues when subtracting days
 
   return incidents.map(incident => {
     const latestSighting = incident.sightings[0];
     const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
 
-    // activeDays is difference between firstSeen and lastSeen inclusive
-    const diffTime = Math.abs(incident.lastSeen.getTime() - incident.firstSeen.getTime());
+    // activeDays is difference between firstSeen and lastSeen dates inclusive
+    const firstSeenStr = formatDate(incident.firstSeen);
+    const lastSeenStr = formatDate(incident.lastSeen);
+    const firstDate = new Date(firstSeenStr);
+    const lastDate = new Date(lastSeenStr);
+    const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
     const activeDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    // Calculate dailyCounts for the past 21 days
+    // Calculate dailyCounts for the past 21 days ending today
     const dailyCounts: { date: string; count: number }[] = [];
     const sightingsByDate: Record<string, number> = {};
     
     incident.sightings.forEach(s => {
-      const dateStr = s.date.toISOString().split('T')[0];
+      const dateStr = formatDate(s.date);
       sightingsByDate[dateStr] = (sightingsByDate[dateStr] || 0) + 1;
     });
 
     for (let i = 20; i >= 0; i--) {
-      const d = new Date(now);
+      const d = new Date(todayBasis);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatDate(d);
       dailyCounts.push({
         date: dateStr,
         count: sightingsByDate[dateStr] || 0
@@ -277,7 +299,13 @@ export async function getOpenIncidents(prisma: PrismaClient) {
       latestMapUrl: latestSighting?.mapUrl || null,
       latestChecklistUrl: latestSighting?.checklistUrl || null,
       activeDays,
-      dailyCounts
+      dailyCounts,
+      firstSeen: firstSeenStr,
+      lastSeen: lastSeenStr,
+      sightings: incident.sightings.map(s => ({
+        ...s,
+        date: formatDate(s.date)
+      }))
     };
   });
 }

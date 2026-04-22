@@ -45,9 +45,10 @@ function isValidDate(date: Date): boolean {
  * Handles quoted-printable encoding and skips malformed records.
  * 
  * @param content The raw email content from an eBird alert.
+ * @param basisDate Optional date to use for relative dates like "Today" (defaults to system time).
  * @returns An array of parsed Sighting objects.
  */
-export function parseEBirdAlert(content: string): Sighting[] {
+export function parseEBirdAlert(content: string, basisDate: Date = new Date()): Sighting[] {
   // Decode the entire content first
   const decodedContent = decodeQuotedPrintable(content);
   
@@ -129,9 +130,29 @@ export function parseEBirdAlert(content: string): Sighting[] {
         if (detailLine.startsWith('- Reported ')) {
           const reportedMatch = detailLine.match(/- Reported (.+?) by (.+)$/);
           if (reportedMatch) {
-            const dateStr = reportedMatch[1] ?? '';
-            const tempDate = new Date(dateStr);
-            if (isValidDate(tempDate)) {
+            let dateStr = reportedMatch[1] ?? '';
+            let tempDate: Date | null = null;
+            
+            if (dateStr.startsWith('Today ')) {
+              const timeStr = dateStr.substring(6);
+              tempDate = new Date(basisDate);
+              const timeParsed = new Date(`2000-01-01 ${timeStr}`);
+              if (isValidDate(timeParsed)) {
+                tempDate.setHours(timeParsed.getHours(), timeParsed.getMinutes(), 0, 0);
+              }
+            } else if (dateStr.startsWith('Yesterday ')) {
+              const timeStr = dateStr.substring(10);
+              tempDate = new Date(basisDate);
+              tempDate.setDate(tempDate.getDate() - 1);
+              const timeParsed = new Date(`2000-01-01 ${timeStr}`);
+              if (isValidDate(timeParsed)) {
+                tempDate.setHours(timeParsed.getHours(), timeParsed.getMinutes(), 0, 0);
+              }
+            } else {
+              tempDate = new Date(dateStr);
+            }
+
+            if (tempDate && isValidDate(tempDate)) {
               date = tempDate;
               observer = reportedMatch[2] ?? '';
             } else {
