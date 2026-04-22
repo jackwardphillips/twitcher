@@ -2,10 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { parseEBirdAlert } from './ebird-parser';
 
 describe('eBird Parser Date Reproduction', () => {
-  it('should parse "Today" relative to system time (incorrect for historical emails)', () => {
-    // Mock system time to April 22, 2026
-    const mockNow = new Date('2026-04-22T10:00:00Z');
-    vi.setSystemTime(mockNow);
+  it('should parse "Today" correctly when providing a basisDate', () => {
+    // Current system time is April 23
+    vi.setSystemTime(new Date('2026-04-23T10:00:00Z'));
 
     const emailWithToday = `
 Species Name (Scientific Name) (1)
@@ -13,21 +12,38 @@ Species Name (Scientific Name) (1)
 - Location Name
 `;
 
-    const sightings = parseEBirdAlert(emailWithToday);
+    // Email was received on April 21
+    const basisDate = new Date('2026-04-21T10:00:00Z');
+    
+    const sightings = parseEBirdAlert(emailWithToday, basisDate);
     expect(sightings).toHaveLength(1);
     
-    // It should be April 22, 2026
+    // It should be April 21, 2026
     const sightingDate = sightings[0].date;
     expect(sightingDate.getFullYear()).toBe(2026);
-    expect(sightingDate.getMonth()).toBe(3); // April is 3
-    expect(sightingDate.getDate()).toBe(22);
+    expect(sightingDate.getMonth()).toBe(3); // April
+    expect(sightingDate.getDate()).toBe(21);
+    expect(sightingDate.getHours()).toBe(8);
+
+    vi.useRealTimers();
+  });
+
+  it('should parse "Yesterday" correctly when providing a basisDate', () => {
+    vi.setSystemTime(new Date('2026-04-23T10:00:00Z'));
+
+    const emailWithYesterday = `
+Species Name (Scientific Name) (1)
+- Reported Yesterday 20:00 by Observer Name
+- Location Name
+`;
+
+    const basisDate = new Date('2026-04-21T10:00:00Z');
+    const sightings = parseEBirdAlert(emailWithYesterday, basisDate);
     
-    // Now if we change system time, the same email content parses differently
-    const mockLater = new Date('2026-04-23T10:00:00Z');
-    vi.setSystemTime(mockLater);
-    
-    const sightingsLater = parseEBirdAlert(emailWithToday);
-    expect(sightingsLater[0].date.getDate()).toBe(23); // WRONG: Email content stayed the same!
+    // Yesterday relative to April 21 is April 20
+    const sightingDate = sightings[0].date;
+    expect(sightingDate.getDate()).toBe(20);
+    expect(sightingDate.getHours()).toBe(20);
 
     vi.useRealTimers();
   });

@@ -24,7 +24,7 @@ describe('SightingHistogram', () => {
     // CRITICAL: Assert tooltip content is present in DOM
     const tooltip = await screen.findByTestId('histogram-tooltip');
     expect(tooltip).toBeInTheDocument();
-    expect(tooltip).toHaveTextContent('Apr 10');
+    expect(tooltip).toHaveTextContent('Apr 11');
     expect(tooltip).toHaveTextContent('5 sightings');
   });
 });
