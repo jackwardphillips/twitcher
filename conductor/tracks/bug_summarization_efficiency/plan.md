@@ -15,6 +15,6 @@ Optimize the summarization cycle to reduce redundant API calls.
 
 ## Phase 3: Validation
 
-- [ ] Add unit tests in `summarization-service.test.ts` to verify filtering logic `[ ]`
-- [ ] Run ingestion with multiple emails and verify only affected incidents are re-summarized `[ ]`
-- [ ] Monitor LLM usage/logs to confirm reduction in calls `[ ]`
+- [x] Add unit tests in `summarization-service.test.ts` to verify filtering logic [d2a4b1c]
+- [x] Run ingestion with multiple emails and verify only affected incidents are re-summarized [d2a4b1c]
+- [x] Monitor LLM usage/logs to confirm reduction in calls [d2a4b1c]
