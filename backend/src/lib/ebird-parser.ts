@@ -135,19 +135,19 @@ export function parseEBirdAlert(content: string, basisDate: Date = new Date()): 
             
             if (dateStr.startsWith('Today ')) {
               const timeStr = dateStr.substring(6);
-              tempDate = new Date(basisDate);
-              const timeParsed = new Date(`2000-01-01 ${timeStr}`);
-              if (isValidDate(timeParsed)) {
-                tempDate.setHours(timeParsed.getHours(), timeParsed.getMinutes(), 0, 0);
-              }
+              // Use YYYY-MM-DD string to avoid host timezone shifts when initializing the base date
+              const basisStr = basisDate.getFullYear() + '-' + 
+                               String(basisDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                               String(basisDate.getDate()).padStart(2, '0');
+              tempDate = new Date(`${basisStr} ${timeStr}`);
             } else if (dateStr.startsWith('Yesterday ')) {
               const timeStr = dateStr.substring(10);
-              tempDate = new Date(basisDate);
-              tempDate.setDate(tempDate.getDate() - 1);
-              const timeParsed = new Date(`2000-01-01 ${timeStr}`);
-              if (isValidDate(timeParsed)) {
-                tempDate.setHours(timeParsed.getHours(), timeParsed.getMinutes(), 0, 0);
-              }
+              const yesterday = new Date(basisDate);
+              yesterday.setDate(yesterday.getDate() - 1);
+              const basisStr = yesterday.getFullYear() + '-' + 
+                               String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                               String(yesterday.getDate()).padStart(2, '0');
+              tempDate = new Date(`${basisStr} ${timeStr}`);
             } else {
               tempDate = new Date(dateStr);
             }

@@ -262,9 +262,13 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     const latestSighting = incident.sightings[0];
     const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
 
-    // activeDays is difference between firstSeen and lastSeen dates inclusive
-    const firstSeenStr = formatDate(incident.firstSeen);
-    const lastSeenStr = formatDate(incident.lastSeen);
+    // Fix: Derive bounds directly from sightings to fix legacy corrupted data
+    const sightingDates = incident.sightings.map(s => s.date.getTime());
+    const firstSeenDate = sightingDates.length > 0 ? new Date(Math.min(...sightingDates)) : incident.firstSeen;
+    const lastSeenDate = sightingDates.length > 0 ? new Date(Math.max(...sightingDates)) : incident.lastSeen;
+
+    const firstSeenStr = formatDate(firstSeenDate);
+    const lastSeenStr = formatDate(lastSeenDate);
     const firstDate = new Date(firstSeenStr);
     const lastDate = new Date(lastSeenStr);
     const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
