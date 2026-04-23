@@ -9,9 +9,9 @@ Optimize the summarization cycle to reduce redundant API calls.
 
 ## Phase 2: Implementation
 
-- [ ] Update `runSummarizationCycle` filter to only include incidents with `lastSeen > summaryGeneratedAt` or `summaryGeneratedAt IS NULL` `[ ]`
-- [ ] Add check in `summarizeIncident` to ensure at least one new comment exists since `summaryGeneratedAt` `[ ]`
-- [ ] Ensure `summaryGeneratedAt` is updated correctly on success `[ ]`
+- [x] Update `runSummarizationCycle` filter to only include incidents with `lastSeen > summaryGeneratedAt` or `summaryGeneratedAt IS NULL` [e16752a]
+- [x] Add check in `summarizeIncident` to ensure at least one new comment exists since `summaryGeneratedAt` [e16752a]
+- [x] Ensure `summaryGeneratedAt` is updated correctly on success [e16752a]
 
 ## Phase 3: Validation
 

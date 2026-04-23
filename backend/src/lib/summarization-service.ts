@@ -58,10 +58,15 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
 
   const incident = await prisma.incident.findUnique({
     where: { id: incidentId },
-    select: { id: true, geminiSummary: true, summaryGeneratedAt: true }
+    select: { id: true, geminiSummary: true, summaryGeneratedAt: true, lastSeen: true }
   });
 
   if (!incident) return;
+
+  // Skip if already summarized and no new sightings since then
+  if (incident.summaryGeneratedAt && incident.lastSeen <= incident.summaryGeneratedAt) {
+    return;
+  }
 
   const now = new Date();
   const comments = await getRecentComments(prisma, incidentId);
@@ -171,7 +176,7 @@ export async function runSummarizationCycle(prisma: PrismaClient): Promise<void>
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const activeIncidents = await prisma.incident.findMany({
+  const activeIncidents = (await prisma.incident.findMany({
     where: {
       lastSeen: {
         gte: sevenDaysAgo,
@@ -186,6 +191,9 @@ export async function runSummarizationCycle(prisma: PrismaClient): Promise<void>
         orderBy: { date: 'desc' }
       }
     }
+  })).filter(incident => {
+    // Only summarize if it's never been summarized OR if it was seen after last summary
+    return !incident.summaryGeneratedAt || incident.lastSeen > incident.summaryGeneratedAt;
   });
 
   console.log(`Starting summarization cycle for ${activeIncidents.length} incidents...`);
