@@ -64,7 +64,10 @@ app.get('/api/ingestion-status', async (req: Request, res: Response) => {
   try {
     const lastEmail = await prisma.incomingEmail.findFirst({
       orderBy: { date: 'desc' },
-      where: { status: 'processed' }
+      where: { 
+        status: 'processed',
+        from: 'ebird-alert@birds.cornell.edu'
+      }
     });
 
     res.json({

@@ -1,0 +1,7 @@
+{
+  "id": "bug_mobile_rarity_filter",
+  "name": "Bug: Mobile Rarity Filter",
+  "description": "Fix the mobile rarity filter to use click-driven state instead of hover, ensuring it works on touch devices.",
+  "status": "queued",
+  "created_at": "2026-04-20"
+}
