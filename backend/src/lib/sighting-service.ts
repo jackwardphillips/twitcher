@@ -60,7 +60,7 @@ export async function saveSightings(sightings: SightingData[], enrich = true): P
 
     // Clustering Logic
     if (sighting.latitude !== null && sighting.longitude !== null) {
-      const normScientific = normalizeScientificName(sighting.scientificName || sighting.species);
+      const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
       const matchingIncident = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude);
       
       if (matchingIncident) {

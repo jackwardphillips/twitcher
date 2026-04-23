@@ -63,7 +63,7 @@ export class IngestionService {
 
           // Auto-parse immediately
           try {
-            const sightings = parseEBirdAlert(email.rawBody);
+            const sightings = parseEBirdAlert(email.rawBody, email.date);
             if (sightings.length > 0) {
               const enrichment = await saveSightings(sightings, enrich);
               if (enrichment) {

@@ -29,7 +29,7 @@ describe('Ingestion Status API', () => {
     expect(response.body.lastRun).toBeNull();
   });
 
-  it('should return the date of the last ingested email', async () => {
+  it('should return the date of the last ingested email and filter by ebird address', async () => {
     const mockDate = new Date('2026-04-01T12:00:00Z');
     (prisma.incomingEmail.findFirst as any).mockResolvedValue({
       date: mockDate,
@@ -38,5 +38,10 @@ describe('Ingestion Status API', () => {
     const response = await request(app).get('/api/ingestion-status');
     expect(response.status).toBe(200);
     expect(new Date(response.body.lastIngestedEmailDate).toISOString()).toBe(mockDate.toISOString());
+    expect(prisma.incomingEmail.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        from: 'ebird-alert@birds.cornell.edu'
+      })
+    }));
   });
 });

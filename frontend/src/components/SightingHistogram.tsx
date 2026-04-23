@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDayMonth } from '../lib/date-utils.js';
 
 interface DailyCount {
   date: string;
@@ -64,7 +65,7 @@ const SightingHistogram: React.FC<SightingHistogramProps> = ({ dailyCounts, rari
             boxShadow: '2px 2px 5px rgba(44, 36, 22, 0.1)'
           }}
         >
-          {new Date(hovered.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}: {hovered.count} {hovered.count === 1 ? 'sighting' : 'sightings'}
+          {formatDayMonth(hovered.date)}: {hovered.count} {hovered.count === 1 ? 'sighting' : 'sightings'}
         </div>
       )}
     </div>

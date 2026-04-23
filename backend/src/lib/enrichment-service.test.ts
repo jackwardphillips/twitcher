@@ -13,6 +13,8 @@ describe('EnrichmentService', () => {
   beforeEach(async () => {
     // Clean up DB before each test
     await prisma.sighting.deleteMany({});
+    await prisma.incident.deleteMany({});
+    await prisma.incomingEmail.deleteMany({});
     
     matchEngine = {
       findMatch: vi.fn(),

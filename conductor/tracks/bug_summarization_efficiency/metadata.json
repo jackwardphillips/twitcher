@@ -1,0 +1,7 @@
+{
+  "id": "bug_summarization_efficiency",
+  "name": "Bug: Summarization Cycle Efficiency",
+  "description": "Optimize the summarization cycle to avoid redundant LLM calls for incidents with no new information.",
+  "status": "queued",
+  "created_at": "2026-04-20"
+}

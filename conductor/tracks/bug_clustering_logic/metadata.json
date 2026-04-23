@@ -1,0 +1,7 @@
+{
+  "id": "bug_clustering_logic",
+  "name": "Bug: Incident Clustering Logic",
+  "description": "Improve incident clustering to prevent splitting of related sightings and allow incidents to evolve or merge.",
+  "status": "queued",
+  "created_at": "2026-04-20"
+}
