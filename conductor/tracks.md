@@ -12,7 +12,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: Bug - Incident Clustering Logic**
 *Link: [./tracks/bug_clustering_logic/](./tracks/bug_clustering_logic/)*
 
-- [ ] **Track: Bug - Summarization Cycle Efficiency**
+- [x] **Track: Bug - Summarization Cycle Efficiency**
 *Link: [./tracks/bug_summarization_efficiency/](./tracks/bug_summarization_efficiency/)*
 
 ---
