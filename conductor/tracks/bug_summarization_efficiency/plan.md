@@ -4,8 +4,8 @@ Optimize the summarization cycle to reduce redundant API calls.
 
 ## Phase 1: Research & Measurement
 
-- [~] Run a summarization cycle and count the number of redundant calls (incidents with no new comments) `[ ]`
-- [ ] Verify `summaryGeneratedAt` behavior in the current database `[ ]`
+- [x] Run a summarization cycle and count the number of redundant calls (incidents with no new comments) [7bd7497]
+- [x] Verify `summaryGeneratedAt` behavior in the current database [7bd7497]
 
 ## Phase 2: Implementation
 
