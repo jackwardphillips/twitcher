@@ -32,3 +32,4 @@
 - [x] Verify Cook's Petrel incidents consolidate to 1. (5ce5153)
 - [x] Give a comprehensive overview of what other incidents merged and a review of why they did. (5ce5153)
 - [x] Run full test suite and verify coverage. (5ce5153)
+- [x] Add simulation scripts and archive track. (47d5e2a)
