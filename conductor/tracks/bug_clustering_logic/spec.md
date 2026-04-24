@@ -1,29 +1,60 @@
-# Specification - Bug: Incident Clustering Logic
+# Specification - Bug: Incident Clustering Logic (Updated)
 
-The current incident clustering logic uses a fixed 10km radius from any existing sighting in an incident. This can lead to fragmented incidents when a bird moves gradually or when two sightings are slightly further apart than the threshold, even if they clearly represent the same individual.
+The current incident clustering logic uses a fixed 10km radius from any existing
+sighting in an incident. This fragmented the April 22, 2026 Cook's Petrel sightings
+from the *Eurodam* cruise into 8 separate incidents because the ship moved faster
+than the 10km/sighting threshold.
 
 ## Requirements
 
-- **Increased Radius**: Update the default clustering radius to **exactly 25km**. This provides a safer balance than 50km while remaining more flexible than the original 10km.
-- **Incident Merging**: When a new sighting matches *multiple* existing incidents, those incidents should be merged into one.
-- **Improved Matching**: Consider matching against the incident centroid or the bounding box in addition to individual sightings.
+- **Base Radius**: Update the default clustering radius to **25km**.
+- **Velocity-Aware Radius**: If a new sighting's date is within **24 hours** of an
+  incident's `lastSeen`, the allowed matching radius is:
+  `25km + (timeDifferenceInHours * 50km)`, capped at **200km**.
+  If the time difference is ≥ 24 hours, use the base radius of 25km only.
+- **Simultaneous Safety**: Two birds seen 50km apart at the exact same time remain
+  separate incidents (radius is 25km, below the 50km gap).
+- **Incident Merging**: When a new sighting matches *multiple* existing incidents,
+  all matching incidents must be merged into one.
+- **Golden Test Case**: The April 22, 2026 Cook's Petrel sequence must cluster into
+  a single incident.
 
 ## Proposed Changes
 
 ### Backend
 
 - **incident-service.ts**:
-    - Update `findMatchingIncident` to return *all* matching incidents instead of just the first one.
-    - Implement a `mergeIncidents` function that combines two or more incidents (re-parenting sightings, updating bounds, etc.).
-    - Update `addSightingToIncident` to handle cases where it might trigger a merge.
-    - Change the default search radius from 10km to **25km**.
+  - Update `findMatchingIncident` to:
+    1. Accept the `date` of the new sighting as a parameter.
+    2. Return *all* matching incidents (`Incident[]`) instead of a single match.
+    3. Compute the matching radius using `lastSeen`: if the new sighting's date is
+       within 24 hours of `lastSeen`, use `min(25 + (timeDiffHours * 50), 200)`;
+       otherwise use 25km flat.
+  - Implement `mergeIncidents(prisma, incidentIds)` to consolidate multiple
+    matching incidents into one, reassigning all child sightings to the surviving
+    incident and recomputing bounding box and metadata.
+  - Update `addSightingToIncident` to call `mergeIncidents` when multiple matches
+    are returned.
+
+- **sighting-service.ts**:
+  - Pass `sighting.date` to `findMatchingIncident`.
+
 - **recluster-sightings.ts**:
-    - Update the existing script in `backend/src/scripts/recluster-sightings.ts` to use the new 25km radius and merging logic to consolidate historical data.
+  - Update all call sites of `findMatchingIncident` to pass the sighting date and
+    handle the new `Incident[]` return type.
 
 ## Verification Plan
 
-- **Automated Tests**:
-    - Add a test in `incident-service.test.ts` where a sighting bridge two previously separate incidents, ensuring they merge.
-    - Test the impact of a larger radius on existing test data.
+- **Automated Tests** (`incident-service.test.ts`):
+  - **Bridge Merge**: A sighting within radius of two separate incidents merges them
+    into one.
+  - **Temporal Expansion**: A sighting 50km away but within 2 hours of `lastSeen`
+    clusters correctly.
+  - **Temporal Boundary**: A sighting 50km away but 25 hours after `lastSeen` does
+    *not* cluster.
+
 - **Manual Verification**:
-    - Use the `recluster-sightings.ts` script (if available or create one) to re-process historical sightings and verify that fragmented incidents are now consolidated.
+  - Query the current `dev.db` for the Cook's Petrel sightings from April 22, 2026
+    to retrieve the exact coordinates and timestamps already in the database.
+  - Run `recluster-sightings.ts` against `dev.db`.
+  - Verify that the 8 Cook's Petrel incidents from April 22 consolidate into 1.
