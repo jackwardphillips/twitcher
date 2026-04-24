@@ -12,8 +12,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [x] **Track: Bug - Incident Dates & Histogram Mismatch**
 *Link: [./tracks/bug_incident_dates_histogram/](./tracks/bug_incident_dates_histogram/)*
 
-- [~] **Track: Bug - Incident Clustering Logic**
-*Link: [./tracks/bug_clustering_logic/](./tracks/bug_clustering_logic/)*
+- [x] **Track: Bug - Incident Clustering Logic**
+*Link: [./tracks/bug_clustering_logic/](./tracks/bug_clustering_logic/)* (77a72cc)
 
 - [ ] **Track: Bug - Summarization Cycle Efficiency**
 *Link: [./tracks/bug_summarization_efficiency/](././tracks/bug_summarization_efficiency/)*
