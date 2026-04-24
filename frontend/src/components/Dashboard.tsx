@@ -5,6 +5,7 @@ import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js'
 import { RarityFilter, type RarityCode } from './RarityFilter.js';
 import { PhotoSlot } from './PhotoSlot.js';
 import { SightingHistogram } from './SightingHistogram.js';
+import { formatDayMonth } from '../lib/date-utils.js';
 
 // ... (keep types and state definitions)
 export interface Incident {
@@ -220,11 +221,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">First Seen</span>
-                  <span className="stat-value">{new Date(incident.firstSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                  <span className="stat-value">{formatDayMonth(incident.firstSeen)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Last Seen</span>
-                  <span className="stat-value">{new Date(incident.lastSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                  <span className="stat-value">{formatDayMonth(incident.lastSeen)}</span>
                 </div>
                 <div className="stat-item" style={{ marginLeft: 'auto', width: '240px' }}>
                   <SightingHistogram 

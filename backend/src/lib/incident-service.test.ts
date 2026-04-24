@@ -256,11 +256,12 @@ describe('IncidentService', () => {
           primaryCounty: 'Montgomery',
           primaryState: 'PA',
           primaryCountry: 'US',
-          statesCovered: JSON.stringify(['PA']),
-          sightings: {
-            connect: { id: 1 }
-          }
+          statesCovered: JSON.stringify(['PA'])
         }
+      });
+      expect(prismaMock.sighting.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { incidentId: 'inc-1' }
       });
     });
   });
@@ -302,6 +303,7 @@ describe('IncidentService', () => {
           maxLat: 40.1,
           minLng: -75.0,
           maxLng: -74.9,
+          firstSeen: existingIncident.firstSeen,
           lastSeen: newSighting.date,
           sightingCount: 2,
           statesCovered: JSON.stringify(['PA', 'NJ']),

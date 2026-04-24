@@ -50,7 +50,7 @@ describe('IngestionService', () => {
     expect(db.incomingEmail.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ messageId: 'msg1', status: 'new' }),
     });
-    expect(parseEBirdAlert).toHaveBeenCalledWith('Body 1');
+    expect(parseEBirdAlert).toHaveBeenCalledWith('Body 1', mockEmails[0].date);
     expect(saveSightings).toHaveBeenCalledWith([{ species: 'Hawk' }], true);
     expect(db.incomingEmail.update).toHaveBeenCalledWith({
       where: { id: 1 },

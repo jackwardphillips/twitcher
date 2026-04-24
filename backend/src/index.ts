@@ -5,7 +5,7 @@ import { prisma } from './lib/db.js';
 import { IngestionService } from './lib/ingestion-service.js';
 import type { IngestionResult } from './lib/ingestion-service.js';
 import { ImapClient } from './lib/imap-client.js';
-import { closeInactiveIncidents, getOpenIncidents } from './lib/incident-service.js';
+import { closeInactiveIncidents, getOpenIncidents, formatDate } from './lib/incident-service.js';
 import { runSummarizationCycle } from './lib/summarization-service.js';
 import 'dotenv/config';
 
@@ -64,7 +64,10 @@ app.get('/api/ingestion-status', async (req: Request, res: Response) => {
   try {
     const lastEmail = await prisma.incomingEmail.findFirst({
       orderBy: { date: 'desc' },
-      where: { status: 'processed' }
+      where: { 
+        status: 'processed',
+        from: 'ebird-alert@birds.cornell.edu'
+      }
     });
 
     res.json({
@@ -88,7 +91,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
     for (const s of sightings) {
       const key = `${s.species}|${s.location}`;
       if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(s.date.toISOString().split('T')[0]);
+      grouped[key].push(formatDate(s.date));
     }
 
     // Convert grouped dates to unique sorted sets
@@ -100,13 +103,13 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
     const sightingsWithStreaks = sightings.map(s => {
       const key = `${s.species}|${s.location}`;
       const dates = streakData[key];
-      const refDateStr = s.date.toISOString().split('T')[0];
+      const refDateStr = formatDate(s.date);
       
       let streak = 0;
-      let currentDate = new Date(refDateStr);
+      let currentDate = new Date(`${refDateStr}T12:00:00`);
       
       while (true) {
-        const dateStr = currentDate.toISOString().split('T')[0];
+        const dateStr = formatDate(currentDate);
         if (dates.includes(dateStr)) {
           streak++;
           currentDate.setDate(currentDate.getDate() - 1);
@@ -115,7 +118,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
         }
       }
 
-      return { ...s, streak };
+      return { ...s, streak, date: refDateStr };
     });
 
     res.json(sightingsWithStreaks);

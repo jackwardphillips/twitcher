@@ -36,7 +36,8 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 - **Location Name** (live, format: `{primaryState}, {primaryCountry}`)
 - **Active Badge**, e.g. "Active 3 days" (live, calculated from first/last seen dates)
 - **Reports Count**, e.g. "72 sightings" (live)
-- **First Seen / Last Seen dates** (live)
+- **First Seen / Last Seen dates** (live, formatted as "MMM D", e.g. "Apr 1")
+- **Activity Histogram** (live, 21-day bar chart showing sightings per day, colored by rarity)
 - **Rarity Color Border** (live, driven by ABA codes 3-6; defaults to code 5 for unknown rarities)
 - **Links** to the latest eBird Map and Checklist for that incident.
 - **Discuss link** is still a static Discord root link, not incident-specific context.
@@ -54,6 +55,7 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 ### Data Model & Freshness
 - Data is served via `GET /api/incidents`, which returns **open incidents** grouped by species and proximity (10km).
 - Scientific names are normalized to binomials (Genus species) to ensure consistency across subspecies and mangled alert data.
+- **Date fields** (firstSeen, lastSeen, and dailyCounts) are served as `YYYY-MM-DD` strings to ensure timezone-consistent display on the frontend.
 - Email ingestion runs automatically on backend startup.
 - A background summarization cycle runs after ingestion only when new emails were actually ingested.
 
@@ -72,4 +74,5 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 | rarity_code_filter_20260412 | 2026-04-12 | Rarity filter UI component added |
 | incident_dashboard_wiring_20260416 | 2026-04-16 | Dashboard switched to `/api/incidents`; live rarity colors on cards; binomial normalization; active days display |
 | chase_intel_summarization_20260416 | 2026-04-16 | Incident summaries generated in the backend and rendered on cards |
+| bug_incident_dates_histogram | 2026-04-20 | Fixed off-by-one dates; served dates as YYYY-MM-DD strings; added 21-day activity histogram to incident cards |
 | Documentation update | 2026-04-19 | Reconciled `dashboard-state.md` with the current incident card fields, controls, and background summarization behavior |

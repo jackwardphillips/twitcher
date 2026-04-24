@@ -21,6 +21,10 @@ vi.mock('./lib/db.js', () => ({
   prisma: {
     sighting: {
       findMany: vi.fn(),
+    },
+    incident: {
+      findMany: vi.fn().mockResolvedValue([]),
+      update: vi.fn(),
     }
   }
 }));

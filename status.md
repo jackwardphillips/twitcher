@@ -128,6 +128,10 @@
 ## Known Bugs
 
 - The mobile rarity filter uses a hover-driven custom dropdown. That is fragile on touch devices and does not behave like a durable mobile control.
+- Incident cards (e.g., Baikal Teal in Ontario) show incorrect first/last seen dates derived from ingestion time rather than the actual sighting dates. The incident model needs to derive these bounds from the underlying aggregated sightings. Additionally, while the histogram shows the correct distribution of counts, the days are mislabeled.
+- Incident clustering logic may need adjustment; incidents of the same species are sometimes splitting when they could be merged. Consider expanding the clustering radius (e.g., to 50km) or allowing incidents to "migrate" as new sightings are added.
+- The summarization cycle is inefficient: it only triggers if at least one new email is ingested during a run, but then re-summarizes *all* active incidents (seen in the last 7 days) regardless of whether they had new sightings today. This leads to redundant LLM API calls for incidents with no new information.
+- npx tsc reports two errors — prisma.config.ts and vitest.config.ts are outside rootDir: src/ in tsconfig.json. Fix: add both to the exclude array in backend/tsconfig.json. Non-blocking.
 
 ---
 
