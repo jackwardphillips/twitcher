@@ -10,18 +10,18 @@
 
 ## Phase 2: Core Logic Implementation
 
-- [ ] Update `findMatchingIncident` signature to accept `date: Date` and return
-      `Incident[]`.
-- [ ] Implement velocity-aware radius: if new sighting date is within 24h of
+- [x] Update `findMatchingIncident` signature to accept `date: Date` and return
+      `Incident[]`. (abaca97)
+- [x] Implement velocity-aware radius: if new sighting date is within 24h of
       `lastSeen`, use `min(25 + (timeDiffHours * 50), 200)`; otherwise use 25km
-      flat.
-- [ ] Implement `mergeIncidents(prisma, incidentIds: string[])`: reassign all child
+      flat. (abaca97)
+- [x] Implement `mergeIncidents(prisma, incidentIds: string[])`: reassign all child
       sightings to the lowest-`createdAt` incident, recompute bounding box
       (`minLat`, `maxLat`, `minLng`, `maxLng`), update `lastSeen`, `firstSeen`,
-      and delete the merged-away incidents.
-- [ ] Update `addSightingToIncident` to call `mergeIncidents` when
-      `findMatchingIncident` returns more than one result.
-- [ ] Update `sighting-service.ts` to pass `sighting.date` to `findMatchingIncident`.
+      and delete the merged-away incidents. (abaca97)
+- [x] Update `addSightingToIncident` to call `mergeIncidents` when
+      `findMatchingIncident` returns more than one result. (abaca97)
+- [x] Update `sighting-service.ts` to pass `sighting.date` to `findMatchingIncident`. (abaca97)
 
 ## Phase 3: Migration & Validation
 

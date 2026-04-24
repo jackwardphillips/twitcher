@@ -26,15 +26,16 @@ async function recluster() {
     for (const sighting of sightings) {
       const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
       
-      const match = await findMatchingIncident(
+      const matches = await findMatchingIncident(
         tx as any, 
         normScientific, 
         sighting.latitude || 0, 
-        sighting.longitude || 0
+        sighting.longitude || 0,
+        sighting.date
       );
 
-      if (match) {
-        await addSightingToIncident(tx as any, match, sighting);
+      if (matches.length > 0) {
+        await addSightingToIncident(tx as any, matches, sighting);
         added++;
       } else {
         await createIncident(tx as any, sighting);

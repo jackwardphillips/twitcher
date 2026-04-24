@@ -14,11 +14,14 @@ const prismaMock = {
   incident: {
     findFirst: vi.fn(),
     findMany: vi.fn(),
+    findUnique: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteMany: vi.fn(),
   },
   sighting: {
     update: vi.fn(),
+    updateMany: vi.fn(),
   },
   rarityCode: {
     findMany: vi.fn(),
@@ -166,12 +169,12 @@ describe('IncidentService', () => {
       vi.resetAllMocks();
     });
 
-    it('should return null if no matching incidents exist by scientific name', async () => {
+    it('should return empty array if no matching incidents exist by scientific name', async () => {
       prismaMock.incident.findMany.mockResolvedValue([]);
       
-      const result = await findMatchingIncident(prismaMock as any, 'Turdus migratorius', 40.0, -75.0);
+      const result = await findMatchingIncident(prismaMock as any, 'Turdus migratorius', 40.0, -75.0, new Date());
       
-      expect(result).toBeNull();
+      expect(result).toEqual([]);
       expect(prismaMock.incident.findMany).toHaveBeenCalledWith({
         where: {
           scientificName: 'Turdus migratorius',
@@ -181,11 +184,12 @@ describe('IncidentService', () => {
       });
     });
 
-    it('should match an incident if a sighting is within 10km', async () => {
+    it('should match an incident if a sighting is within 10km (base 25km radius now)', async () => {
       const mockIncident = {
         id: 'inc-1',
         scientificName: 'Turdus migratorius',
         status: 'OPEN',
+        lastSeen: new Date(),
         sightings: [
           { latitude: 40.0, longitude: -75.0 }
         ]
@@ -194,9 +198,10 @@ describe('IncidentService', () => {
       prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
       
       // 40.05, -75.05 is about 7km from 40.0, -75.0
-      const result = await findMatchingIncident(prismaMock as any, 'Turdus migratorius', 40.05, -75.05);
+      const result = await findMatchingIncident(prismaMock as any, 'Turdus migratorius', 40.05, -75.05, new Date());
       
-      expect(result).toEqual(mockIncident);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual(mockIncident);
     });
 
     it('should prioritized OPEN incidents over CLOSED ones', async () => {
@@ -204,20 +209,22 @@ describe('IncidentService', () => {
         id: 'inc-open',
         scientificName: 'Turdus migratorius',
         status: 'OPEN',
+        lastSeen: new Date(),
         sightings: [{ latitude: 40.0, longitude: -75.0 }]
       };
       const closedIncident = {
         id: 'inc-closed',
         scientificName: 'Turdus migratorius',
         status: 'CLOSED',
+        lastSeen: new Date(),
         sightings: [{ latitude: 40.0, longitude: -75.0 }]
       };
       
       prismaMock.incident.findMany.mockResolvedValue([closedIncident, openIncident]);
       
-      const result = await findMatchingIncident(prismaMock as any, 'Turdus migratorius', 40.01, -75.01);
+      const result = await findMatchingIncident(prismaMock as any, 'Turdus migratorius', 40.01, -75.01, new Date());
       
-      expect(result?.id).toBe('inc-open');
+      expect(result[0]?.id).toBe('inc-open');
     });
   });
 
@@ -371,7 +378,15 @@ describe('IncidentService', () => {
       vi.resetAllMocks();
     });
 
-    it('should fragment Cook\'s Petrel sightings with 10km radius', async () => {
+    it('should NOT fragment Cook\'s Petrel sightings with new velocity-aware radius', async () => {
+      // S0: 13:44, Lat: 37.535089, Lng: -123.665607
+      const s0 = {
+        scientificName: 'Pterodroma cookii',
+        latitude: 37.535089,
+        longitude: -123.665607,
+        date: new Date('2026-04-22T13:44:00.000Z')
+      };
+
       // S10: 14:05, Lat: 37.62679, Lng: -123.737018
       const s10 = {
         scientificName: 'Pterodroma cookii',
@@ -380,7 +395,7 @@ describe('IncidentService', () => {
         date: new Date('2026-04-22T14:05:00.000Z')
       };
 
-      // S11: 14:15, Lat: 37.4027, Lng: -123.4622 (34.76km away)
+      // S11: 14:15, Lat: 37.4027, Lng: -123.4622 (21km from S0, 34km from S10)
       const s11 = {
         scientificName: 'Pterodroma cookii',
         latitude: 37.4027,
@@ -391,27 +406,81 @@ describe('IncidentService', () => {
       // Mock behavior: first check finds no incident
       prismaMock.incident.findMany.mockResolvedValueOnce([]);
       
-      const match1 = await findMatchingIncident(prismaMock as any, s10.scientificName, s10.latitude, s10.longitude);
-      expect(match1).toBeNull();
+      const match1 = await findMatchingIncident(prismaMock as any, s0.scientificName, s0.latitude, s0.longitude, s0.date);
+      expect(match1).toHaveLength(0);
 
-      // Create first incident (Inc A)
+      // Create first incident (Inc A) with S0 and S10
       const incA = {
         id: 'inc-A',
-        scientificName: s10.scientificName,
+        scientificName: s0.scientificName,
         status: 'OPEN',
-        sightings: [s10]
+        lastSeen: s10.date,
+        sightings: [s0, s10]
       };
 
-      // Second check (for S11) finds Inc A but 34km is > 10km
+      // Second check (for S11) finds Inc A.
+      // S11 is 21km from S0. 
+      // Time diff S11 to Inc.lastSeen (S10) is 10 mins (0.17h).
+      // Radius is 25 + 0.17*50 = 33.5km.
+      // 21km < 33.5km. Match!
+      
       prismaMock.incident.findMany.mockResolvedValueOnce([incA]);
-      const match2 = await findMatchingIncident(prismaMock as any, s11.scientificName, s11.latitude, s11.longitude);
-      expect(match2).not.toBeNull(); // This should FAIL currently because it fragments
+      const match2 = await findMatchingIncident(prismaMock as any, s11.scientificName, s11.latitude, s11.longitude, s11.date);
+      expect(match2).not.toHaveLength(0); 
     });
 
     it('should bridge and merge two separate incidents', async () => {
-      // This test expects findMatchingIncident to return MULTIPLE incidents
-      // which will be implemented in Phase 2.
-      // For now, it will fail because findMatchingIncident only returns one.
+      const s1 = { id: 1, scientificName: 'Bird A', latitude: 40.0, longitude: -75.0, date: new Date('2026-04-01T10:00:00Z'), location: 'L1' };
+      const s2 = { id: 2, scientificName: 'Bird A', latitude: 40.1, longitude: -75.0, date: new Date('2026-04-01T10:05:00Z'), location: 'L2' };
+      const s3 = { id: 3, scientificName: 'Bird A', latitude: 40.05, longitude: -75.0, date: new Date('2026-04-01T10:10:00Z'), location: 'L3' };
+
+      const inc1 = { 
+        id: 'inc-1', 
+        scientificName: 'Bird A', 
+        status: 'OPEN', 
+        lastSeen: s1.date, 
+        sightings: [s1], 
+        createdAt: new Date('2026-04-01T10:00:00Z'), 
+        statesCovered: '["PA"]', 
+        minLat: 40.0, maxLat: 40.0, minLng: -75.0, maxLng: -75.0, 
+        firstSeen: s1.date,
+        sightingCount: 1
+      };
+      const inc2 = { 
+        id: 'inc-2', 
+        scientificName: 'Bird A', 
+        status: 'OPEN', 
+        lastSeen: s2.date, 
+        sightings: [s2], 
+        createdAt: new Date('2026-04-01T10:05:00Z'), 
+        statesCovered: '["PA"]', 
+        minLat: 40.1, maxLat: 40.1, minLng: -75.0, maxLng: -75.0, 
+        firstSeen: s2.date,
+        sightingCount: 1
+      };
+
+      prismaMock.incident.findMany.mockResolvedValue([inc1, inc2]);
+      prismaMock.incident.update.mockResolvedValue({ ...inc1, sightingCount: 3 });
+      
+      const matches = await findMatchingIncident(prismaMock as any, 'Bird A', s3.latitude, s3.longitude, s3.date);
+      expect(matches).toHaveLength(2);
+
+      await addSightingToIncident(prismaMock as any, matches, s3 as any);
+      
+      // Verify merge reassigned sightings from inc2 to inc1
+      expect(prismaMock.sighting.updateMany).toHaveBeenCalledWith({
+        where: { incidentId: { in: ['inc-2'] } },
+        data: { incidentId: 'inc-1' }
+      });
+      // Verify inc2 was deleted
+      expect(prismaMock.incident.deleteMany).toHaveBeenCalledWith({
+        where: { id: { in: ['inc-2'] } }
+      });
+      // Verify s3 was added to inc1
+      expect(prismaMock.sighting.update).toHaveBeenCalledWith({
+        where: { id: 3 },
+        data: { incidentId: 'inc-1' }
+      });
     });
   });
 });

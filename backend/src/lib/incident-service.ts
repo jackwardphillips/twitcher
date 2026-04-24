@@ -30,19 +30,21 @@ export function normalizeScientificName(raw: string, commonName?: string): strin
 }
 
 /**
- * Finds a matching OPEN or CLOSED incident for a given scientific name and coordinates.
+ * Finds all matching OPEN or CLOSED incidents for a given scientific name, coordinates, and date.
  * An incident matches if it has the same scientific name and at least one sighting 
- * within 10km of the provided coordinates.
- * OPEN incidents are prioritized over CLOSED ones.
+ * within the velocity-aware radius of the provided coordinates.
+ * Velocity-aware radius: 25km + (timeDiffHours * 50km), capped at 200km, if within 24h of lastSeen.
+ * Default radius is 25km.
  */
 export async function findMatchingIncident(
   prisma: PrismaClient,
   scientificName: string,
   latitude: number,
-  longitude: number
-): Promise<(Incident & { sightings: Sighting[] }) | null> {
+  longitude: number,
+  date: Date
+): Promise<Incident[]> {
   if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
-    return null;
+    return [];
   }
 
   // Find all candidate incidents with the same scientific name that are not permanently closed
@@ -59,21 +61,25 @@ export async function findMatchingIncident(
   });
 
   if (candidates.length === 0) {
-    return null;
+    return [];
   }
 
-  // Filter candidates by proximity (within 10km of ANY existing sighting in the incident)
+  // Filter candidates by proximity
   const matchingCandidates = candidates.filter(incident => {
+    // Compute the matching radius using lastSeen
+    const timeDiffHours = Math.abs(date.getTime() - incident.lastSeen.getTime()) / (1000 * 60 * 60);
+    
+    let radius = 25;
+    if (timeDiffHours <= 24) {
+      radius = Math.min(25 + (timeDiffHours * 50), 200);
+    }
+
     return incident.sightings.some(sighting => {
       if (sighting.latitude === null || sighting.longitude === null) return false;
       const dist = calculateDistance(latitude, longitude, sighting.latitude, sighting.longitude);
-      return dist <= 10;
+      return dist <= radius;
     });
   });
-
-  if (matchingCandidates.length === 0) {
-    return null;
-  }
 
   // Prioritize OPEN over CLOSED
   matchingCandidates.sort((a, b) => {
@@ -82,7 +88,7 @@ export async function findMatchingIncident(
     return 0;
   });
 
-  return matchingCandidates[0]!;
+  return matchingCandidates;
 }
 
 /**
@@ -129,13 +135,109 @@ export async function createIncident(
 }
 
 /**
- * Adds a sighting to an existing incident and updates the incident's summary data.
+ * Merges multiple incidents into one.
+ * The "survivor" is the incident with the earliest createdAt date.
+ * All sightings from other incidents are reassigned to the survivor.
+ * The survivor's metadata is updated to reflect the combined bounds and dates.
+ */
+export async function mergeIncidents(
+  prisma: PrismaClient,
+  incidentIds: string[]
+): Promise<Incident> {
+  if (incidentIds.length === 0) throw new Error('No incident IDs provided for merge');
+  if (incidentIds.length === 1) {
+    const incident = await prisma.incident.findUnique({
+      where: { id: incidentIds[0] }
+    });
+    if (!incident) throw new Error(`Incident ${incidentIds[0]} not found`);
+    return incident;
+  }
+
+  // Find all incidents to be merged
+  const incidents = await prisma.incident.findMany({
+    where: { id: { in: incidentIds } },
+    include: { sightings: true },
+    orderBy: { createdAt: 'asc' }
+  });
+
+  const survivor = incidents[0]!;
+  const toMerge = incidents.slice(1);
+
+  // Collect all sightings
+  const allSightings = incidents.flatMap(inc => inc.sightings);
+  
+  // Recompute metadata
+  const validCoords = allSightings.filter(s => s.latitude !== null && s.longitude !== null);
+  const minLat = Math.min(...validCoords.map(s => s.latitude!));
+  const maxLat = Math.max(...validCoords.map(s => s.latitude!));
+  const minLng = Math.min(...validCoords.map(s => s.longitude!));
+  const maxLng = Math.max(...validCoords.map(s => s.longitude!));
+  const firstSeen = new Date(Math.min(...allSightings.map(s => s.date.getTime())));
+  const lastSeen = new Date(Math.max(...allSightings.map(s => s.date.getTime())));
+  
+  const allStates = new Set<string>();
+  allSightings.forEach(s => {
+    const parts = s.location.split(',').map(p => p.trim());
+    const state = parts.length >= 2 ? parts[parts.length - 2] : null;
+    if (state) allStates.add(state);
+  });
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Reassign sightings
+    await tx.sighting.updateMany({
+      where: { incidentId: { in: toMerge.map(inc => inc.id) } },
+      data: { incidentId: survivor.id }
+    });
+
+    // 2. Update survivor
+    const updatedSurvivor = await tx.incident.update({
+      where: { id: survivor.id },
+      data: {
+        minLat,
+        maxLat,
+        minLng,
+        maxLng,
+        firstSeen,
+        lastSeen,
+        sightingCount: allSightings.length,
+        statesCovered: JSON.stringify(Array.from(allStates)),
+        status: IncidentStatus.OPEN,
+        closedAt: null
+      }
+    });
+
+    // 3. Delete merged incidents
+    await tx.incident.deleteMany({
+      where: { id: { in: toMerge.map(inc => inc.id) } }
+    });
+
+    return updatedSurvivor;
+  });
+}
+
+/**
+ * Adds a sighting to an existing incident (or merges multiple incidents and adds to the result).
  */
 export async function addSightingToIncident(
   prisma: PrismaClient,
-  incident: Incident,
+  incidentOrIncidents: Incident | Incident[],
   sighting: Sighting
 ): Promise<Incident> {
+  let incident: Incident;
+  
+  if (Array.isArray(incidentOrIncidents)) {
+    if (incidentOrIncidents.length === 0) {
+      throw new Error('No incidents provided to addSightingToIncident');
+    }
+    if (incidentOrIncidents.length > 1) {
+      incident = await mergeIncidents(prisma, incidentOrIncidents.map(inc => inc.id));
+    } else {
+      incident = incidentOrIncidents[0]!;
+    }
+  } else {
+    incident = incidentOrIncidents;
+  }
+
   if (incident.status === IncidentStatus.PERMANENTLY_CLOSED) {
     throw new Error('Cannot add sighting to PERMANENTLY_CLOSED incident');
   }
