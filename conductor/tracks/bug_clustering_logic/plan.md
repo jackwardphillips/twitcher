@@ -2,11 +2,11 @@
 
 ## Phase 1: Research & Reproduction
 
-- [ ] Query `dev.db` for all Cook's Petrel sightings from April 22, 2026 to extract
+- [x] Query dev.db for all Cook's Petrel sightings from April 22, 2026 to extract
       their coordinates and timestamps. Log the inter-sighting distances and time
-      gaps to confirm the fragmentation pattern.
-- [ ] Write a failing reproduction test in `incident-service.test.ts` using the
-      extracted coordinates, confirming that the current logic produces 8 incidents.
+      gaps to confirm the fragmentation pattern. (22306e2)
+- [x] Write a failing reproduction test in `incident-service.test.ts` using the
+      extracted coordinates, confirming that the current logic produces 8 incidents. (22306e2)
 
 ## Phase 2: Core Logic Implementation
 

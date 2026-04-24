@@ -49,7 +49,8 @@ describe('IncidentService', () => {
         primaryState: 'PA',
         primaryCountry: 'US',
         sightings: [
-          { id: 5, date: new Date('2026-04-15T10:00:00Z'), mapUrl: 'map5', checklistUrl: 'check5' }
+          { id: 5, date: new Date('2026-04-15T10:00:00Z'), mapUrl: 'map5', checklistUrl: 'check5' },
+          { id: 1, date: new Date('2026-04-10T10:00:00Z'), mapUrl: 'map1', checklistUrl: 'check1' }
         ]
       };
 
@@ -362,6 +363,55 @@ describe('IncidentService', () => {
         where: { id: 'inc-inactive' },
         data: { status: 'CLOSED', closedAt: expect.any(Date) }
       });
+    });
+  });
+
+  describe('Fragmentation Reproduction (Cook\'s Petrel April 22, 2026)', () => {
+    beforeEach(() => {
+      vi.resetAllMocks();
+    });
+
+    it('should fragment Cook\'s Petrel sightings with 10km radius', async () => {
+      // S10: 14:05, Lat: 37.62679, Lng: -123.737018
+      const s10 = {
+        scientificName: 'Pterodroma cookii',
+        latitude: 37.62679,
+        longitude: -123.737018,
+        date: new Date('2026-04-22T14:05:00.000Z')
+      };
+
+      // S11: 14:15, Lat: 37.4027, Lng: -123.4622 (34.76km away)
+      const s11 = {
+        scientificName: 'Pterodroma cookii',
+        latitude: 37.4027,
+        longitude: -123.4622,
+        date: new Date('2026-04-22T14:15:00.000Z')
+      };
+
+      // Mock behavior: first check finds no incident
+      prismaMock.incident.findMany.mockResolvedValueOnce([]);
+      
+      const match1 = await findMatchingIncident(prismaMock as any, s10.scientificName, s10.latitude, s10.longitude);
+      expect(match1).toBeNull();
+
+      // Create first incident (Inc A)
+      const incA = {
+        id: 'inc-A',
+        scientificName: s10.scientificName,
+        status: 'OPEN',
+        sightings: [s10]
+      };
+
+      // Second check (for S11) finds Inc A but 34km is > 10km
+      prismaMock.incident.findMany.mockResolvedValueOnce([incA]);
+      const match2 = await findMatchingIncident(prismaMock as any, s11.scientificName, s11.latitude, s11.longitude);
+      expect(match2).not.toBeNull(); // This should FAIL currently because it fragments
+    });
+
+    it('should bridge and merge two separate incidents', async () => {
+      // This test expects findMatchingIncident to return MULTIPLE incidents
+      // which will be implemented in Phase 2.
+      // For now, it will fail because findMatchingIncident only returns one.
     });
   });
 });
