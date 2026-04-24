@@ -24,6 +24,10 @@ async function recluster() {
     let added = 0;
 
     for (const sighting of sightings) {
+      if (sighting.latitude === null || sighting.longitude === null) {
+        continue;
+      }
+      
       const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
       
       const matches = await findMatchingIncident(

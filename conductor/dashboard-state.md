@@ -53,7 +53,8 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 - **Does not yet exist.** Clicking a card does not open a drill-down view.
 
 ### Data Model & Freshness
-- Data is served via `GET /api/incidents`, which returns **open incidents** grouped by species and proximity (10km).
+- Data is served via `GET /api/incidents`, which returns **open incidents** grouped by species and velocity-aware proximity (25km base radius + 50km/h velocity component, capped at 200km).
+- Multiple matching incidents are automatically merged into the earliest-created incident to prevent fragmentation (e.g., from moving observers on ships).
 - Scientific names are normalized to binomials (Genus species) to ensure consistency across subspecies and mangled alert data.
 - **Date fields** (firstSeen, lastSeen, and dailyCounts) are served as `YYYY-MM-DD` strings to ensure timezone-consistent display on the frontend.
 - Email ingestion runs automatically on backend startup.
@@ -75,4 +76,5 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 | incident_dashboard_wiring_20260416 | 2026-04-16 | Dashboard switched to `/api/incidents`; live rarity colors on cards; binomial normalization; active days display |
 | chase_intel_summarization_20260416 | 2026-04-16 | Incident summaries generated in the backend and rendered on cards |
 | bug_incident_dates_histogram | 2026-04-20 | Fixed off-by-one dates; served dates as YYYY-MM-DD strings; added 21-day activity histogram to incident cards |
+| bug_clustering_logic | 2026-04-24 | Implemented velocity-aware incident clustering (25km + velocity) and automated incident merging to prevent fragmentation. |
 | Documentation update | 2026-04-19 | Reconciled `dashboard-state.md` with the current incident card fields, controls, and background summarization behavior |

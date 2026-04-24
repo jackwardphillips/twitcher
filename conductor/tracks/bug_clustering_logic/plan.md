@@ -25,10 +25,10 @@
 
 ## Phase 3: Migration & Validation
 
-- [ ] Update `recluster-sightings.ts`: update all call sites to pass sighting date
+- [x] Update `recluster-sightings.ts`: update all call sites to pass sighting date
       and handle `Incident[]` return type (loop → merge if multiple, add to single
-      if one, create new if zero).
-- [ ] Run `recluster-sightings.ts` against `dev.db`.
-- [ ] Verify Cook's Petrel incidents consolidate to 1.
-- [ ] Give a comprehensive overview of what other incidents merged and a review of why they did.
-- [ ] Run full test suite and verify coverage.
+      if one, create new if zero). (5ce5153)
+- [x] Run `recluster-sightings.ts` against `dev.db`. (5ce5153)
+- [x] Verify Cook's Petrel incidents consolidate to 1. (5ce5153)
+- [x] Give a comprehensive overview of what other incidents merged and a review of why they did. (5ce5153)
+- [x] Run full test suite and verify coverage. (5ce5153)
