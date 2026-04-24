@@ -4,9 +4,9 @@
 
 - [x] Query dev.db for all Cook's Petrel sightings from April 22, 2026 to extract
       their coordinates and timestamps. Log the inter-sighting distances and time
-      gaps to confirm the fragmentation pattern. (22306e2)
+      gaps to confirm the fragmentation pattern. (9337961)
 - [x] Write a failing reproduction test in `incident-service.test.ts` using the
-      extracted coordinates, confirming that the current logic produces 8 incidents. (22306e2)
+      extracted coordinates, confirming that the current logic produces 8 incidents. (9337961)
 
 ## Phase 2: Core Logic Implementation
 
