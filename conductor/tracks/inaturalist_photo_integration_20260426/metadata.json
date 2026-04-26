@@ -1,0 +1,8 @@
+{
+  "track_id": "inaturalist_photo_integration_20260426",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-26T19:12:00Z",
+  "updated_at": "2026-04-26T19:12:00Z",
+  "description": "Integrate iNaturalist REST API to provide representative species photos for rare bird incidents with CC attribution and local caching."
+}
