@@ -1,6 +1,6 @@
 # Implementation Plan: T9 — iNaturalist Photo Integration
 
-## Phase 1: Database Schema & Core Service
+## Phase 1: Database Schema & Core Service [checkpoint: 366f696]
 
 ### Task 1.1: Update Database Schema
 - [x] Task: Add `SpeciesPhoto` model to `backend/prisma/schema.prisma`. [d6af5f5]
@@ -19,7 +19,7 @@
   - [x] Mock iNaturalist API responses.
   - [x] Verify caching and stale re-fetch logic.
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md) [366f696]
 
 ## Phase 2: Backend Integration
 
