@@ -21,7 +21,7 @@
 
 - [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md) [366f696]
 
-## Phase 2: Backend Integration
+## Phase 2: Backend Integration [checkpoint: 815c020]
 
 ### Task 2.1: Update Incident Service
 - [x] Task: Update `getOpenIncidents` in `backend/src/lib/incident-service.ts` to include photo data from `SpeciesPhoto`. [5d47f9b]
@@ -35,7 +35,7 @@
   - [x] Verify that `/api/incidents` triggers `photoService.fetchSpeciesPhoto` for incidents missing cached photos.
   - [x] Verify that the immediate response for a missing photo is `null`.
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md) [815c020]
 
 ## Phase 3: Frontend Refinement
 
