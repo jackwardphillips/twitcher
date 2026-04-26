@@ -28,9 +28,9 @@
 - [x] Task: Write unit tests to verify incident-photo join.
 
 ### Task 2.2: Implement Lazy Fetch in API
-- [ ] Task: Update `/api/incidents` handler in `backend/src/index.ts`.
-  - [ ] Identify incidents with missing or stale photos.
-  - [ ] Trigger `photoService.fetchSpeciesPhoto` in a fire-and-forget background call.
+- [~] Task: Update `/api/incidents` handler in `backend/src/index.ts`. [591df5f]
+  - [~] Identify incidents with missing or stale photos.
+  - [~] Trigger `photoService.fetchSpeciesPhoto` in a fire-and-forget background call.
 - [ ] Task: Write integration tests for `/api/incidents`.
   - [ ] Verify that `/api/incidents` triggers `photoService.fetchSpeciesPhoto` for incidents missing cached photos.
   - [ ] Verify that the immediate response for a missing photo is `null`.
