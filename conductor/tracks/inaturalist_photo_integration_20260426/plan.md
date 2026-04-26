@@ -8,16 +8,16 @@
 - [x] Task: Generate Prisma client and run migration.
   - [x] Run `npx.cmd prisma migrate dev --name add_species_photo`.
 
-- [~] Task: Implement `PhotoService` [4070695]
-- [~] Task: Create `backend/src/lib/photo-service.ts`.
-- [ ] Task: Implement `fetchSpeciesPhoto(speciesName: string)` method.
-  - [ ] Use `fetch` to call iNaturalist API.
-  - [ ] Handle 30-day stale cache logic.
-  - [ ] Implement negative caching (store null for no results).
-- [ ] Task: Write unit tests for `PhotoService`.
-  - [ ] Create `backend/src/lib/photo-service.test.ts`.
-  - [ ] Mock iNaturalist API responses.
-  - [ ] Verify caching and stale re-fetch logic.
+- [x] Task: Implement `PhotoService` [6e8f572]
+- [x] Task: Create `backend/src/lib/photo-service.ts`.
+- [x] Task: Implement `fetchSpeciesPhoto(speciesName: string)` method.
+  - [x] Use `fetch` to call iNaturalist API.
+  - [x] Handle 30-day stale cache logic.
+  - [x] Implement negative caching (store null for no results).
+- [x] Task: Write unit tests for `PhotoService`.
+  - [x] Create `backend/src/lib/photo-service.test.ts`.
+  - [x] Mock iNaturalist API responses.
+  - [x] Verify caching and stale re-fetch logic.
 
 - [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
