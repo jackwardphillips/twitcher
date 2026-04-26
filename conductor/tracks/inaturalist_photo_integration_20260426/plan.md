@@ -24,8 +24,8 @@
 ## Phase 2: Backend Integration
 
 ### Task 2.1: Update Incident Service
-- [~] Task: Update `getOpenIncidents` in `backend/src/lib/incident-service.ts` to include photo data from `SpeciesPhoto`.
-- [ ] Task: Write unit tests to verify incident-photo join.
+- [x] Task: Update `getOpenIncidents` in `backend/src/lib/incident-service.ts` to include photo data from `SpeciesPhoto`. [5d47f9b]
+- [x] Task: Write unit tests to verify incident-photo join.
 
 ### Task 2.2: Implement Lazy Fetch in API
 - [ ] Task: Update `/api/incidents` handler in `backend/src/index.ts`.
