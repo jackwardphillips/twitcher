@@ -441,11 +441,6 @@ body {
   justify-content: center;
 }
 
-.photo-placeholder::after {
-  content: url('/icons.svg#bird-silhouette');
-  opacity: 0.3;
-}
-
 .photo-slot img {
   width: 100%;
   height: 100%;

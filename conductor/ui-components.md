@@ -29,7 +29,7 @@ This file is the **living contract** between data/logic tracks and the frontend.
 |---|---|---|---|
 | Photo image | live | `Incident.photo.url` | |
 | Attribution text | live | `Incident.photo.attribution` | Displayed as hover overlay |
-| Placeholder state | live | `Incident.photo` is null | Shows bird silhouette silhouette SVG |
+| Placeholder state | live | `Incident.photo` is null | Shows muted parchment-toned placeholder (no silhouette) |
 
 ### `SightingHistogram`
 *File: `frontend/src/components/SightingHistogram.tsx`*

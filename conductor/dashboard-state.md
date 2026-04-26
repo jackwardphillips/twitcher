@@ -29,7 +29,11 @@ Its purpose is to give any track - especially data/logic tracks that do not touc
 - Popups display species name, location, active days, and report count.
 
 ### Incident Cards
-The dashboard uses an **incident-based view**. Each card in the vertical stack displays:
+The dashboard uses an **incident-based view** with a horizontal card layout:
+- **Species Photo** (live): A 180px fixed-width photo slot on the left.
+- **Lazy Loading**: Photos are fetched from iNaturalist lazily in the background and cached for 30 days.
+- **Placeholder**: A muted parchment-toned placeholder is shown while the photo is loading or if no photo is available.
+- **Attribution**: An attribution overlay appears on top of the photo when hovering over the photo slot.
 - **Common Name** (live, normalized)
 - **Scientific Name** (live, normalized binomial)
 - **Gemini / Groq summary text** (live when `Incident.geminiSummary` is present)
@@ -38,7 +42,7 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 - **Reports Count**, e.g. "72 sightings" (live)
 - **First Seen / Last Seen dates** (live, formatted as "MMM D", e.g. "Apr 1")
 - **Activity Histogram** (live, 21-day bar chart showing sightings per day, colored by rarity)
-- **Rarity Color Border** (live, driven by ABA codes 3-6; defaults to code 5 for unknown rarities)
+- **Rarity Color Border** (live, 4px left border driven by ABA codes 3-6; defaults to code 5 for unknown rarities)
 - **Links** to the latest eBird Map and Checklist for that incident.
 - **Discuss link** is still a static Discord root link, not incident-specific context.
 
