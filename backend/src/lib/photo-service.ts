@@ -28,6 +28,27 @@ export class PhotoService {
       }
     }
 
+    return await this.refreshCache(speciesName);
+  }
+
+  async needsFetch(speciesName: string): Promise<boolean> {
+    const cached = await prisma.speciesPhoto.findUnique({
+      where: { speciesName },
+    });
+
+    if (!cached) return true;
+
+    const isStale =
+      new Date().getTime() - new Date(cached.fetchedAt).getTime() >
+      this.CACHE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+    
+    return isStale;
+  }
+
+  private async refreshCache(speciesName: string): Promise<SpeciesPhoto | null> {
+    const cached = await prisma.speciesPhoto.findUnique({
+      where: { speciesName },
+    });
     try {
       const url = new URL(`${this.INAT_API_BASE}/taxa`);
       url.searchParams.append('q', speciesName);
