@@ -15,7 +15,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: Bug - Summarization Cycle Efficiency**
 *Link: [./tracks/bug_summarization_efficiency/](././tracks/bug_summarization_efficiency/)*
 
-- [ ] **Track: iNaturalist Photo Integration**
+- [~] **Track: iNaturalist Photo Integration**
 *Link: [./tracks/inaturalist_photo_integration_20260426/](./tracks/inaturalist_photo_integration_20260426/)*
 
 ---

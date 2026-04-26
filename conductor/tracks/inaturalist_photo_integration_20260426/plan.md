@@ -3,10 +3,10 @@
 ## Phase 1: Database Schema & Core Service
 
 ### Task 1.1: Update Database Schema
-- [~] Task: Add `SpeciesPhoto` model to `backend/prisma/schema.prisma`.
-  - [ ] Fields: `speciesName` (String, @id), `photoUrl` (String?), `attribution` (String?), `fetchedAt` (DateTime).
-- [ ] Task: Generate Prisma client and run migration.
-  - [ ] Run `npx.cmd prisma migrate dev --name add_species_photo`.
+- [x] Task: Add `SpeciesPhoto` model to `backend/prisma/schema.prisma`. [d6af5f5]
+  - [x] Fields: `speciesName` (String, @id), `photoUrl` (String?), `attribution` (String?), `fetchedAt` (DateTime).
+- [x] Task: Generate Prisma client and run migration.
+  - [x] Run `npx.cmd prisma migrate dev --name add_species_photo`.
 
 ### Task 1.2: Implement PhotoService
 - [ ] Task: Create `backend/src/lib/photo-service.ts`.
