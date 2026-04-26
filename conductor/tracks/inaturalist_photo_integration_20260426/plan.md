@@ -39,10 +39,10 @@
 
 ## Phase 3: Frontend Refinement
 
-### Task 3.1: Update Frontend Types & Component
-- [ ] Task: Update `Incident` interface in `frontend/src/components/Dashboard.tsx` to include the `photo` field.
-- [ ] Task: Refine `frontend/src/components/PhotoSlot.tsx` to remove the `.photo-placeholder` silhouette.
-- [ ] Task: Update CSS in `frontend/src/App.css` for `.photo-placeholder` to remove `::after` silhouette.
+- [~] Task: Update Frontend Types & Component [6b5d6a7]
+- [~] Task: Update `Incident` interface in `frontend/src/components/Dashboard.tsx` to include the `photo` field.
+- [~] Task: Refine `frontend/src/components/PhotoSlot.tsx` to remove the `.photo-placeholder` silhouette.
+- [~] Task: Update CSS in `frontend/src/App.css` for `.photo-placeholder` to remove `::after` silhouette.
 
 ### Task 3.2: Final Verification
 - [ ] Task: Manually verify that rare bird cards load photos after a short delay or page refresh.
