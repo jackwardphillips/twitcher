@@ -56,6 +56,7 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 - Data is served via `GET /api/incidents`, which returns **open incidents** grouped by species and velocity-aware proximity (25km base radius + 50km/h velocity component, capped at 200km).
 - Multiple matching incidents are automatically merged into the earliest-created incident to prevent fragmentation (e.g., from moving observers on ships).
 - Scientific names are normalized to binomials (Genus species) to ensure consistency across subspecies and mangled alert data.
+- **Species Photos** are stored in the `SpeciesPhoto` model, keyed by binomial species name, caching iNaturalist photo URLs and attributions for 30 days.
 - **Date fields** (firstSeen, lastSeen, and dailyCounts) are served as `YYYY-MM-DD` strings to ensure timezone-consistent display on the frontend.
 - Email ingestion runs automatically on backend startup.
 - A background summarization cycle runs after ingestion only when new emails were actually ingested.
