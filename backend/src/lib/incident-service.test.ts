@@ -24,7 +24,10 @@ const prismaMock = {
     updateMany: vi.fn(),
   },
   rarityCode: {
-    findMany: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+  },
+  speciesPhoto: {
+    findMany: vi.fn().mockResolvedValue([]),
   },
   $transaction: vi.fn((cb) => cb(prismaMock)),
 };
@@ -33,6 +36,8 @@ describe('IncidentService', () => {
   describe('getOpenIncidents', () => {
     beforeEach(() => {
       vi.resetAllMocks();
+      prismaMock.rarityCode.findMany.mockResolvedValue([]);
+      prismaMock.speciesPhoto.findMany.mockResolvedValue([]);
     });
 
     it('should fetch only OPEN incidents and enrich them with rarity and summary data', async () => {
@@ -129,6 +134,38 @@ describe('IncidentService', () => {
 
       const result = await getOpenIncidents(prismaMock as any);
       expect(result[0].abaCode).toBeNull();
+    });
+
+    it('should include species photo data', async () => {
+      const mockIncident = {
+        id: 'inc-photo',
+        scientificName: 'Cyanocitta cristata',
+        commonName: 'Blue Jay',
+        status: 'OPEN',
+        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
+        firstSeen: new Date(), lastSeen: new Date(),
+        sightings: []
+      };
+
+      const mockPhoto = {
+        speciesName: 'Cyanocitta cristata',
+        photoUrl: 'https://inat.com/bluejay.jpg',
+        attribution: '(c) Photographer'
+      };
+
+      prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
+      prismaMock.rarityCode.findMany.mockResolvedValue([]);
+      
+      // Mock speciesPhoto
+      (prismaMock as any).speciesPhoto = {
+        findMany: vi.fn().mockResolvedValue([mockPhoto])
+      };
+
+      const result = await getOpenIncidents(prismaMock as any);
+      expect(result[0].photo).toEqual({
+        url: 'https://inat.com/bluejay.jpg',
+        attribution: '(c) Photographer'
+      });
     });
   });
 

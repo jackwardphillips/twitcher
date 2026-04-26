@@ -343,6 +343,7 @@ export async function getOpenIncidents(prisma: PrismaClient) {
   });
 
   const rarityCodes = await prisma.rarityCode.findMany();
+  const speciesPhotos = await prisma.speciesPhoto.findMany();
   
   // Create a map for faster lookup by scientific name (normalized)
   const rarityMap = new Map<string, number>();
@@ -356,13 +357,21 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     }
   });
 
+  const photoMap = new Map<string, { url: string | null; attribution: string | null }>();
+  speciesPhotos.forEach(p => {
+    photoMap.set(p.speciesName, { url: p.photoUrl, attribution: p.attribution });
+  });
+
   const now = new Date();
   const todayStr = formatDate(now);
   const todayBasis = new Date(`${todayStr}T12:00:00`); // Use noon to avoid DST/timezone edge issues when subtracting days
 
   return incidents.map(incident => {
     const latestSighting = incident.sightings[0];
+    const normSciName = normalizeScientificName(incident.scientificName, incident.commonName);
     const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
+    const photoData = photoMap.get(normSciName);
+    const photo = photoData?.url ? { url: photoData.url, attribution: photoData.attribution } : null;
 
     // Fix: Derive bounds directly from sightings to fix legacy corrupted data
     const sightingDates = incident.sightings.map(s => s.date.getTime());
@@ -397,8 +406,9 @@ export async function getOpenIncidents(prisma: PrismaClient) {
 
     return {
       ...incident,
-      scientificName: normalizeScientificName(incident.scientificName, incident.commonName),
+      scientificName: normSciName,
       abaCode,
+      photo,
       centroidLat: (incident.minLat + incident.maxLat) / 2,
       centroidLng: (incident.minLng + incident.maxLng) / 2,
       locationName: `${incident.primaryState}, ${incident.primaryCountry}`,
