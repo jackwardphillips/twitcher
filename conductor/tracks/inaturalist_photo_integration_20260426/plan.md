@@ -8,8 +8,8 @@
 - [x] Task: Generate Prisma client and run migration.
   - [x] Run `npx.cmd prisma migrate dev --name add_species_photo`.
 
-### Task 1.2: Implement PhotoService
-- [ ] Task: Create `backend/src/lib/photo-service.ts`.
+- [~] Task: Implement `PhotoService` [4070695]
+- [~] Task: Create `backend/src/lib/photo-service.ts`.
 - [ ] Task: Implement `fetchSpeciesPhoto(speciesName: string)` method.
   - [ ] Use `fetch` to call iNaturalist API.
   - [ ] Handle 30-day stale cache logic.
