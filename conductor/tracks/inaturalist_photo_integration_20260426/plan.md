@@ -37,7 +37,7 @@
 
 - [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md) [815c020]
 
-## Phase 3: Frontend Refinement
+## Phase 3: Frontend Refinement [checkpoint: 5ca5928]
 
 - [x] Task: Update Frontend Types & Component [4d67c55]
 - [x] Task: Update `Incident` interface in `frontend/src/components/Dashboard.tsx` to include the `photo` field.
@@ -45,8 +45,8 @@
 - [x] Task: Update CSS in `frontend/src/App.css` for `.photo-placeholder` to remove `::after` silhouette.
 
 ### Task 3.2: Final Verification
-- [~] Task: Manually verify that rare bird cards load photos after a short delay or page refresh.
-- [ ] Task: Verify attribution overlay appears on hover.
-- [ ] Task: Verify blank placeholder appears when no photo is found.
+- [x] Task: Manually verify that rare bird cards load photos after a short delay or page refresh.
+- [x] Task: Verify attribution overlay appears on hover.
+- [x] Task: Verify blank placeholder appears when no photo is found.
 
-- [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md) [e0f8a07]
