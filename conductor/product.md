@@ -30,6 +30,7 @@ A centralized, web-based dashboard designed for ABA rare bird seekers and effici
 - **Incident-Based Clustering (Updated 2026-04-24):** Automatically groups multiple sightings of the same species into a single "Incident" using velocity-aware logic (25km base radius + expansion for moving observers). This prevents fragmentation of sightings from ships or traveling birds while maintaining high precision for stationary reports.
 - **Automated Email Ingestion:** Active IMAP polling for eBird alerts (ABA Rarities) to automatically ingest and parse sightings.
 - **Chase Intel Summaries (Added 2026-04-16):** AI-generated (Groq/Gemini) 1-2 sentence summaries of observer comments, highlighting precise location cues and behavioral patterns to help birders plan their chase.
+- **iNaturalist Photo Integration (Added 2026-04-26):** Automated fetching and local caching of high-quality species photos from the iNaturalist API, displayed with CC attribution in a "field journal" aesthetic.
 - **Platform Integration:** Direct links or snippets from Discord community discussions.
 - **Automated Bird Research:** Automated web searching and AI summarization to gather additional information, photos, and context for rare species.
 
