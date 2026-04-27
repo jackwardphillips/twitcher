@@ -9,18 +9,18 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: Bug - Mobile Rarity Filter**
 *Link: [./tracks/bug_mobile_rarity_filter/](./tracks/bug_mobile_rarity_filter/)*
 
-- [x] **Track: Bug - Incident Dates & Histogram Mismatch**
-*Link: [./tracks/bug_incident_dates_histogram/](./tracks/bug_incident_dates_histogram/)*
-
 - [ ] **Track: Bug - Incident Clustering Logic**
 *Link: [./tracks/bug_clustering_logic/](./tracks/bug_clustering_logic/)*
 
-- [ ] **Track: Bug - Summarization Cycle Efficiency**
+- [x] **Track: Bug - Summarization Cycle Efficiency**
 *Link: [./tracks/bug_summarization_efficiency/](./tracks/bug_summarization_efficiency/)*
 
 ---
 
 # Archived Tracks
+
+- [x] **Track: Bug - Incident Dates & Histogram Mismatch (2026-04-22)**
+*Link: [./archive/bug_incident_dates_histogram_20260422/](./archive/bug_incident_dates_histogram_20260422/)*
 
 - [x] **Track: Incident Card Redesign (2026-04-19)**
 *Link: [./archive/incident_card_redesign_20260419/](./archive/incident_card_redesign_20260419/)*
