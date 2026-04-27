@@ -79,3 +79,10 @@ model IncomingEmail {
   status    String   @default("new") // new, processed, failed
   createdAt DateTime @default(now())
 }
+
+model SpeciesPhoto {
+  speciesName    String   @id
+  photoUrl       String?
+  attribution    String?
+  fetchedAt      DateTime @default(now())
+}

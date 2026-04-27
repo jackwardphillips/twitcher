@@ -420,7 +420,7 @@ body {
 }
 
 .photo-slot {
-  width: 180px;
+  width: 275px;
   flex-shrink: 0;
   background-color: #d6cfc4;
   position: relative;
@@ -441,11 +441,6 @@ body {
   justify-content: center;
 }
 
-.photo-placeholder::after {
-  content: url('/icons.svg#bird-silhouette');
-  opacity: 0.3;
-}
-
 .photo-slot img {
   width: 100%;
   height: 100%;
@@ -459,8 +454,9 @@ body {
   right: 0;
   background: rgba(0, 0, 0, 0.5);
   color: white;
-  font-size: 0.7rem;
-  padding: 0.4rem;
+  font-size: 0.5rem;
+  line-height: 1.5;
+  padding: 0.1rem 0.3rem;
   opacity: 0;
   transition: opacity 0.2s;
 }

@@ -29,7 +29,11 @@ Its purpose is to give any track - especially data/logic tracks that do not touc
 - Popups display species name, location, active days, and report count.
 
 ### Incident Cards
-The dashboard uses an **incident-based view**. Each card in the vertical stack displays:
+The dashboard uses an **incident-based view** with a horizontal card layout:
+- **Species Photo** (live): A 180px fixed-width photo slot on the left.
+- **Lazy Loading**: Photos are fetched from iNaturalist lazily in the background and cached for 30 days.
+- **Placeholder**: A muted parchment-toned placeholder is shown while the photo is loading or if no photo is available.
+- **Attribution**: An attribution overlay appears on top of the photo when hovering over the photo slot.
 - **Common Name** (live, normalized)
 - **Scientific Name** (live, normalized binomial)
 - **Gemini / Groq summary text** (live when `Incident.geminiSummary` is present)
@@ -38,7 +42,7 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 - **Reports Count**, e.g. "72 sightings" (live)
 - **First Seen / Last Seen dates** (live, formatted as "MMM D", e.g. "Apr 1")
 - **Activity Histogram** (live, 21-day bar chart showing sightings per day, colored by rarity)
-- **Rarity Color Border** (live, driven by ABA codes 3-6; defaults to code 5 for unknown rarities)
+- **Rarity Color Border** (live, 4px left border driven by ABA codes 3-6; defaults to code 5 for unknown rarities)
 - **Links** to the latest eBird Map and Checklist for that incident.
 - **Discuss link** is still a static Discord root link, not incident-specific context.
 
@@ -53,8 +57,10 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 - **Does not yet exist.** Clicking a card does not open a drill-down view.
 
 ### Data Model & Freshness
-- Data is served via `GET /api/incidents`, which returns **open incidents** grouped by species and proximity (10km).
+- Data is served via `GET /api/incidents`, which returns **open incidents** grouped by species and velocity-aware proximity (25km base radius + 50km/h velocity component, capped at 200km).
+- Multiple matching incidents are automatically merged into the earliest-created incident to prevent fragmentation (e.g., from moving observers on ships).
 - Scientific names are normalized to binomials (Genus species) to ensure consistency across subspecies and mangled alert data.
+- **Species Photos** are stored in the `SpeciesPhoto` model, keyed by binomial species name, caching iNaturalist photo URLs and attributions for 30 days.
 - **Date fields** (firstSeen, lastSeen, and dailyCounts) are served as `YYYY-MM-DD` strings to ensure timezone-consistent display on the frontend.
 - Email ingestion runs automatically on backend startup.
 - A background summarization cycle runs after ingestion only when new emails were actually ingested.
@@ -75,4 +81,5 @@ The dashboard uses an **incident-based view**. Each card in the vertical stack d
 | incident_dashboard_wiring_20260416 | 2026-04-16 | Dashboard switched to `/api/incidents`; live rarity colors on cards; binomial normalization; active days display |
 | chase_intel_summarization_20260416 | 2026-04-16 | Incident summaries generated in the backend and rendered on cards |
 | bug_incident_dates_histogram | 2026-04-20 | Fixed off-by-one dates; served dates as YYYY-MM-DD strings; added 21-day activity histogram to incident cards |
+| bug_clustering_logic | 2026-04-24 | Implemented velocity-aware incident clustering (25km + velocity) and automated incident merging to prevent fragmentation. |
 | Documentation update | 2026-04-19 | Reconciled `dashboard-state.md` with the current incident card fields, controls, and background summarization behavior |

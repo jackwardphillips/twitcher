@@ -7,6 +7,7 @@ import type { IngestionResult } from './lib/ingestion-service.js';
 import { ImapClient } from './lib/imap-client.js';
 import { closeInactiveIncidents, getOpenIncidents, formatDate } from './lib/incident-service.js';
 import { runSummarizationCycle } from './lib/summarization-service.js';
+import { PhotoService } from './lib/photo-service.js';
 import 'dotenv/config';
 
 const app = express();
@@ -15,6 +16,7 @@ const port = process.env.PORT || 3001;
 app.use(express.json());
 
 let lastIngestionResult: IngestionResult | null = null;
+const photoService = new PhotoService();
 
 async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   const imapConfig = {
@@ -130,6 +132,18 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
 app.get('/api/incidents', async (req: Request, res: Response) => {
   try {
     const incidents = await getOpenIncidents(prisma);
+    
+    // Lazy fetch missing/stale photos in the background
+    incidents.forEach(incident => {
+      photoService.needsFetch(incident.scientificName).then(needed => {
+        if (needed) {
+          photoService.fetchSpeciesPhoto(incident.scientificName).catch(err => {
+            console.error(`Background photo fetch failed for ${incident.scientificName}:`, err);
+          });
+        }
+      });
+    });
+
     res.json(incidents);
   } catch (error) {
     console.error('Failed to fetch incidents:', error);

@@ -9,6 +9,9 @@ const prismaMock = {
   rarityCode: {
     findMany: vi.fn(),
   },
+  speciesPhoto: {
+    findMany: vi.fn().mockResolvedValue([]),
+  },
 };
 
 describe('Incident Histogram Reproduction', () => {

@@ -9,15 +9,18 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: Bug - Mobile Rarity Filter**
 *Link: [./tracks/bug_mobile_rarity_filter/](./tracks/bug_mobile_rarity_filter/)*
 
-- [ ] **Track: Bug - Incident Clustering Logic**
-*Link: [./tracks/bug_clustering_logic/](./tracks/bug_clustering_logic/)*
-
-- [x] **Track: Bug - Summarization Cycle Efficiency**
-*Link: [./tracks/bug_summarization_efficiency/](./tracks/bug_summarization_efficiency/)*
-
 ---
 
 # Archived Tracks
+
+- [x] **Track: iNaturalist Photo Integration (2026-04-26)**
+*Link: [./archive/inaturalist_photo_integration_20260426/](./archive/inaturalist_photo_integration_20260426/)*
+
+- [x] **Track: Bug - Summarization Cycle Efficiency (2026-04-26)**
+*Link: [./archive/bug_summarization_efficiency/](./archive/bug_summarization_efficiency/)*
+
+- [x] **Track: Bug - Incident Clustering Logic (2026-04-24)**
+*Link: [./archive/bug_clustering_logic_20260424/](./archive/bug_clustering_logic_20260424/)*
 
 - [x] **Track: Bug - Incident Dates & Histogram Mismatch (2026-04-22)**
 *Link: [./archive/bug_incident_dates_histogram_20260422/](./archive/bug_incident_dates_histogram_20260422/)*

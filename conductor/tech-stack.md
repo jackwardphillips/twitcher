@@ -20,6 +20,7 @@
 - **Native Fetch API:** Used for handling HTTP requests to eBird and other external APIs on both frontend and backend.
 - **Groq API (Llama 3.3):** Primary high-performance AI inference for incident summarization.
 - **Gemini API (2.0 Flash):** Fallback AI inference for incident summarization.
+- **iNaturalist API:** REST API used for fetching species-level representative photos.
 - **Concurrently:** For simultaneous execution of backend and frontend development services.
 
 ## Deployment

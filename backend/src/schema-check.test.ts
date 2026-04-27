@@ -23,4 +23,15 @@ describe('Prisma Schema Updates', () => {
     expect(emailFields).toContain('rawBody');
     expect(emailFields).toContain('status');
   });
+
+  it('should have the SpeciesPhoto model in the Prisma client', () => {
+    // This will fail if the model is not in the schema and generated
+    // @ts-expect-error - SpeciesPhotoScalarFieldEnum will not exist yet
+    const photoFields = Object.values(Prisma.SpeciesPhotoScalarFieldEnum);
+
+    expect(photoFields).toContain('speciesName');
+    expect(photoFields).toContain('photoUrl');
+    expect(photoFields).toContain('attribution');
+    expect(photoFields).toContain('fetchedAt');
+  });
 });

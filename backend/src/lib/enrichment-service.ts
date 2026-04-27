@@ -207,10 +207,10 @@ export class EnrichmentService {
     // Clustering Logic - if not already clustered
     if (!sighting.incidentId && sighting.latitude !== null && sighting.longitude !== null) {
       const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
-      const matchingIncident = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude);
+      const matchingIncidents = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude, sighting.date);
       
-      if (matchingIncident) {
-        await addSightingToIncident(prisma, matchingIncident, sighting);
+      if (matchingIncidents.length > 0) {
+        await addSightingToIncident(prisma, matchingIncidents, sighting);
       } else {
         await createIncident(prisma, sighting);
       }

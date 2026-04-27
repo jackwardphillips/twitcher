@@ -25,10 +25,10 @@ async function migrate() {
     // Only cluster if we have coordinates
     if (sighting.latitude !== null && sighting.longitude !== null) {
       const normScientific = normalizeScientificName(sighting.scientificName || sighting.species);
-      const matchingIncident = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude);
+      const matchingIncidents = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude, sighting.date);
 
-      if (matchingIncident) {
-        await addSightingToIncident(prisma, matchingIncident, sighting);
+      if (matchingIncidents.length > 0) {
+        await addSightingToIncident(prisma, matchingIncidents, sighting);
         clusteredCount++;
       } else {
         await createIncident(prisma, sighting);
