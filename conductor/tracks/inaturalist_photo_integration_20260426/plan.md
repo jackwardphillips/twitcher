@@ -45,7 +45,7 @@
 - [x] Task: Update CSS in `frontend/src/App.css` for `.photo-placeholder` to remove `::after` silhouette.
 
 ### Task 3.2: Final Verification
-- [ ] Task: Manually verify that rare bird cards load photos after a short delay or page refresh.
+- [~] Task: Manually verify that rare bird cards load photos after a short delay or page refresh.
 - [ ] Task: Verify attribution overlay appears on hover.
 - [ ] Task: Verify blank placeholder appears when no photo is found.
 
