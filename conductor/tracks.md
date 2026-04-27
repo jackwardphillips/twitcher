@@ -15,12 +15,12 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: Bug - Summarization Cycle Efficiency**
 *Link: [./tracks/bug_summarization_efficiency/](././tracks/bug_summarization_efficiency/)*
 
-- [x] **Track: iNaturalist Photo Integration**
-*Link: [./tracks/inaturalist_photo_integration_20260426/](./tracks/inaturalist_photo_integration_20260426/)*
-
 ---
 
 # Archived Tracks
+
+- [x] **Track: iNaturalist Photo Integration (2026-04-26)**
+*Link: [./archive/inaturalist_photo_integration_20260426/](./archive/inaturalist_photo_integration_20260426/)*
 
 - [x] **Track: Bug - Incident Clustering Logic (2026-04-24)**
 *Link: [./archive/bug_clustering_logic_20260424/](./archive/bug_clustering_logic_20260424/)*
