@@ -18,6 +18,7 @@
 ## Integration & Automation
 - **imapflow:** Lightweight IMAP client for polling eBird alert emails.
 - **Native Fetch API:** Used for handling HTTP requests to eBird and other external APIs on both frontend and backend.
+- **Mock Service Worker (MSW):** Standardized network mocking for integration tests.
 - **Groq API (Llama 3.3):** Primary high-performance AI inference for incident summarization.
 - **Gemini API (2.0 Flash):** Fallback AI inference for incident summarization.
 - **iNaturalist API:** REST API used for fetching species-level representative photos.
