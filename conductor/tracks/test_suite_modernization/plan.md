@@ -5,7 +5,7 @@
 - [x] Implement a standardized network mocking pattern (e.g., using `msw` or similar) [8707442]
 
 ## Phase 2: Core Logic Tests
-- [ ] Rewrite `ingestion-service.test.ts` to cover failure/retry states
+- [~] Rewrite ingestion-service.test.ts to cover failure/retry states
 - [ ] Add integration tests for the full Sighting -> Incident flow
 - [ ] Replace secret-dependent and contract-wrong backend tests (`config.test.ts`, ingest route expectations)
 
