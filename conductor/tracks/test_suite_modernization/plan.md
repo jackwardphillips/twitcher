@@ -1,8 +1,8 @@
 # Plan: Test Suite Modernization
 
 ## Phase 1: Infrastructure
-- [~] Set up a robust test database cleaner
-- [ ] Implement a standardized network mocking pattern (e.g., using `msw` or similar)
+- [x] Set up a robust test database cleaner [8707442]
+- [x] Implement a standardized network mocking pattern (e.g., using `msw` or similar) [8707442]
 
 ## Phase 2: Core Logic Tests
 - [ ] Rewrite `ingestion-service.test.ts` to cover failure/retry states
