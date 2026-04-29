@@ -10,10 +10,12 @@ describe('App', () => {
     }));
   });
 
-  it('renders the twitcher header', async () => {
+  it('renders the Dashboard and shows initial loading state', async () => {
+    // Keep fetch pending
+    (global.fetch as any).mockReturnValue(new Promise(() => {}));
+    
     render(<App />)
-    await waitFor(() => {
-      expect(screen.getByText(/twitcher/i)).toBeInTheDocument()
-    });
+    expect(screen.getByText(/twitcher/i)).toBeInTheDocument()
+    expect(screen.getByText(/Loading sightings.../i)).toBeInTheDocument()
   })
 })
