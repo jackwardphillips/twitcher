@@ -16,6 +16,7 @@ A centralized, web-based dashboard designed for ABA rare bird seekers and effici
 
 ## Goals
 - **Centralize Information:** Consolidate data from eBird alerts, Discord discussions, and web searches into a single interface.
+- **Reliability & Integrity:** Ensure data is captured and processed reliably, with robust handling of intermittent network or database failures.
 - **Geospatial Awareness:** Provide precise mapping and proximity-based filtering to help users find rarities near them.
 - **Informed Decision-Making:** Provide enough context for users to quickly decide if a sighting is worth investigating.
 - **Stay Updated on Rarities:** Ensure users stay current with the latest high-priority rarity alerts.
