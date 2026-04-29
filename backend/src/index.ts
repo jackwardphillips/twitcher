@@ -55,6 +55,11 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
     console.log('Triggering ingestion via API...');
     const results = await triggerIngestion();
     console.log('Ingestion result:', results);
+    
+    if (results.status === 'imap_error') {
+      return res.status(500).json({ error: 'Ingestion failed', details: results.error });
+    }
+    
     res.json({ message: 'Ingestion complete', results });
   } catch (error) {
     console.error('Ingestion failed via API:', error);
