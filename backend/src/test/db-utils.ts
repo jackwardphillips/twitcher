@@ -1,8 +1,9 @@
 import { db } from '../lib/db';
 
 /**
- * Clears all data from the database.
- * Useful for ensuring a clean state between tests.
+ * Clears all transaction-safe data from the database.
+ * Useful for ensuring a clean state between tests while preserving reference data.
+ * @returns {Promise<void>}
  */
 export async function clearDatabase() {
   // Order matters if there are foreign key constraints, 
@@ -19,7 +20,8 @@ export async function clearDatabase() {
 }
 
 /**
- * Resets the database to a completely empty state, including reference data.
+ * Resets the database to a completely empty state, including reference data like RarityCodes.
+ * @returns {Promise<void>}
  */
 export async function resetDatabase() {
   await clearDatabase();

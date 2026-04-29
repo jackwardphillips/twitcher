@@ -12,13 +12,28 @@ export interface IngestionResult {
   error?: string;
 }
 
+/**
+ * Service responsible for ingesting eBird alert emails and converting them into sightings and incidents.
+ * Handles IMAP fetching, database persistence of raw emails, and coordination with parsing and enrichment.
+ */
 export class IngestionService {
   private imapClient: ImapClient;
 
+  /**
+   * @param {ImapClient} imapClient - The IMAP client used to fetch emails.
+   */
   constructor(imapClient: ImapClient) {
     this.imapClient = imapClient;
   }
 
+  /**
+   * Performs a full ingestion cycle.
+   * Fetches new emails from IMAP and retries any previously failed or new emails stored in the database.
+   * 
+   * @param {Date} [since] - Optional date to fetch emails since.
+   * @param {boolean} [enrich=true] - Whether to perform eBird API enrichment for discovered sightings.
+   * @returns {Promise<IngestionResult>} Summary of the ingestion process.
+   */
   async ingest(since?: Date, enrich = true): Promise<IngestionResult> {
     try {
       const newEmails = await this.imapClient.fetchRecentAlerts(since);
