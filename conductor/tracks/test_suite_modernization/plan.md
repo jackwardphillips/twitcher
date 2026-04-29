@@ -10,5 +10,5 @@
 - [x] Replace secret-dependent and contract-wrong backend tests (`config.test.ts`, ingest route expectations) [465640b]
 
 ## Phase 3: Regression Guarding
-- [~] Add "slow network" and "db failure" simulation tests
-- [ ] Rewrite frontend tests to cover failure, empty-state, and ingestion-status behavior instead of only header/card rendering
+- [x] Add "slow network" and "db failure" simulation tests [b6a128d]
+- [x] Rewrite frontend tests to cover failure, empty-state, and ingestion-status behavior instead of only header/card rendering [b6a128d]
