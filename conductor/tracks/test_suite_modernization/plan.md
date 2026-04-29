@@ -12,3 +12,7 @@
 ## Phase 3: Regression Guarding [checkpoint: 6234760]
 - [x] Add "slow network" and "db failure" simulation tests [b6a128d]
 - [x] Rewrite frontend tests to cover failure, empty-state, and ingestion-status behavior instead of only header/card rendering [b6a128d]
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions [87996aa]
+
