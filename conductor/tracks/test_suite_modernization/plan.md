@@ -6,8 +6,8 @@
 
 ## Phase 2: Core Logic Tests
 - [x] Rewrite ingestion-service.test.ts to cover failure/retry states [67276db]
-- [ ] Add integration tests for the full Sighting -> Incident flow
-- [ ] Replace secret-dependent and contract-wrong backend tests (`config.test.ts`, ingest route expectations)
+- [x] Add integration tests for the full Sighting -> Incident flow [14b5ef3]
+- [x] Replace secret-dependent and contract-wrong backend tests (`config.test.ts`, ingest route expectations) [465640b]
 
 ## Phase 3: Regression Guarding
 - [ ] Add "slow network" and "db failure" simulation tests
