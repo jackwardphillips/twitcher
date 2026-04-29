@@ -2,9 +2,6 @@ import { beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { clearDatabase } from './db-utils';
 import { server } from './mocks/server';
 
-// Force DATABASE_URL to use test.db
-process.env.DATABASE_URL = 'file:./test.db';
-
 beforeAll(async () => {
   // Start msw server
   server.listen({ onUnhandledRequest: 'warn' });

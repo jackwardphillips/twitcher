@@ -6,8 +6,24 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 # Active Tracks
 
+- [ ] **Track: Project Polish & Immediate Reliability**
+*Link: [./tracks/low_complexity_cleanup/](./tracks/low_complexity_cleanup/)*
+
 - [ ] **Track: Bug - Mobile Rarity Filter**
 *Link: [./tracks/bug_mobile_rarity_filter/](./tracks/bug_mobile_rarity_filter/)*
+
+---
+
+# Queued Tracks
+
+- [ ] **Track: Atomic Ingestion & Data Integrity**
+*Link: [./tracks/ingestion_atomicity/](./tracks/ingestion_atomicity/)*
+
+- [ ] **Track: API Hardening & Background Scaling**
+*Link: [./tracks/api_hardening_scaling/](./tracks/api_hardening_scaling/)*
+
+- [~] **Track: Test Suite Modernization**
+*Link: [./tracks/test_suite_modernization/](./tracks/test_suite_modernization/)*
 
 ---
 

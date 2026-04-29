@@ -71,7 +71,7 @@ export async function findMatchingIncident(
     
     let radius = 25;
     if (timeDiffHours <= 24) {
-      radius = Math.min(25 + (timeDiffHours * 50), 200);
+      radius = Math.min(25 + (timeDiffHours * 10), 50);
     }
 
     return incident.sightings.some(sighting => {
