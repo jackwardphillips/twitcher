@@ -4,7 +4,7 @@ import { server } from './mocks/server';
 
 beforeAll(async () => {
   // Start msw server
-  server.listen({ onUnhandledRequest: 'warn' });
+  server.listen({ onUnhandledRequest: 'bypass' });
 });
 
 beforeEach(async () => {

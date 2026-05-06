@@ -18,7 +18,7 @@ describe('IngestionService DB Failure Simulation', () => {
     service = new IngestionService(mockImapClient);
   });
 
-  it('should return imap_error when database findMany fails', async () => {
+  it('should return error when database findMany fails', async () => {
     mockImapClient.fetchRecentAlerts.mockResolvedValue([]);
     
     const findManySpy = vi.spyOn(db.incomingEmail, 'findMany').mockRejectedValue(new Error('Database is down'));
@@ -26,7 +26,7 @@ describe('IngestionService DB Failure Simulation', () => {
 
     const result = await service.ingest();
 
-    expect(result.status).toBe('imap_error');
+    expect(result.status).toBe('error');
     expect(result.error).toBe('Database is down');
     expect(consoleSpy).toHaveBeenCalledWith('Ingestion failed:', expect.any(Error));
 

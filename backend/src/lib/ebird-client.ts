@@ -73,10 +73,11 @@ export class EbirdClient {
         return await response.json();
       } catch (error) {
         const isLastRetry = i === retries - 1;
-        const isNetworkError = error instanceof Error && 
-          (error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'));
+        const isRetryableError = (error instanceof Error && 
+          (error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'))) ||
+          (error instanceof Error && error.message.startsWith('eBird API error 5'));
         
-        if (isLastRetry || !isNetworkError) {
+        if (isLastRetry || !isRetryableError) {
           throw error;
         }
         

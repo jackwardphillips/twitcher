@@ -7,8 +7,8 @@ export interface IngestionResult {
   ingested: number;
   skipped: number;
   failed: number;
-  status: 'success' | 'no_new_emails' | 'imap_error';
-  enrichmentStatus?: 'success' | 'partial_failure' | 'failed' | 'not_requested';
+  status: 'success' | 'no_new_emails' | 'imap_error' | 'error';
+  enrichmentStatus?: 'success' | 'failed' | 'partial_failure' | 'not_requested';
   error?: string;
 }
 
@@ -164,11 +164,14 @@ export class IngestionService {
       return { ingested, skipped, failed, status: 'success', enrichmentStatus };
     } catch (error) {
       console.error('Ingestion failed:', error);
+      const isImapError = error instanceof Error && 
+        (error.message.includes('IMAP') || error.message.includes('connection') || error.message.includes('auth'));
+        
       return { 
         ingested: 0, 
         skipped: 0, 
         failed: 0, 
-        status: 'imap_error',
+        status: isImapError ? 'imap_error' : 'error',
         error: error instanceof Error ? error.message : String(error)
       };
     }
