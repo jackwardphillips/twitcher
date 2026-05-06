@@ -26,8 +26,8 @@
 
 ## Phase 5A: Residual Test Cleanup
 - [x] Strengthen `backend/src/index.test.ts` for `/api/incidents` so it asserts meaningful shaped response fields (`locationName`, centroid fields, `activeDays`, `dailyCounts`, latest links, and cached photo data) instead of only basic presence. [a5e42fc]
-- [ ] Update the success fixture in `backend/src/api-ingest.test.ts` to use the full `IngestionResult` shape, including `status` and `enrichmentStatus`, so the test matches the actual contract instead of a partial object.
-- [ ] Remove stray debug logging from `backend/src/full-api-ingest.test.ts` to keep automated test output clean and intentional.
+- [x] Update the success fixture in `backend/src/api-ingest.test.ts` to use the full `IngestionResult` shape, including `status` and `enrichmentStatus`, so the test matches the actual contract instead of a partial object. [a3eae76]
+- [x] Remove stray debug logging from `backend/src/full-api-ingest.test.ts` to keep automated test output clean and intentional. [4ba5b5b]
 
 ## Phase 6: Concurrency and Background Work
 - [ ] Add backend tests that run overlapping ingestions and prove duplicate emails/sightings/incidents are not created when startup ingestion and manual `/api/ingest` happen at the same time.
