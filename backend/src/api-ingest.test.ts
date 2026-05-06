@@ -24,15 +24,28 @@ describe('POST /api/ingest', () => {
     expect(IngestionService.prototype.ingest).toHaveBeenCalled();
   });
 
-  it('should return 500 if ingestion fails', async () => {
-    (IngestionService.prototype.ingest as any).mockRejectedValue(new Error('IMAP failure'));
+  it('should return 500 if status is imap_error', async () => {
+    const mockResult = { status: 'imap_error', error: 'Connection failed', ingested: 0, skipped: 0, failed: 0 };
+    (IngestionService.prototype.ingest as any).mockResolvedValue(mockResult);
 
     const response = await request(app).post('/api/ingest');
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ 
       error: 'Ingestion failed',
-      details: 'IMAP failure'
+      details: 'Connection failed'
+    });
+  });
+
+  it('should return 500 if ingestion throws an exception', async () => {
+    (IngestionService.prototype.ingest as any).mockRejectedValue(new Error('Hard crash'));
+
+    const response = await request(app).post('/api/ingest');
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({ 
+      error: 'Ingestion failed',
+      details: 'Hard crash'
     });
   });
 });
