@@ -11,7 +11,13 @@ describe('POST /api/ingest', () => {
   });
 
   it('should trigger ingestion and return results', async () => {
-    const mockResult = { ingested: 2, skipped: 1, failed: 0 };
+    const mockResult = { 
+      ingested: 2, 
+      skipped: 1, 
+      failed: 0,
+      status: 'success',
+      enrichmentStatus: 'success'
+    };
     (IngestionService.prototype.ingest as any).mockResolvedValue(mockResult);
 
     const response = await request(app).post('/api/ingest');
