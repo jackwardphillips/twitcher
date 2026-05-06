@@ -15,4 +15,5 @@
 
 ## Phase: Review Fixes
 - [x] Task: Apply review suggestions [87996aa]
+- [x] Task: Refine EbirdClient retry and IngestionService error handling [8a5701a]
 
