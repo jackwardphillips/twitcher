@@ -22,7 +22,7 @@
 - [x] Rewrite `backend/src/api-ingest.test.ts` to cover the actual `/api/ingest` contract: resolved `imap_error` returns `500`, thrown exceptions hit the catch path, and success remains `200`. [a3216a0]
 - [x] Remove or rewrite fake integration tests (`backend/src/full-api-ingest.test.ts`, similar over-mocked flow tests) so anything labeled "full flow" uses the real parser and database boundaries. [3f65d72]
 - [x] Replace remaining backend smoke theater (`backend/src/index.test.ts`, `backend/src/config.test.ts`) with assertions tied to meaningful behavior, or delete them if they protect nothing. [a57eb41]
-- [ ] Fix test entrypoints so routine verification works on Windows without PowerShell execution-policy hacks: root `npm test` must run the real suites, and backend test scripts must not depend on `.ps1` shims to reach Vitest.
+- [x] Fix test entrypoints so routine verification works on Windows without PowerShell execution-policy hacks: root `npm test` must run the real suites, and backend test scripts must not depend on `.ps1` shims to reach Vitest. [fa15ed6]
 
 ## Phase 6: Concurrency and Background Work
 - [ ] Add backend tests that run overlapping ingestions and prove duplicate emails/sightings/incidents are not created when startup ingestion and manual `/api/ingest` happen at the same time.
