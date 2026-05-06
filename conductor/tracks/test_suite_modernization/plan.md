@@ -24,7 +24,7 @@
 - [x] Replace remaining backend smoke theater (`backend/src/index.test.ts`, `backend/src/config.test.ts`) with assertions tied to meaningful behavior, or delete them if they protect nothing. [a57eb41]
 - [x] Fix test entrypoints so routine verification works on Windows without PowerShell execution-policy hacks: root `npm test` must run the real suites, and backend test scripts must not depend on `.ps1` shims to reach Vitest. [fa15ed6]
 
-## Phase 5A: Residual Test Cleanup
+## Phase 5A: Residual Test Cleanup [checkpoint: 4f3f7cb]
 - [x] Strengthen `backend/src/index.test.ts` for `/api/incidents` so it asserts meaningful shaped response fields (`locationName`, centroid fields, `activeDays`, `dailyCounts`, latest links, and cached photo data) instead of only basic presence. [a5e42fc]
 - [x] Update the success fixture in `backend/src/api-ingest.test.ts` to use the full `IngestionResult` shape, including `status` and `enrichmentStatus`, so the test matches the actual contract instead of a partial object. [a3eae76]
 - [x] Remove stray debug logging from `backend/src/full-api-ingest.test.ts` to keep automated test output clean and intentional. [4ba5b5b]
