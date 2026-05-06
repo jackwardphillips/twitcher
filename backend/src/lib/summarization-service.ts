@@ -169,41 +169,56 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
   }
 }
 
+let isSummarizing = false;
+
 /**
  * Runs a summarization cycle for all active incidents (sightings in the last 7 days).
  */
 export async function runSummarizationCycle(prisma: PrismaClient): Promise<void> {
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  const activeIncidents = (await prisma.incident.findMany({
-    where: {
-      lastSeen: {
-        gte: sevenDaysAgo,
-      },
-      status: {
-        in: ['OPEN', 'CLOSED']
-      }
-    },
-    include: {
-      sightings: {
-        take: 1,
-        orderBy: { date: 'desc' }
-      }
-    }
-  })).filter(incident => {
-    // Only summarize if it's never been summarized OR if it was seen after last summary
-    return !incident.summaryGeneratedAt || incident.lastSeen > incident.summaryGeneratedAt;
-  });
-
-  console.log(`Starting summarization cycle for ${activeIncidents.length} incidents...`);
-
-  for (const incident of activeIncidents) {
-    console.log(`Processing summary for: ${incident.commonName}...`);
-    await summarizeIncident(prisma, incident.id);
-    // 2 second delay for Groq (safe 30 RPM)
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  if (isSummarizing) {
+    console.log('Summarization cycle already in progress. Skipping...');
+    return;
   }
 
-  console.log('Summarization cycle complete.');
+  isSummarizing = true;
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const activeIncidents = (await prisma.incident.findMany({
+      where: {
+        lastSeen: {
+          gte: sevenDaysAgo,
+        },
+        status: {
+          in: ['OPEN', 'CLOSED']
+        }
+      },
+      include: {
+        sightings: {
+          take: 1,
+          orderBy: { date: 'desc' }
+        }
+      }
+    })).filter(incident => {
+      // Only summarize if it's never been summarized OR if it was seen after last summary
+      return !incident.summaryGeneratedAt || incident.lastSeen > incident.summaryGeneratedAt;
+    });
+
+    console.log(`Starting summarization cycle for ${activeIncidents.length} incidents...`);
+
+    for (const incident of activeIncidents) {
+      console.log(`Processing summary for: ${incident.commonName}...`);
+      await summarizeIncident(prisma, incident.id);
+      // 2 second delay for Groq (safe 30 RPM)
+      // Only delay if there are more incidents to process
+      if (activeIncidents.indexOf(incident) < activeIncidents.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    console.log('Summarization cycle complete.');
+  } finally {
+    isSummarizing = false;
+  }
 }

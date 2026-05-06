@@ -8,27 +8,45 @@ export interface SpeciesPhoto {
 export class PhotoService {
   private INAT_API_BASE = 'https://api.inaturalist.org/v1';
   private CACHE_EXPIRATION_DAYS = 30;
+  private static pendingFetches = new Map<string, Promise<SpeciesPhoto | null>>();
 
   async fetchSpeciesPhoto(speciesName: string): Promise<SpeciesPhoto | null> {
-    const cached = await prisma.speciesPhoto.findUnique({
-      where: { speciesName },
-    });
-
-    if (cached) {
-      const isStale =
-        new Date().getTime() - new Date(cached.fetchedAt).getTime() >
-        this.CACHE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
-      
-      if (!isStale) {
-        if (!cached.photoUrl) return null;
-        return {
-          photoUrl: cached.photoUrl,
-          attribution: cached.attribution,
-        };
-      }
+    // Check if there is already a fetch in progress for this species
+    const pending = PhotoService.pendingFetches.get(speciesName);
+    if (pending) {
+      return pending;
     }
 
-    return await this.refreshCache(speciesName);
+    // Define the full fetch process as a single promise to be tracked
+    const fetchPromise = (async () => {
+      try {
+        const cached = await prisma.speciesPhoto.findUnique({
+          where: { speciesName },
+        });
+
+        if (cached) {
+          const isStale =
+            new Date().getTime() - new Date(cached.fetchedAt).getTime() >
+            this.CACHE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+          
+          if (!isStale) {
+            if (!cached.photoUrl) return null;
+            return {
+              photoUrl: cached.photoUrl,
+              attribution: cached.attribution,
+            };
+          }
+        }
+
+        return await this.refreshCache(speciesName);
+      } finally {
+        // Clean up after completion
+        PhotoService.pendingFetches.delete(speciesName);
+      }
+    })();
+
+    PhotoService.pendingFetches.set(speciesName, fetchPromise);
+    return fetchPromise;
   }
 
   async needsFetch(speciesName: string): Promise<boolean> {

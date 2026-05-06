@@ -252,21 +252,30 @@ export async function addSightingToIncident(
 
   // Use a transaction to ensure both updates succeed
   return await prisma.$transaction(async (tx) => {
+    // Fetch the latest incident state to avoid race conditions with stale data
+    const latestIncident = await tx.incident.findUnique({
+      where: { id: incident.id }
+    });
+
+    if (!latestIncident) {
+      throw new Error(`Incident ${incident.id} not found during update`);
+    }
+
     await tx.sighting.update({
       where: { id: sighting.id },
-      data: { incidentId: incident.id }
+      data: { incidentId: latestIncident.id }
     });
 
     return await tx.incident.update({
-      where: { id: incident.id },
+      where: { id: latestIncident.id },
       data: {
-        minLat: Math.min(incident.minLat, sighting.latitude!),
-        maxLat: Math.max(incident.maxLat, sighting.latitude!),
-        minLng: Math.min(incident.minLng, sighting.longitude!),
-        maxLng: Math.max(incident.maxLng, sighting.longitude!),
-        firstSeen: sighting.date < incident.firstSeen ? sighting.date : incident.firstSeen,
-        lastSeen: sighting.date > incident.lastSeen ? sighting.date : incident.lastSeen,
-        sightingCount: incident.sightingCount + 1,
+        minLat: Math.min(latestIncident.minLat, sighting.latitude!),
+        maxLat: Math.max(latestIncident.maxLat, sighting.latitude!),
+        minLng: Math.min(latestIncident.minLng, sighting.longitude!),
+        maxLng: Math.max(latestIncident.maxLng, sighting.longitude!),
+        firstSeen: sighting.date < latestIncident.firstSeen ? sighting.date : latestIncident.firstSeen,
+        lastSeen: sighting.date > latestIncident.lastSeen ? sighting.date : latestIncident.lastSeen,
+        sightingCount: { increment: 1 },
         statesCovered: JSON.stringify(currentStates),
         status: IncidentStatus.OPEN,
         closedAt: null
