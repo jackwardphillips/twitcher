@@ -1,12 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IngestionService } from './ingestion-service.js';
 import { ImapClient } from './imap-client.js';
+import { saveSightings } from './sighting-service.js';
 import { db } from './db.js';
 import { http, HttpResponse } from 'msw';
 import { server } from '../test/mocks/server';
 
 // Mock ImapClient
 vi.mock('./imap-client.js');
+// Mock sighting-service to allow failure injection
+vi.mock('./sighting-service.js', async () => {
+  const actual = await vi.importActual('./sighting-service.js') as any;
+  return {
+    ...actual,
+    saveSightings: vi.fn(actual.saveSightings),
+  };
+});
 
 describe('IngestionService Integration', () => {
   let service: IngestionService;
@@ -182,38 +191,28 @@ describe('IngestionService Integration', () => {
     expect(result.ingested).toBe(0);
   });
 
-  it('should mark as failed if parseEBirdAlert throws', async () => {
+  it('should mark email as failed if saveSightings throws', async () => {
     const date = getRecentDate();
     const mockEmail = { 
-      messageId: 'msg-fail-parse', 
+      messageId: 'msg-fail-save', 
       subject: 'Alert', 
       from: 'ebird-alert@birds.cornell.edu', 
       date: date, 
-      rawBody: 'INVALID BODY'
+      rawBody: getRawBody(date)
     };
     mockImapClient.fetchRecentAlerts.mockResolvedValue([mockEmail]);
 
-    // Note: parseEBirdAlert currently doesn't throw for invalid body, it just returns empty array.
-    // If sightings.length === 0, it just marks as processed?
-    // Let's check IngestionService.ts:
-    // const sightings = parseEBirdAlert(email.rawBody, email.date);
-    // if (sightings.length > 0) { ... }
-    // await db.incomingEmail.update({ ... status: 'processed' });
-    
-    // So if it's empty, it's still "processed" (just no sightings found).
-    
-    // To trigger catch (parseError), I might need saveSightings to throw.
-    // server.use(http.get(...) returning an error already tested the enrichmentStatus, 
-    // but sighting-service catches that error.
-    
-    // I'll mock saveSightings to throw a hard error.
-    // Wait, I can't easily mock saveSightings if I'm doing integration tests unless I use vi.mock.
-    // But I'm already using vi.mock for ImapClient.
-    
-    // Let's see if I can make parseEBirdAlert throw.
-    // Actually, I'll just accept 77% if I can't easily trigger the hard failure without more mocking.
-    // But wait, I can mock Prisma to throw!
-    
-    // Actually, let's just run what I have.
+    // Inject failure into saveSightings
+    vi.mocked(saveSightings).mockRejectedValueOnce(new Error('Database explosion'));
+
+    const result = await service.ingest();
+
+    expect(result.failed).toBe(1);
+    expect(result.ingested).toBe(0);
+
+    const savedEmail = await db.incomingEmail.findUnique({
+      where: { messageId: 'msg-fail-save' }
+    });
+    expect(savedEmail?.status).toBe('failed');
   });
 });
