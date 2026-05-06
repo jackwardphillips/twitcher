@@ -11,7 +11,7 @@
     "seed:emails": "tsx src/scripts/seed-from-emails.ts",
     "backfill:emails": "tsx src/scripts/backfill-emails.ts",
     "check:counts": "tsx src/scripts/check-counts.ts",
-    "test": "powershell -NoProfile -Command \"npx.cmd prisma generate; if (Test-Path dev.db) { Copy-Item dev.db test.db -Force }; $env:DATABASE_URL='file:./test.db'; vitest run\""
+    "test": "node test-setup.js"
   },
   "keywords": [],
   "author": "",
