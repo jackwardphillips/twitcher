@@ -87,12 +87,6 @@ describe('Full API Ingestion Flow (Real DB)', () => {
       where: { species: 'Common Crane' }
     });
     expect(savedSighting).not.toBeNull();
-    console.log('Saved sighting:', {
-      id: savedSighting?.id,
-      latitude: savedSighting?.latitude,
-      longitude: savedSighting?.longitude,
-      scientificName: savedSighting?.scientificName
-    });
     expect(savedSighting?.observer).toBe('John Doe');
     expect(savedSighting?.location).toBe('Test Location');
     expect(savedSighting?.rarity).toBe(4);
