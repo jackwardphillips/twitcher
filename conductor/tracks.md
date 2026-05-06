@@ -22,7 +22,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: API Hardening & Background Scaling**
 *Link: [./tracks/api_hardening_scaling/](./tracks/api_hardening_scaling/)*
 
-- [x] **Track: Test Suite Modernization**
+- [~] **Track: Test Suite Modernization**
 *Link: [./tracks/test_suite_modernization/](./tracks/test_suite_modernization/)*
 
 ---
