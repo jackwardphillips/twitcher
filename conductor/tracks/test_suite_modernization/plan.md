@@ -36,6 +36,13 @@
 - [x] Add regression tests for `/api/incidents` photo fetching so concurrent requests do not fan out duplicate photo refreshes for the same species. [f19da00]
 - [x] Add failure-containment tests proving background summarization and photo refresh errors are logged and isolated without breaking the user-facing API response. [f19da00]
 
+## Phase 6A: Concurrency Hardening Fixes
+- [~] Add an atomic claim/transition step for pending `IncomingEmail` rows in `backend/src/lib/ingestion-service.ts` so concurrent retry workers cannot both parse/save the same email after reading `status in ['new', 'failed']`.
+- [ ] Replace the current pending-email concurrency test with one that forces real overlap on the retry path and proves only one worker processes a shared pending email end to end.
+- [ ] Fix `backend/src/lib/incident-service.ts` so concurrent updates derive `statesCovered` from the latest persisted incident state inside the transaction, not from the stale incident snapshot passed into `addSightingToIncident`.
+- [ ] Add a concurrent incident-update test that uses distinct state-bearing locations and proves `statesCovered`, `sightingCount`, and `lastSeen` all survive overlapping writes.
+- [ ] Add explicit failure-containment coverage for `photoService.needsFetch()` rejection in `backend/src/index.ts`, and update the route if needed so both `needsFetch()` and `fetchSpeciesPhoto()` failures are isolated and logged without leaking into the response path.
+
 ## Phase 7: End-to-End Dashboard Coverage
 - [ ] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents.
 - [ ] Add interaction tests for combined dashboard filters (rarity plus near-me plus empty-state guard) so filter composition is covered instead of checked one flag at a time.
