@@ -92,19 +92,23 @@ export class IngestionService {
         }
         try {
           let savedId = email.dbId;
+          let claimed = false;
 
-          if (!email.isRetry) {
-            const existing = await db.incomingEmail.findUnique({
-              where: { messageId: email.messageId },
+          if (email.isRetry) {
+            // Atomic claim of existing record
+            const result = await db.incomingEmail.updateMany({
+              where: {
+                id: savedId,
+                status: { in: ['new', 'failed'] }
+              },
+              data: { status: 'processing' }
             });
-
-            if (existing) {
-              if (existing.status === 'processed') {
-                skipped++;
-                continue;
-              }
-              savedId = existing.id;
-            } else {
+            if (result.count === 1) {
+              claimed = true;
+            }
+          } else {
+            // New email from IMAP: try to create with 'processing' status
+            try {
               const saved = await db.incomingEmail.create({
                 data: {
                   messageId: email.messageId,
@@ -112,11 +116,45 @@ export class IngestionService {
                   from: email.from,
                   date: email.date,
                   rawBody: email.rawBody,
-                  status: 'new',
+                  status: 'processing',
                 },
               });
               savedId = saved.id;
+              claimed = true;
+            } catch (createError: any) {
+              if (createError.code === 'P2002') { // Unique constraint violation (messageId)
+                // Someone else created it (or it already existed), try to claim if it's pending
+                const result = await db.incomingEmail.updateMany({
+                  where: {
+                    messageId: email.messageId,
+                    status: { in: ['new', 'failed'] }
+                  },
+                  data: { status: 'processing' }
+                });
+                
+                if (result.count === 1) {
+                  const existing = await db.incomingEmail.findUnique({
+                    where: { messageId: email.messageId }
+                  });
+                  savedId = existing?.id;
+                  claimed = true;
+                } else {
+                  // Already being processed or already succeeded
+                  const existing = await db.incomingEmail.findUnique({
+                    where: { messageId: email.messageId }
+                  });
+                  if (existing?.status === 'processed') {
+                    skipped++;
+                  }
+                }
+              } else {
+                throw createError;
+              }
             }
+          }
+
+          if (!claimed) {
+            continue;
           }
 
           // Auto-parse immediately
