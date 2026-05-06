@@ -30,11 +30,11 @@
 - [x] Remove stray debug logging from `backend/src/full-api-ingest.test.ts` to keep automated test output clean and intentional. [4ba5b5b]
 
 ## Phase 6: Concurrency and Background Work
-- [ ] Add backend tests that run overlapping ingestions and prove duplicate emails/sightings/incidents are not created when startup ingestion and manual `/api/ingest` happen at the same time.
-- [ ] Add incident update tests that detect stale `sightingCount`, `lastSeen`, and incident merge behavior under concurrent writes instead of only single-threaded happy paths.
-- [ ] Add regression tests for background summarization so repeated ingest triggers do not start duplicate summarization work for the same incident set.
-- [ ] Add regression tests for `/api/incidents` photo fetching so concurrent requests do not fan out duplicate photo refreshes for the same species.
-- [ ] Add failure-containment tests proving background summarization and photo refresh errors are logged and isolated without breaking the user-facing API response.
+- [x] Add backend tests that run overlapping ingestions and prove duplicate emails/sightings/incidents are not created when startup ingestion and manual `/api/ingest` happen at the same time. [a7bd247]
+- [x] Add incident update tests that detect stale `sightingCount`, `lastSeen`, and incident merge behavior under concurrent writes instead of only single-threaded happy paths. [f19da00]
+- [x] Add regression tests for background summarization so repeated ingest triggers do not start duplicate summarization work for the same incident set. [f19da00]
+- [x] Add regression tests for `/api/incidents` photo fetching so concurrent requests do not fan out duplicate photo refreshes for the same species. [f19da00]
+- [x] Add failure-containment tests proving background summarization and photo refresh errors are logged and isolated without breaking the user-facing API response. [f19da00]
 
 ## Phase 7: End-to-End Dashboard Coverage
 - [ ] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents.
