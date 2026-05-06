@@ -13,7 +13,28 @@
 - [x] Add "slow network" and "db failure" simulation tests [b6a128d]
 - [x] Rewrite frontend tests to cover failure, empty-state, and ingestion-status behavior instead of only header/card rendering [b6a128d]
 
-## Phase: Review Fixes
+## Phase 4 : Review Fixes
 - [x] Task: Apply review suggestions [87996aa]
 - [x] Task: Refine EbirdClient retry and IngestionService error handling [8a5701a]
+
+## Phase 5: Test Credibility Cleanup
+- [~] Replace the non-test in `backend/src/lib/ingestion-service.test.ts` with a real failure-injection case that proves parse/save failures mark the email `failed` and do not silently pass.
+- [ ] Rewrite `backend/src/api-ingest.test.ts` to cover the actual `/api/ingest` contract: resolved `imap_error` returns `500`, thrown exceptions hit the catch path, and success remains `200`.
+- [ ] Remove or rewrite fake integration tests (`backend/src/full-api-ingest.test.ts`, similar over-mocked flow tests) so anything labeled "full flow" uses the real parser and database boundaries.
+- [ ] Replace remaining backend smoke theater (`backend/src/index.test.ts`, `backend/src/config.test.ts`) with assertions tied to meaningful behavior, or delete them if they protect nothing.
+- [ ] Fix test entrypoints so routine verification works on Windows without PowerShell execution-policy hacks: root `npm test` must run the real suites, and backend test scripts must not depend on `.ps1` shims to reach Vitest.
+
+## Phase 6: Concurrency and Background Work
+- [ ] Add backend tests that run overlapping ingestions and prove duplicate emails/sightings/incidents are not created when startup ingestion and manual `/api/ingest` happen at the same time.
+- [ ] Add incident update tests that detect stale `sightingCount`, `lastSeen`, and incident merge behavior under concurrent writes instead of only single-threaded happy paths.
+- [ ] Add regression tests for background summarization so repeated ingest triggers do not start duplicate summarization work for the same incident set.
+- [ ] Add regression tests for `/api/incidents` photo fetching so concurrent requests do not fan out duplicate photo refreshes for the same species.
+- [ ] Add failure-containment tests proving background summarization and photo refresh errors are logged and isolated without breaking the user-facing API response.
+
+## Phase 7: End-to-End Dashboard Coverage
+- [ ] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents.
+- [ ] Add interaction tests for combined dashboard filters (rarity plus near-me plus empty-state guard) so filter composition is covered instead of checked one flag at a time.
+- [ ] Add behavioral tests for histogram, map, and photo presentation states that assert user-visible outcomes rather than CSS trivia.
+- [ ] Add API-level tests for ingestion hardening gaps that still affect dashboard reliability: auth/rate limiting expectations, slow-provider behavior, and safe error surfaces.
+- [ ] Add representative end-to-end smoke coverage for the main dashboard flow: ingest data, fetch incidents, render the list/map, and preserve failure messaging when one backend dependency degrades.
 
