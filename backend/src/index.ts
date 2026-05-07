@@ -140,13 +140,15 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
     
     // Lazy fetch missing/stale photos in the background
     incidents.forEach(incident => {
-      photoService.needsFetch(incident.scientificName).then(needed => {
-        if (needed) {
-          photoService.fetchSpeciesPhoto(incident.scientificName).catch(err => {
-            console.error(`Background photo fetch failed for ${incident.scientificName}:`, err);
-          });
-        }
-      });
+      photoService.needsFetch(incident.scientificName)
+        .then(needed => {
+          if (needed) {
+            return photoService.fetchSpeciesPhoto(incident.scientificName);
+          }
+        })
+        .catch(err => {
+          console.error(`Background photo check/fetch failed for ${incident.scientificName}:`, err);
+        });
     });
 
     res.json(incidents);
