@@ -54,6 +54,8 @@ describe('Ingestion Concurrency', () => {
   });
 
   it('should not fan out duplicate photo fetches for the same species', async () => {
+    // RACE: Multiple concurrent requests for the same species each trigger an iNat fetch.
+    // FIX: PhotoService uses an in-memory 'pendingFetches' Map to de-duplicate active requests.
     const photoService = new PhotoService();
     const species = 'Grus grus';
 
@@ -84,6 +86,10 @@ describe('Ingestion Concurrency', () => {
   });
 
   it('should not create duplicate sightings when multiple ingestions run concurrently', async () => {
+    // RACE: Two workers both fetch the same NEW email from IMAP and try to create it.
+    // FIX: Unique constraint on 'messageId' causes one worker to fail creation, 
+    // it then tries to 'claim' the existing row if it's still pending.
+    
     const date = new Date();
     date.setSeconds(0, 0);
     const dateStr = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false });
@@ -127,6 +133,9 @@ describe('Ingestion Concurrency', () => {
   });
 
   it('should not create duplicate sightings when processing the same pending email concurrently', async () => {
+    // RACE: Two workers both see a 'new' email in DB and try to process it.
+    // FIX: Atomic updateMany({ status: 'new' }) -> { status: 'processing' } ensures only one winner.
+    
     const date = new Date();
     date.setSeconds(0, 0);
     const dateStr = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false });
@@ -164,7 +173,10 @@ describe('Ingestion Concurrency', () => {
     expect(sightingCount).toBe(1);
   });
 
-  it('should correctly update sightingCount under concurrent incident updates', async () => {
+  it('should correctly update sightingCount under concurrent incident updates (deterministic overlap)', async () => {
+    // RACE: Two sightings added to same incident concurrently, both read same stale count.
+    // FIX: Fetch latest incident state INSIDE transaction before updating.
+    
     // 1. Arrange: Create an incident and multiple sightings
     const incident = await prisma.incident.create({
       data: {
@@ -204,6 +216,17 @@ describe('Ingestion Concurrency', () => {
       })
     ]);
 
+    // Inject delay into FIRST update to force overlap
+    const originalUpdate = prisma.incident.update;
+    let updateCallCount = 0;
+    vi.spyOn(prisma.incident, 'update').mockImplementation(async (args) => {
+        updateCallCount++;
+        if (updateCallCount === 1) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        return originalUpdate.call(prisma.incident, args);
+    });
+
     // 2. Act: Concurrent updates
     await Promise.all(sightings.map(s => addSightingToIncident(prisma, incident, s)));
 
@@ -217,6 +240,9 @@ describe('Ingestion Concurrency', () => {
   });
 
   it('should not run overlapping summarization cycles', async () => {
+    // RACE: Multiple ingest triggers start multiple summarization cycles.
+    // FIX: SummarizationService uses an in-memory 'isRunning' flag to guard the cycle.
+    
     // 1. Arrange: Create an incident that needs summarization
     const incident = await prisma.incident.create({
       data: {

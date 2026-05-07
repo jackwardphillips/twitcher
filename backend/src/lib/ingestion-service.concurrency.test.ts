@@ -62,7 +62,11 @@ describe('IngestionService Concurrency', () => {
 - Comments: "Rare crane sighting"`;
   };
 
-  it('should process a pending email only once even with concurrent ingest() calls', async () => {
+  it('should process a pending email only once even with concurrent ingest() calls (deterministic overlap)', async () => {
+    // RACE: Two workers both see an email with status='new' and try to process it.
+    // FIX: Atomic updateMany({ where: { status: 'new' }, data: { status: 'processing' } })
+    // only returns count=1 for the winner.
+    
     const date = getRecentDate();
     const body = getRawBody(date);
 
@@ -78,18 +82,26 @@ describe('IngestionService Concurrency', () => {
       }
     });
 
+    // Inject a delay into the FIRST updateMany to force the second worker to attempt a concurrent claim
+    const originalUpdateMany = db.incomingEmail.updateMany;
+    let claimCallCount = 0;
+    vi.spyOn(db.incomingEmail, 'updateMany').mockImplementation(async (args) => {
+        claimCallCount++;
+        if (claimCallCount === 1) {
+            // First worker stalls during claim
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        return originalUpdateMany.call(db.incomingEmail, args);
+    });
+
     // Run two ingestions concurrently
     const [res1, res2] = await Promise.all([
       service.ingest(),
       service.ingest()
     ]);
 
-    // One should have ingested it, the other should have either seen it as already being processed or skipped it
-    // With the CURRENT implementation, both will likely see it as 'new' and both will process it.
-    
+    // One should have ingested it, the other should have skipped it (claimed=false)
     const totalIngested = res1.ingested + res2.ingested;
-    
-    // We expect totalIngested to be 1. If the bug exists, it will be 2.
     expect(totalIngested).toBe(1);
     
     // saveSightings should only be called once
