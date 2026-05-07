@@ -86,6 +86,59 @@ describe('IngestionService Recovery', () => {
     expect(updatedEmail!.status).toBe('processed');
   });
 
+  it('should simulate a crash-recovery cycle: claim -> (crash) -> recover -> success', async () => {
+    const date = getRecentDate();
+    const body = getRawBody(date);
+
+    // 1. First run: Start processing but "crash" (simulated by just stopping after claim)
+    const email = await db.incomingEmail.create({
+      data: {
+        messageId: 'crash-recovery-msg',
+        subject: 'Crash Recovery Alert',
+        from: 'ebird-alert@birds.cornell.edu',
+        date: date,
+        rawBody: body,
+        status: 'new'
+      }
+    });
+
+    // Mock saveSightings to throw once to simulate a crash that avoids the internal catch
+    // (In reality, a process death is what we are simulating)
+    // We'll just manually put it in 'processing' with an old date to represent the "crashed" state
+    const thirtyMinsAgo = new Date();
+    thirtyMinsAgo.setMinutes(thirtyMinsAgo.getMinutes() - 30);
+    
+    await db.incomingEmail.update({
+        where: { id: email.id },
+        data: { 
+            status: 'processing',
+            updatedAt: thirtyMinsAgo
+        }
+    });
+
+    // 2. Second run: Should recover and succeed
+    const results = await service.ingest();
+    expect(results.ingested).toBe(1);
+
+    const finalEmail = await db.incomingEmail.findUnique({
+      where: { id: email.id }
+    });
+    expect(finalEmail!.status).toBe('processed');
+    
+    // 3. Third run: IMAP returns it again, should skip
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'crash-recovery-msg',
+      subject: 'Crash Recovery Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date: date,
+      rawBody: body
+    }]);
+    
+    const results2 = await service.ingest();
+    expect(results2.ingested).toBe(0);
+    expect(results2.skipped).toBe(1);
+  });
+
   it('should NOT recover an email that was just updated in "processing" state', async () => {
     const date = getRecentDate();
     const body = getRawBody(date);
