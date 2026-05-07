@@ -38,10 +38,18 @@ export class IngestionService {
     try {
       const newEmails = await this.imapClient.fetchRecentAlerts(since);
       
-      // Also fetch any 'new' or 'failed' emails from the database for retry
+      const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+      
+      // Also fetch any 'new', 'failed', or 'stuck processing' emails from the database for retry
       const pendingEmails = await db.incomingEmail.findMany({
         where: {
-          status: { in: ['new', 'failed'] }
+          OR: [
+            { status: { in: ['new', 'failed'] } },
+            { 
+              status: 'processing',
+              updatedAt: { lt: fifteenMinsAgo }
+            }
+          ]
         }
       });
 
@@ -99,7 +107,13 @@ export class IngestionService {
             const result = await db.incomingEmail.updateMany({
               where: {
                 id: savedId,
-                status: { in: ['new', 'failed'] }
+                OR: [
+                  { status: { in: ['new', 'failed'] } },
+                  { 
+                    status: 'processing',
+                    updatedAt: { lt: fifteenMinsAgo }
+                  }
+                ]
               },
               data: { status: 'processing' }
             });
@@ -127,7 +141,13 @@ export class IngestionService {
                 const result = await db.incomingEmail.updateMany({
                   where: {
                     messageId: email.messageId,
-                    status: { in: ['new', 'failed'] }
+                    OR: [
+                      { status: { in: ['new', 'failed'] } },
+                      { 
+                        status: 'processing',
+                        updatedAt: { lt: fifteenMinsAgo }
+                      }
+                    ]
                   },
                   data: { status: 'processing' }
                 });
