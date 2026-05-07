@@ -43,6 +43,14 @@
 - [x] Add a concurrent incident-update test that uses distinct state-bearing locations and proves `statesCovered`, `sightingCount`, and `lastSeen` all survive overlapping writes. [557f435]
 - [x] Add explicit failure-containment coverage for `photoService.needsFetch()` rejection in `backend/src/index.ts`, and update the route if needed so both `needsFetch()` and `fetchSpeciesPhoto()` failures are isolated and logged without leaking into the response path. [e52c28e]
 
+## Phase 6B: Concurrency Hardening Follow-Through
+- [x] Add recovery semantics for stuck `IncomingEmail` claims in `backend/src/lib/ingestion-service.test.ts` so rows left in `processing` after a worker crash or interruption become retryable again instead of remaining permanently stranded. [162c417]
+- [x] Add a failure-injection ingestion test that simulates a worker claiming an email and dying before final status write, then proves a later run recovers and processes that email exactly once. [e86a1b8]
+- [x] Rework `backend/src/lib/incident-service.ts` so concurrent incident updates cannot overwrite `statesCovered`, `lastSeen`, or coordinate bounds from stale read snapshots. [85b2a39]
+- [x] Replace the current incident concurrency regression with one that forces overlap between the read and write portions of `addSightingToIncident`, so it fails against the stale-snapshot implementation and passes only after the real fix. [85b2a39]
+- [x] Extend concurrent incident-update assertions to explicitly verify `statesCovered`, `sightingCount`, `lastSeen`, `minLat`, `maxLat`, `minLng`, and `maxLng`. [85b2a39]
+- [x] Audit the Phase 6 concurrency tests for timing-sensitive false confidence and add intentional overlap controls plus a short note in each test describing the race it is meant to reproduce. [e0d006c]
+
 ## Phase 7: End-to-End Dashboard Coverage
 - [ ] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents.
 - [ ] Add interaction tests for combined dashboard filters (rarity plus near-me plus empty-state guard) so filter composition is covered instead of checked one flag at a time.
