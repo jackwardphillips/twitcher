@@ -242,14 +242,6 @@ export async function addSightingToIncident(
     throw new Error('Cannot add sighting to PERMANENTLY_CLOSED incident');
   }
 
-  const currentStates: string[] = JSON.parse(incident.statesCovered);
-  const parts = sighting.location.split(',').map(p => p.trim());
-  const newState = parts.length >= 2 ? parts[parts.length - 2] : null;
-  
-  if (newState && !currentStates.includes(newState)) {
-    currentStates.push(newState);
-  }
-
   // Use a transaction to ensure both updates succeed
   return await prisma.$transaction(async (tx) => {
     // Fetch the latest incident state to avoid race conditions with stale data
@@ -259,6 +251,14 @@ export async function addSightingToIncident(
 
     if (!latestIncident) {
       throw new Error(`Incident ${incident.id} not found during update`);
+    }
+
+    const currentStates: string[] = JSON.parse(latestIncident.statesCovered);
+    const parts = sighting.location.split(',').map(p => p.trim());
+    const newState = parts.length >= 2 ? parts[parts.length - 2] : null;
+    
+    if (newState && !currentStates.includes(newState)) {
+      currentStates.push(newState);
     }
 
     await tx.sighting.update({
