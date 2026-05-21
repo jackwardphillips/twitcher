@@ -52,7 +52,7 @@
 - [x] Audit the Phase 6 concurrency tests for timing-sensitive false confidence and add intentional overlap controls plus a short note in each test describing the race it is meant to reproduce. [e0d006c]
 
 ## Phase 7: End-to-End Dashboard Coverage
-- [ ] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents.
+- [~] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents.
 - [ ] Add interaction tests for combined dashboard filters (rarity plus near-me plus empty-state guard) so filter composition is covered instead of checked one flag at a time.
 - [ ] Add behavioral tests for histogram, map, and photo presentation states that assert user-visible outcomes rather than CSS trivia.
 - [ ] Add API-level tests for ingestion hardening gaps that still affect dashboard reliability: auth/rate limiting expectations, slow-provider behavior, and safe error surfaces.
