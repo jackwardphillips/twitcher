@@ -6,12 +6,28 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 # Active Tracks
 
+- [ ] **Track: Project Polish & Immediate Reliability**
+*Link: [./tracks/low_complexity_cleanup/](./tracks/low_complexity_cleanup/)*
+
 - [ ] **Track: Bug - Mobile Rarity Filter**
 *Link: [./tracks/bug_mobile_rarity_filter/](./tracks/bug_mobile_rarity_filter/)*
 
 ---
 
+# Queued Tracks
+
+- [ ] **Track: Atomic Ingestion & Data Integrity**
+*Link: [./tracks/ingestion_atomicity/](./tracks/ingestion_atomicity/)*
+
+- [ ] **Track: API Hardening & Background Scaling**
+*Link: [./tracks/api_hardening_scaling/](./tracks/api_hardening_scaling/)*
+
+---
+
 # Archived Tracks
+
+- [x] **Track: Test Suite Modernization (2026-05-21)**
+*Link: [./archive/test_suite_modernization/](./archive/test_suite_modernization/)*
 
 - [x] **Track: iNaturalist Photo Integration (2026-04-26)**
 *Link: [./archive/inaturalist_photo_integration_20260426/](./archive/inaturalist_photo_integration_20260426/)*

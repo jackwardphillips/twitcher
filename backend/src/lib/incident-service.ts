@@ -71,7 +71,7 @@ export async function findMatchingIncident(
     
     let radius = 25;
     if (timeDiffHours <= 24) {
-      radius = Math.min(25 + (timeDiffHours * 50), 200);
+      radius = Math.min(25 + (timeDiffHours * 10), 50);
     }
 
     return incident.sightings.some(sighting => {
@@ -145,44 +145,40 @@ export async function mergeIncidents(
   incidentIds: string[]
 ): Promise<Incident> {
   if (incidentIds.length === 0) throw new Error('No incident IDs provided for merge');
-  if (incidentIds.length === 1) {
-    const incident = await prisma.incident.findUnique({
-      where: { id: incidentIds[0] }
-    });
-    if (!incident) throw new Error(`Incident ${incidentIds[0]} not found`);
-    return incident;
-  }
-
-  // Find all incidents to be merged
-  const incidents = await prisma.incident.findMany({
-    where: { id: { in: incidentIds } },
-    include: { sightings: true },
-    orderBy: { createdAt: 'asc' }
-  });
-
-  const survivor = incidents[0]!;
-  const toMerge = incidents.slice(1);
-
-  // Collect all sightings
-  const allSightings = incidents.flatMap(inc => inc.sightings);
   
-  // Recompute metadata
-  const validCoords = allSightings.filter(s => s.latitude !== null && s.longitude !== null);
-  const minLat = Math.min(...validCoords.map(s => s.latitude!));
-  const maxLat = Math.max(...validCoords.map(s => s.latitude!));
-  const minLng = Math.min(...validCoords.map(s => s.longitude!));
-  const maxLng = Math.max(...validCoords.map(s => s.longitude!));
-  const firstSeen = new Date(Math.min(...allSightings.map(s => s.date.getTime())));
-  const lastSeen = new Date(Math.max(...allSightings.map(s => s.date.getTime())));
-  
-  const allStates = new Set<string>();
-  allSightings.forEach(s => {
-    const parts = s.location.split(',').map(p => p.trim());
-    const state = parts.length >= 2 ? parts[parts.length - 2] : null;
-    if (state) allStates.add(state);
-  });
-
   return await prisma.$transaction(async (tx) => {
+    // Find all incidents to be merged INSIDE transaction
+    const incidents = await tx.incident.findMany({
+      where: { id: { in: incidentIds } },
+      include: { sightings: true },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    if (incidents.length === 0) throw new Error('No incidents found for merge');
+    if (incidents.length === 1) return incidents[0]!;
+
+    const survivor = incidents[0]!;
+    const toMerge = incidents.slice(1);
+
+    // Collect all sightings
+    const allSightings = incidents.flatMap(inc => inc.sightings);
+    
+    // Recompute metadata
+    const validCoords = allSightings.filter(s => s.latitude !== null && s.longitude !== null);
+    const minLat = Math.min(...validCoords.map(s => s.latitude!));
+    const maxLat = Math.max(...validCoords.map(s => s.latitude!));
+    const minLng = Math.min(...validCoords.map(s => s.longitude!));
+    const maxLng = Math.max(...validCoords.map(s => s.longitude!));
+    const firstSeen = new Date(Math.min(...allSightings.map(s => s.date.getTime())));
+    const lastSeen = new Date(Math.max(...allSightings.map(s => s.date.getTime())));
+    
+    const allStates = new Set<string>();
+    allSightings.forEach(s => {
+      const parts = s.location.split(',').map(p => p.trim());
+      const state = parts.length >= 2 ? parts[parts.length - 2] : null;
+      if (state) allStates.add(state);
+    });
+
     // 1. Reassign sightings
     await tx.sighting.updateMany({
       where: { incidentId: { in: toMerge.map(inc => inc.id) } },
@@ -223,50 +219,60 @@ export async function addSightingToIncident(
   incidentOrIncidents: Incident | Incident[],
   sighting: Sighting
 ): Promise<Incident> {
-  let incident: Incident;
+  let incidentId: string;
   
   if (Array.isArray(incidentOrIncidents)) {
     if (incidentOrIncidents.length === 0) {
       throw new Error('No incidents provided to addSightingToIncident');
     }
     if (incidentOrIncidents.length > 1) {
-      incident = await mergeIncidents(prisma, incidentOrIncidents.map(inc => inc.id));
+      const merged = await mergeIncidents(prisma, incidentOrIncidents.map(inc => inc.id));
+      incidentId = merged.id;
     } else {
-      incident = incidentOrIncidents[0]!;
+      incidentId = incidentOrIncidents[0]!.id;
     }
   } else {
-    incident = incidentOrIncidents;
-  }
-
-  if (incident.status === IncidentStatus.PERMANENTLY_CLOSED) {
-    throw new Error('Cannot add sighting to PERMANENTLY_CLOSED incident');
-  }
-
-  const currentStates: string[] = JSON.parse(incident.statesCovered);
-  const parts = sighting.location.split(',').map(p => p.trim());
-  const newState = parts.length >= 2 ? parts[parts.length - 2] : null;
-  
-  if (newState && !currentStates.includes(newState)) {
-    currentStates.push(newState);
+    incidentId = incidentOrIncidents.id;
   }
 
   // Use a transaction to ensure both updates succeed
   return await prisma.$transaction(async (tx) => {
+    // Fetch the latest incident state to avoid race conditions with stale data
+    const latestIncident = await tx.incident.findUnique({
+      where: { id: incidentId }
+    });
+
+    if (!latestIncident) {
+      throw new Error(`Incident ${incidentId} not found during update`);
+    }
+
+    if (latestIncident.status === IncidentStatus.PERMANENTLY_CLOSED) {
+      throw new Error('Cannot add sighting to PERMANENTLY_CLOSED incident');
+    }
+
+    const currentStates: string[] = JSON.parse(latestIncident.statesCovered);
+    const parts = sighting.location.split(',').map(p => p.trim());
+    const newState = parts.length >= 2 ? parts[parts.length - 2] : null;
+    
+    if (newState && !currentStates.includes(newState)) {
+      currentStates.push(newState);
+    }
+
     await tx.sighting.update({
       where: { id: sighting.id },
-      data: { incidentId: incident.id }
+      data: { incidentId: latestIncident.id }
     });
 
     return await tx.incident.update({
-      where: { id: incident.id },
+      where: { id: latestIncident.id },
       data: {
-        minLat: Math.min(incident.minLat, sighting.latitude!),
-        maxLat: Math.max(incident.maxLat, sighting.latitude!),
-        minLng: Math.min(incident.minLng, sighting.longitude!),
-        maxLng: Math.max(incident.maxLng, sighting.longitude!),
-        firstSeen: sighting.date < incident.firstSeen ? sighting.date : incident.firstSeen,
-        lastSeen: sighting.date > incident.lastSeen ? sighting.date : incident.lastSeen,
-        sightingCount: incident.sightingCount + 1,
+        minLat: Math.min(latestIncident.minLat, sighting.latitude!),
+        maxLat: Math.max(latestIncident.maxLat, sighting.latitude!),
+        minLng: Math.min(latestIncident.minLng, sighting.longitude!),
+        maxLng: Math.max(latestIncident.maxLng, sighting.longitude!),
+        firstSeen: sighting.date < latestIncident.firstSeen ? sighting.date : latestIncident.firstSeen,
+        lastSeen: sighting.date > latestIncident.lastSeen ? sighting.date : latestIncident.lastSeen,
+        sightingCount: { increment: 1 },
         statesCovered: JSON.stringify(currentStates),
         status: IncidentStatus.OPEN,
         closedAt: null

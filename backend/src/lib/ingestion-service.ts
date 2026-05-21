@@ -7,21 +7,52 @@ export interface IngestionResult {
   ingested: number;
   skipped: number;
   failed: number;
-  status: 'success' | 'no_new_emails' | 'imap_error';
-  enrichmentStatus?: 'success' | 'partial_failure' | 'failed' | 'not_requested';
+  status: 'success' | 'no_new_emails' | 'imap_error' | 'error';
+  enrichmentStatus?: 'success' | 'failed' | 'partial_failure' | 'not_requested';
   error?: string;
 }
 
+/**
+ * Service responsible for ingesting eBird alert emails and converting them into sightings and incidents.
+ * Handles IMAP fetching, database persistence of raw emails, and coordination with parsing and enrichment.
+ */
 export class IngestionService {
   private imapClient: ImapClient;
 
+  /**
+   * @param {ImapClient} imapClient - The IMAP client used to fetch emails.
+   */
   constructor(imapClient: ImapClient) {
     this.imapClient = imapClient;
   }
 
+  /**
+   * Performs a full ingestion cycle.
+   * Fetches new emails from IMAP and retries any previously failed or new emails stored in the database.
+   * 
+   * @param {Date} [since] - Optional date to fetch emails since.
+   * @param {boolean} [enrich=true] - Whether to perform eBird API enrichment for discovered sightings.
+   * @returns {Promise<IngestionResult>} Summary of the ingestion process.
+   */
   async ingest(since?: Date, enrich = true): Promise<IngestionResult> {
     try {
-      const emails = await this.imapClient.fetchRecentAlerts(since);
+      const newEmails = await this.imapClient.fetchRecentAlerts(since);
+      
+      const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+      
+      // Also fetch any 'new', 'failed', or 'stuck processing' emails from the database for retry
+      const pendingEmails = await db.incomingEmail.findMany({
+        where: {
+          OR: [
+            { status: { in: ['new', 'failed'] } },
+            { 
+              status: 'processing',
+              updatedAt: { lt: fifteenMinsAgo }
+            }
+          ]
+        }
+      });
+
       let ingested = 0;
       let skipped = 0;
       let failed = 0;
@@ -29,37 +60,122 @@ export class IngestionService {
       let enrichmentSucceeded = 0;
       let enrichmentFailed = 0;
 
-      if (emails.length === 0) {
+      if (newEmails.length === 0 && pendingEmails.length === 0) {
         return { ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
       }
 
-      console.log(`Found ${emails.length} emails to process.`);
+      console.log(`Found ${newEmails.length} new emails and ${pendingEmails.length} pending emails.`);
+
+      // Combine emails: new ones from IMAP and pending ones from DB
+      // Use a Map to avoid processing the same messageId twice if it appears in both
+      const emailMap = new Map<string, any>();
+      
+      for (const email of pendingEmails) {
+        emailMap.set(email.messageId, {
+          dbId: email.id,
+          messageId: email.messageId,
+          subject: email.subject,
+          from: email.from,
+          date: email.date,
+          rawBody: email.rawBody,
+          isRetry: true
+        });
+      }
+
+      for (const email of newEmails) {
+        if (!emailMap.has(email.messageId)) {
+          emailMap.set(email.messageId, {
+            ...email,
+            isRetry: false
+          });
+        }
+      }
+
+      const allEmails = Array.from(emailMap.values());
       let count = 0;
-      for (const email of emails) {
+      for (const email of allEmails) {
         count++;
-        if (count % 10 === 0 || count === emails.length) {
-          console.log(`Processing email ${count}/${emails.length}...`);
+        if (count % 10 === 0 || count === allEmails.length) {
+          console.log(`Processing email ${count}/${allEmails.length}...`);
         }
         try {
-          const existing = await db.incomingEmail.findUnique({
-            where: { messageId: email.messageId },
-          });
+          let savedId = email.dbId;
+          let claimed = false;
 
-          if (existing) {
-            skipped++;
-            continue;
+          if (email.isRetry) {
+            // Atomic claim of existing record
+            const result = await db.incomingEmail.updateMany({
+              where: {
+                id: savedId,
+                OR: [
+                  { status: { in: ['new', 'failed'] } },
+                  { 
+                    status: 'processing',
+                    updatedAt: { lt: fifteenMinsAgo }
+                  }
+                ]
+              },
+              data: { status: 'processing' }
+            });
+            if (result.count === 1) {
+              claimed = true;
+            }
+          } else {
+            // New email from IMAP: try to create with 'processing' status
+            try {
+              const saved = await db.incomingEmail.create({
+                data: {
+                  messageId: email.messageId,
+                  subject: email.subject,
+                  from: email.from,
+                  date: email.date,
+                  rawBody: email.rawBody,
+                  status: 'processing',
+                },
+              });
+              savedId = saved.id;
+              claimed = true;
+            } catch (createError: any) {
+              if (createError.code === 'P2002') { // Unique constraint violation (messageId)
+                // Someone else created it (or it already existed), try to claim if it's pending
+                const result = await db.incomingEmail.updateMany({
+                  where: {
+                    messageId: email.messageId,
+                    OR: [
+                      { status: { in: ['new', 'failed'] } },
+                      { 
+                        status: 'processing',
+                        updatedAt: { lt: fifteenMinsAgo }
+                      }
+                    ]
+                  },
+                  data: { status: 'processing' }
+                });
+                
+                if (result.count === 1) {
+                  const existing = await db.incomingEmail.findUnique({
+                    where: { messageId: email.messageId }
+                  });
+                  savedId = existing?.id;
+                  claimed = true;
+                } else {
+                  // Already being processed or already succeeded
+                  const existing = await db.incomingEmail.findUnique({
+                    where: { messageId: email.messageId }
+                  });
+                  if (existing?.status === 'processed') {
+                    skipped++;
+                  }
+                }
+              } else {
+                throw createError;
+              }
+            }
           }
 
-          const saved = await db.incomingEmail.create({
-            data: {
-              messageId: email.messageId,
-              subject: email.subject,
-              from: email.from,
-              date: email.date,
-              rawBody: email.rawBody,
-              status: 'new',
-            },
-          });
+          if (!claimed) {
+            continue;
+          }
 
           // Auto-parse immediately
           try {
@@ -74,14 +190,14 @@ export class IngestionService {
             }
             
             await db.incomingEmail.update({
-              where: { id: saved.id },
+              where: { id: savedId },
               data: { status: 'processed' },
             });
             ingested++;
           } catch (parseError) {
-            console.error(`Failed to parse email ${email.messageId}:`, parseError);
+            console.error(`Failed to parse/save email ${email.messageId}:`, parseError);
             await db.incomingEmail.update({
-              where: { id: saved.id },
+              where: { id: savedId },
               data: { status: 'failed' },
             });
             failed++;
@@ -106,11 +222,14 @@ export class IngestionService {
       return { ingested, skipped, failed, status: 'success', enrichmentStatus };
     } catch (error) {
       console.error('Ingestion failed:', error);
+      const isImapError = error instanceof Error && 
+        (error.message.includes('IMAP') || error.message.includes('connection') || error.message.includes('auth'));
+        
       return { 
         ingested: 0, 
         skipped: 0, 
         failed: 0, 
-        status: 'imap_error',
+        status: isImapError ? 'imap_error' : 'error',
         error: error instanceof Error ? error.message : String(error)
       };
     }

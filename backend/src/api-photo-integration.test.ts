@@ -91,4 +91,69 @@ describe('API Photo Integration', () => {
     expect(response.body[0].photo.url).toBe('https://cached.com/photo.jpg');
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it('should not fail the request if photoService.needsFetch rejects', async () => {
+    // 1. Arrange: Create an incident
+    await prisma.incident.create({
+      data: {
+        scientificName: 'Error species',
+        commonName: 'Error Bird',
+        status: 'OPEN',
+        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
+        firstSeen: new Date(),
+        lastSeen: new Date(),
+        statesCovered: '[]'
+      }
+    });
+
+    // Mock PhotoService.needsFetch to reject
+    const PhotoService = (await import('./lib/photo-service.js')).PhotoService;
+    vi.spyOn(PhotoService.prototype, 'needsFetch').mockRejectedValue(new Error('needsFetch failed'));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // 2. Act: Call /api/incidents
+    const response = await request(app).get('/api/incidents');
+
+    // 3. Assert: Request succeeds
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    
+    // Cleanup
+    consoleSpy.mockRestore();
+  });
+
+  it('should not fail the request if photoService.fetchSpeciesPhoto rejects', async () => {
+    // 1. Arrange: Create an incident
+    await prisma.incident.create({
+      data: {
+        scientificName: 'Fetch error species',
+        commonName: 'Fetch Error Bird',
+        status: 'OPEN',
+        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
+        firstSeen: new Date(),
+        lastSeen: new Date(),
+        statesCovered: '[]'
+      }
+    });
+
+    // Mock PhotoService.needsFetch to succeed, but fetchSpeciesPhoto to reject
+    const PhotoService = (await import('./lib/photo-service.js')).PhotoService;
+    vi.spyOn(PhotoService.prototype, 'needsFetch').mockResolvedValue(true);
+    vi.spyOn(PhotoService.prototype, 'fetchSpeciesPhoto').mockRejectedValue(new Error('fetchSpeciesPhoto failed'));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // 2. Act: Call /api/incidents
+    const response = await request(app).get('/api/incidents');
+
+    // 3. Assert: Request succeeds
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+
+    // Wait for background fetch attempt
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Background photo check/fetch failed'), expect.any(Error));
+    
+    // Cleanup
+    consoleSpy.mockRestore();
+  });
 });

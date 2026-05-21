@@ -4,11 +4,12 @@
 
 1. **The Plan is the Source of Truth:** All work must be tracked in `plan.md`.
 2. **The Tech Stack is Deliberate:** Changes to the tech stack must be documented in `tech-stack.md` before implementation.
-3. **Test-Driven Development:** Write unit tests before implementing functionality.
-4. **High Code Coverage:** Aim for >80% code coverage for all modules.
-5. **User Experience First:** Every decision should prioritize user experience.
-6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
-7. **State Docs Stay Current:** For dashboard or UI work, read `conductor/dashboard-state.md` and `conductor/ui-components.md` before implementation and update them before the phase is closed when behavior changes.
+3. **Test-Driven Development:** Write tests before implementing functionality.
+4. **Behavior Over Theater:** Tests must prove externally meaningful behavior, not just that code rendered, a class exists, or a mocked function was called.
+5. **High Code Coverage:** Aim for >80% code coverage for all modules, but never use coverage percentage as evidence that tests are meaningful.
+6. **User Experience First:** Every decision should prioritize user experience.
+7. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
+8. **State Docs Stay Current:** For dashboard or UI work, read `conductor/dashboard-state.md` and `conductor/ui-components.md` before implementation and update them before the phase is closed when behavior changes.
 
 ## Branch and Pull Request Workflow
 
@@ -30,9 +31,14 @@ All tasks follow a strict lifecycle:
 3. **Mark In Progress:** Before beginning work, edit `plan.md` and change the task from `[ ]` to `[~]`.
 
 4. **Write Failing Tests (Red Phase):**
-   - Create a new test file for the feature or bug fix.
-   - Write one or more unit tests that clearly define the expected behavior and acceptance criteria for the task.
-   - **CRITICAL:** Run the tests and confirm that they fail as expected. This is the "Red" phase of TDD. Do not proceed until you have failing tests.
+   - Create or update the test file that best exercises the user-visible or API-visible contract for the feature or bug fix.
+   - Before writing the test, identify the real contract being protected: API status/body, persisted database state, retry behavior, visible UI state, auth behavior, or other externally observable result.
+   - Write tests that clearly define the expected behavior and acceptance criteria for the task.
+   - Include at least one negative-path or failure-mode test when the code touches IO, parsing, auth, retries, concurrency, or error handling.
+   - For backend logic, prefer integration-style tests with a real test database and mocks only at provider or network boundaries when practical.
+   - For frontend logic, assert visible behavior and state transitions. Do not write tests whose main value is checking CSS classes, implementation details, or trivial static text that can pass while the feature is broken.
+   - Do not require real secrets, live third-party credentials, or live network access in automated tests.
+   - **CRITICAL:** Run the tests and confirm that they fail for the right reason. This is the "Red" phase of TDD. Do not proceed until you have failing tests that demonstrate the intended contract.
 
 5. **Implement to Pass Tests (Green Phase):**
    - Write the minimum amount of application code necessary to make the failing tests pass.
@@ -47,6 +53,7 @@ All tasks follow a strict lifecycle:
    pytest --cov=app --cov-report=html
    ```
    Target: >80% coverage for new code. The specific tools and commands will vary by language and framework.
+   Coverage is a secondary gate. If the tests are shallow, structural, or mock away the real failure mode, the coverage number does not count as success.
 
 8. **Document Deviations:** If implementation differs from tech stack:
    - **STOP** implementation.
@@ -96,7 +103,8 @@ All tasks follow a strict lifecycle:
    - **Step 2.3: Verify and Create Tests:** For each file in the list:
      - First, check its extension. Exclude non-code files such as `.json`, `.md`, and `.yaml`.
      - For each remaining code file, verify a corresponding test file exists.
-     - If a test file is missing, create one. Before writing the test, analyze other test files in the repository to determine the correct naming convention and testing style. The new tests must validate the functionality described in this phase's tasks in `plan.md`.
+     - If a test file is missing, create one. Before writing the test, analyze other test files in the repository to determine the correct naming convention and testing style.
+     - Do not create placeholder or structural tests just to satisfy file parity. New tests must validate the functionality described in this phase's tasks in `plan.md`, including meaningful success criteria and relevant failure behavior.
 
 3. **Execute Automated Tests with Proactive Debugging:**
    - Before execution, announce the exact shell command you will use to run the tests.
@@ -230,12 +238,17 @@ npx.cmd prisma validate
 - Use appropriate test setup and teardown mechanisms.
 - Mock external dependencies.
 - Test both success and failure cases.
+- Prefer assertions on outputs, persisted state, and observable side effects over assertions on internal calls.
+- Do not write tests that require real environment secrets or live external services.
+- Avoid snapshotting or CSS-class assertions unless the styling token itself is the contract being changed.
 
 ### Integration Testing
 - Test complete user flows.
 - Verify database transactions.
 - Test authentication and authorization.
 - Check form submissions.
+- For backend work involving databases, queues, retries, parsing, or multi-step flows, integration tests are preferred over heavily mocked unit tests.
+- Mock at the network or provider boundary, not by mocking away the service under test.
 
 ### Mobile Testing
 - Test on an actual iPhone when possible.
@@ -261,9 +274,9 @@ Before requesting review:
    - Appropriate comments.
 
 3. **Testing**
-   - Unit tests comprehensive.
-   - Integration tests pass.
-   - Coverage adequate (>80%).
+   - Unit tests comprehensive where unit tests make sense.
+   - Integration tests cover stateful and IO-heavy flows.
+   - Coverage adequate (>80%), with assertions that prove real contracts.
 
 4. **Security**
    - No hardcoded secrets.
@@ -316,14 +329,15 @@ A task is complete when:
 
 1. All code implemented to specification.
 2. Unit tests written and passing.
-3. Code coverage meets project requirements.
-4. Documentation complete if applicable.
-5. Code passes all configured linting and static analysis checks.
-6. Works beautifully on mobile if applicable.
-7. Implementation notes added to `plan.md`.
-8. Changes committed to the track branch with proper messages.
-9. Git note with task summary attached to the commit.
-10. Draft PR created or updated for the track branch.
+3. Integration tests added where the change touches IO, persistence, auth, retries, parsing, or concurrency.
+4. Code coverage meets project requirements.
+5. Documentation complete if applicable.
+6. Code passes all configured linting and static analysis checks.
+7. Works beautifully on mobile if applicable.
+8. Implementation notes added to `plan.md`.
+9. Changes committed to the track branch with proper messages.
+10. Git note with task summary attached to the commit.
+11. Draft PR created or updated for the track branch.
 
 ## Emergency Procedures
 

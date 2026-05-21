@@ -130,9 +130,6 @@ const Dashboard: React.FC = () => {
       return dist <= 50;
     });
 
-  if (loading) return <div>Loading sightings...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   return (
     <div className="dashboard">
       <header className="dashboard-header">
@@ -167,82 +164,90 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <SightingMap incidents={displayedIncidents} />
-      
-      <div className="sightings-list">
-        {displayedIncidents.map((incident) => (
-          <div 
-            key={incident.id} 
-            className="sighting-card sighting-card-horizontal"
-            style={{ borderLeftColor: getRarityColor(incident) }}
-          >
-            <div className="photo-slot">
-              <PhotoSlot photo={incident.photo} />
-            </div>
-            
-            <div className="card-content">
-              <div className="card-top-row">
-                <div className="species-info">
-                  <h3>{incident.commonName}</h3>
-                  <p className="scientific-name">{incident.scientificName}</p>
-                  <div className="location-container">
-                    <svg className="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <p className="location-info">{incident.locationName}</p>
+      {loading ? (
+        <div className="loading-state">Loading sightings...</div>
+      ) : error ? (
+        <div className="error-state">Error: {error}</div>
+      ) : (
+        <>
+          <SightingMap incidents={displayedIncidents} />
+          
+          <div className="sightings-list">
+            {displayedIncidents.map((incident) => (
+              <div 
+                key={incident.id} 
+                className="sighting-card sighting-card-horizontal"
+                style={{ borderLeftColor: getRarityColor(incident) }}
+              >
+                <div className="photo-slot">
+                  <PhotoSlot photo={incident.photo} />
+                </div>
+                
+                <div className="card-content">
+                  <div className="card-top-row">
+                    <div className="species-info">
+                      <h3>{incident.commonName}</h3>
+                      <p className="scientific-name">{incident.scientificName}</p>
+                      <div className="location-container">
+                        <svg className="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <p className="location-info">{incident.locationName}</p>
+                      </div>
+                    </div>
+                    <div className="card-actions">
+                      <span 
+                        className="streak-badge"
+                        style={{ 
+                          '--rarity-color': getRarityColor(incident) 
+                        } as React.CSSProperties}
+                      >
+                        Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {incident.geminiSummary && (
+                    <blockquote 
+                      className="gemini-summary"
+                      style={{ borderLeftColor: getRarityColor(incident) }}
+                    >
+                      {incident.geminiSummary}
+                    </blockquote>
+                  )}
+
+                  <div className="card-middle-row">
+                    <div className="stat-item">
+                      <span className="stat-label">Reports</span>
+                      <span className="stat-value">{incident.sightingCount}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">First Seen</span>
+                      <span className="stat-value">{formatDayMonth(incident.firstSeen)}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Last Seen</span>
+                      <span className="stat-value">{formatDayMonth(incident.lastSeen)}</span>
+                    </div>
+                    <div className="stat-item" style={{ marginLeft: 'auto', width: '240px' }}>
+                      <SightingHistogram 
+                        dailyCounts={incident.dailyCounts} 
+                        rarityColor={getRarityColor(incident)} 
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="card-actions">
-                  <span 
-                    className="streak-badge"
-                    style={{ 
-                      '--rarity-color': getRarityColor(incident) 
-                    } as React.CSSProperties}
-                  >
-                    Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}
-                  </span>
-                </div>
               </div>
-
-              {incident.geminiSummary && (
-                <blockquote 
-                  className="gemini-summary"
-                  style={{ borderLeftColor: getRarityColor(incident) }}
-                >
-                  {incident.geminiSummary}
-                </blockquote>
-              )}
-
-              <div className="card-middle-row">
-                <div className="stat-item">
-                  <span className="stat-label">Reports</span>
-                  <span className="stat-value">{incident.sightingCount}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">First Seen</span>
-                  <span className="stat-value">{formatDayMonth(incident.firstSeen)}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Last Seen</span>
-                  <span className="stat-value">{formatDayMonth(incident.lastSeen)}</span>
-                </div>
-                <div className="stat-item" style={{ marginLeft: 'auto', width: '240px' }}>
-                  <SightingHistogram 
-                    dailyCounts={incident.dailyCounts} 
-                    rarityColor={getRarityColor(incident)} 
-                  />
-                </div>
+            ))}
+            {displayedIncidents.length === 0 && (
+              <div className="no-results">
+                {nearMe ? 'No rare birds reported within 50km of your location.' : 'No rare birds reported.'}
               </div>
-            </div>
+            )}
           </div>
-        ))}
-        {displayedIncidents.length === 0 && (
-          <div className="no-results">
-            {nearMe ? 'No rare birds reported within 50km of your location.' : 'No rare birds reported.'}
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };

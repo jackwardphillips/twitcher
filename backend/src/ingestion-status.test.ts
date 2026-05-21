@@ -1,47 +1,63 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { app } from './index';
 import { prisma } from './lib/db';
 
-vi.mock('./lib/db', () => ({
-  prisma: {
-    incomingEmail: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-    },
-    sighting: {
-      findMany: vi.fn(),
-    }
-  },
-}));
-
-describe('Ingestion Status API', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+describe('Ingestion Status API (Real DB)', () => {
+  beforeEach(async () => {
+    await prisma.incomingEmail.deleteMany();
   });
 
   it('should return null if no emails have been ingested', async () => {
-    (prisma.incomingEmail.findFirst as any).mockResolvedValue(null);
-
     const response = await request(app).get('/api/ingestion-status');
     expect(response.status).toBe(200);
     expect(response.body.lastIngestedEmailDate).toBeNull();
-    expect(response.body.lastRun).toBeNull();
   });
 
-  it('should return the date of the last ingested email and filter by ebird address', async () => {
+  it('should return the date of the last ingested email', async () => {
     const mockDate = new Date('2026-04-01T12:00:00Z');
-    (prisma.incomingEmail.findFirst as any).mockResolvedValue({
-      date: mockDate,
+    await prisma.incomingEmail.create({
+      data: {
+        messageId: 'status-test-1',
+        subject: 'Alert',
+        from: 'ebird-alert@birds.cornell.edu',
+        date: mockDate,
+        rawBody: '...',
+        status: 'processed'
+      }
     });
 
     const response = await request(app).get('/api/ingestion-status');
     expect(response.status).toBe(200);
     expect(new Date(response.body.lastIngestedEmailDate).toISOString()).toBe(mockDate.toISOString());
-    expect(prisma.incomingEmail.findFirst).toHaveBeenCalledWith(expect.objectContaining({
-      where: expect.objectContaining({
-        from: 'ebird-alert@birds.cornell.edu'
-      })
-    }));
+  });
+
+  it('should only count processed eBird emails', async () => {
+    // 1. Unprocessed email
+    await prisma.incomingEmail.create({
+      data: {
+        messageId: 'status-test-2',
+        subject: 'Alert',
+        from: 'ebird-alert@birds.cornell.edu',
+        date: new Date('2026-05-01T12:00:00Z'),
+        rawBody: '...',
+        status: 'new'
+      }
+    });
+
+    // 2. Email from different sender
+    await prisma.incomingEmail.create({
+      data: {
+        messageId: 'status-test-3',
+        subject: 'Alert',
+        from: 'someone-else@example.com',
+        date: new Date('2026-05-01T13:00:00Z'),
+        rawBody: '...',
+        status: 'processed'
+      }
+    });
+
+    const response = await request(app).get('/api/ingestion-status');
+    expect(response.body.lastIngestedEmailDate).toBeNull();
   });
 });

@@ -4,7 +4,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    setupFiles: ['./src/test/setup.ts'],
     fileParallelism: false,
+    env: {
+      DATABASE_URL: 'file:./test.db',
+    },
     exclude: ['**/node_modules/**', '**/dist/**', '**/cypress/**', '**/.{idea,git,cache,output,temp}/**', '**/{karma,rollup,webpack,vite,vitest,ava,babel,nyc,cypress,tsup,build}.config.*'],
     coverage: {
       provider: 'v8', // Use v8 for coverage

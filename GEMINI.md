@@ -55,6 +55,7 @@ When all tasks in a phase are `[x]`:
 - No changes outside the current track's scope.
 - No architectural decisions. Flag gaps, don't fill them silently.
 - Never commit directly to `master`, `main`, or any other default branch.
+- Never take destructive action against dev.db. 
 
 ---
 
