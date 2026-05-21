@@ -41,13 +41,11 @@ describe('IngestionService DB Failure Simulation', () => {
     ];
     mockImapClient.fetchRecentAlerts.mockResolvedValue(mockEmails);
     
-    // msg1 fails on findUnique (DB error)
-    const findUniqueSpy = vi.spyOn(db.incomingEmail, 'findUnique')
+    // msg1 fails on create (DB error)
+    const createSpy = vi.spyOn(db.incomingEmail, 'create')
       .mockRejectedValueOnce(new Error('DB Error for msg1'))
-      .mockResolvedValueOnce(null); // msg2 proceeds
+      .mockResolvedValueOnce({ id: 2 } as any); // msg2 succeeds
 
-    // msg2 succeeds
-    const createSpy = vi.spyOn(db.incomingEmail, 'create').mockResolvedValue({ id: 2 } as any);
     const updateSpy = vi.spyOn(db.incomingEmail, 'update').mockResolvedValue({ id: 2 } as any);
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -57,7 +55,6 @@ describe('IngestionService DB Failure Simulation', () => {
     expect(result.ingested).toBe(1); // msg2 succeeded
     expect(result.status).toBe('success');
 
-    findUniqueSpy.mockRestore();
     createSpy.mockRestore();
     updateSpy.mockRestore();
     consoleSpy.mockRestore();

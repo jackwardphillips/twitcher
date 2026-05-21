@@ -339,6 +339,8 @@ describe('IncidentService', () => {
         location: 'New Location, Burlington, NJ, US'
       };
 
+      prismaMock.incident.findUnique.mockResolvedValue(existingIncident);
+
       await addSightingToIncident(prismaMock as any, existingIncident as any, newSighting as any);
 
       expect(prismaMock.incident.update).toHaveBeenCalledWith({
@@ -350,7 +352,7 @@ describe('IncidentService', () => {
           maxLng: -74.9,
           firstSeen: existingIncident.firstSeen,
           lastSeen: newSighting.date,
-          sightingCount: 2,
+          sightingCount: { increment: 1 },
           statesCovered: JSON.stringify(['PA', 'NJ']),
           status: 'OPEN',
           closedAt: null
@@ -370,6 +372,8 @@ describe('IncidentService', () => {
       };
       const newSighting = { id: 2, date: new Date() };
       
+      prismaMock.incident.findUnique.mockResolvedValue(existingIncident);
+
       await expect(addSightingToIncident(prismaMock as any, existingIncident as any, newSighting as any))
         .rejects.toThrow('Cannot add sighting to PERMANENTLY_CLOSED incident');
     });
@@ -498,6 +502,7 @@ describe('IncidentService', () => {
 
       prismaMock.incident.findMany.mockResolvedValue([inc1, inc2]);
       prismaMock.incident.update.mockResolvedValue({ ...inc1, sightingCount: 3 });
+      prismaMock.incident.findUnique.mockResolvedValue(inc1);
       
       const matches = await findMatchingIncident(prismaMock as any, 'Bird A', s3.latitude, s3.longitude, s3.date);
       expect(matches).toHaveLength(2);
