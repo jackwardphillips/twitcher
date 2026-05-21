@@ -55,6 +55,6 @@
 - [x] Add frontend integration tests for geolocation success, denial, unsupported-browser behavior, and near-me filtering across mixed-distance incidents. [40d4a83]
 - [x] Add interaction tests for combined dashboard filters (rarity plus near-me plus empty-state guard) so filter composition is covered instead of checked one flag at a time. [6406eef]
 - [x] Add behavioral tests for histogram, map, and photo presentation states that assert user-visible outcomes rather than CSS trivia. [09b8115]
-- [~] Add API-level tests for ingestion hardening gaps that still affect dashboard reliability: auth/rate limiting expectations, slow-provider behavior, and safe error surfaces.
+- [x] Add API-level tests for ingestion hardening gaps that still affect dashboard reliability: auth/rate limiting expectations, slow-provider behavior, and safe error surfaces. [e573987]
 - [ ] Add representative end-to-end smoke coverage for the main dashboard flow: ingest data, fetch incidents, render the list/map, and preserve failure messaging when one backend dependency degrades.
 
