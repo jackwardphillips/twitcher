@@ -50,20 +50,36 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Rare Bird Dashboard API is running' });
 });
 
+function sanitizeErrorMessage(message: string | undefined): string {
+  if (!message) return 'An unknown error occurred';
+  // Hide internal database details and specific library errors that leak paths
+  if (message.includes('Prisma') || message.includes('DATABASE_URL') || message.includes('secret') || message.includes(' at ')) {
+    return 'An unexpected internal error occurred';
+  }
+  return message;
+}
+
 app.post('/api/ingest', async (req: Request, res: Response) => {
   try {
     console.log('Triggering ingestion via API...');
     const results = await triggerIngestion();
     console.log('Ingestion result:', results);
     
-    if (results.status === 'imap_error') {
-      return res.status(500).json({ error: 'Ingestion failed', details: results.error });
+    if (results.status === 'imap_error' || results.status === 'error') {
+      return res.status(500).json({ 
+        error: 'Ingestion failed', 
+        details: sanitizeErrorMessage(results.error) 
+      });
     }
     
     res.json({ message: 'Ingestion complete', results });
   } catch (error) {
     console.error('Ingestion failed via API:', error);
-    res.status(500).json({ error: 'Ingestion failed', details: error instanceof Error ? error.message : String(error) });
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ 
+      error: 'Ingestion failed', 
+      details: sanitizeErrorMessage(message) 
+    });
   }
 });
 
