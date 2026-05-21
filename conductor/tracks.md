@@ -22,12 +22,12 @@ This file tracks all major tracks for the project. Each track has its own detail
 - [ ] **Track: API Hardening & Background Scaling**
 *Link: [./tracks/api_hardening_scaling/](./tracks/api_hardening_scaling/)*
 
-- [x] **Track: Test Suite Modernization**
-*Link: [./tracks/test_suite_modernization/](./tracks/test_suite_modernization/)*
-
 ---
 
 # Archived Tracks
+
+- [x] **Track: Test Suite Modernization (2026-05-21)**
+*Link: [./archive/test_suite_modernization/](./archive/test_suite_modernization/)*
 
 - [x] **Track: iNaturalist Photo Integration (2026-04-26)**
 *Link: [./archive/inaturalist_photo_integration_20260426/](./archive/inaturalist_photo_integration_20260426/)*
