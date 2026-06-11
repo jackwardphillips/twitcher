@@ -20,6 +20,8 @@ describe('SightingMap', () => {
         abaCode: 4,
         latestMapUrl: null,
         latestChecklistUrl: null,
+        dailyCounts: [],
+        photo: null
       },
     ];
 

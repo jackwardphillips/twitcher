@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Dashboard } from './Dashboard.js';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
