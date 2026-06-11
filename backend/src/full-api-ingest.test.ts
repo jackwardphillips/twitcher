@@ -20,6 +20,7 @@ describe('Full API Ingestion Flow (Real DB)', () => {
     await prisma.sighting.deleteMany();
     await prisma.incident.deleteMany();
     await prisma.incomingEmail.deleteMany();
+    await prisma.ingestionRun.deleteMany();
     await prisma.rarityCode.deleteMany();
 
     mockImapClient = {
@@ -73,6 +74,7 @@ describe('Full API Ingestion Flow (Real DB)', () => {
 
     // Verify API response
     expect(response.status).toBe(200);
+    expect(response.body.results.emailsFound).toBe(1);
     expect(response.body.results.ingested).toBe(1);
 
     // Verify DB state for IncomingEmail

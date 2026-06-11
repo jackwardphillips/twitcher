@@ -81,6 +81,20 @@ model IncomingEmail {
   updatedAt DateTime  @default(now()) @updatedAt
 }
 
+model IngestionRun {
+  id             String    @id @default(cuid())
+  startedAt      DateTime  @default(now())
+  finishedAt     DateTime?
+  status         String
+  emailsFound    Int       @default(0)
+  emailsIngested Int       @default(0)
+  sightingsAdded Int       @default(0)
+  errorMessage   String?
+  trigger        String?
+
+  @@index([startedAt])
+}
+
 model SpeciesPhoto {
   speciesName String   @id
   photoUrl    String?

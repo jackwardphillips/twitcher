@@ -5,10 +5,12 @@ async function check() {
   const sightingCount = await prisma.sighting.count();
   const incidentCount = await prisma.incident.count();
   const emailCount = await prisma.incomingEmail.count();
+  const ingestionRunCount = await prisma.ingestionRun.count();
   console.log(`RarityCodes: ${rarityCount}`);
   console.log(`Sightings: ${sightingCount}`);
   console.log(`Incidents: ${incidentCount}`);
   console.log(`IncomingEmails: ${emailCount}`);
+  console.log(`IngestionRuns: ${ingestionRunCount}`);
   await prisma.$disconnect();
 }
 

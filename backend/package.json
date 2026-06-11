@@ -15,6 +15,11 @@
     "backfill:emails": "tsx src/scripts/backfill-emails.ts",
     "backfill:summaries": "tsx src/scripts/backfill-summaries.ts",
     "check:counts": "tsx src/scripts/check-counts.ts",
+    "ops:health": "tsx src/scripts/check-health.ts",
+    "ops:db": "tsx src/scripts/check-db.ts",
+    "ops:db-counts": "tsx src/scripts/check-db-counts.ts",
+    "ops:ingestion": "tsx src/scripts/check-ingestion.ts",
+    "ops:env": "tsx src/scripts/check-env.ts",
     "test": "node test-setup.js"
   },
   "keywords": [],

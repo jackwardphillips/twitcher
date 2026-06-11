@@ -11,6 +11,7 @@ export async function clearDatabase() {
   await db.sighting.deleteMany();
   await db.incident.deleteMany();
   await db.incomingEmail.deleteMany();
+  await db.ingestionRun.deleteMany();
   await db.speciesPhoto.deleteMany();
   
   // RarityCode is usually seeded data, but we can clear it too if we want a TRULY empty DB.

@@ -6,12 +6,14 @@ import { prisma } from './lib/db';
 describe('Ingestion Status API (Real DB)', () => {
   beforeEach(async () => {
     await prisma.incomingEmail.deleteMany();
+    await prisma.ingestionRun.deleteMany();
   });
 
   it('should return null if no emails have been ingested', async () => {
     const response = await request(app).get('/api/ingestion-status');
     expect(response.status).toBe(200);
     expect(response.body.lastIngestedEmailDate).toBeNull();
+    expect(response.body.latestRun).toBeNull();
   });
 
   it('should return the date of the last ingested email', async () => {
@@ -59,5 +61,24 @@ describe('Ingestion Status API (Real DB)', () => {
 
     const response = await request(app).get('/api/ingestion-status');
     expect(response.body.lastIngestedEmailDate).toBeNull();
+  });
+
+  it('should return the latest ingestion run', async () => {
+    await prisma.ingestionRun.create({
+      data: {
+        status: 'success',
+        finishedAt: new Date('2026-04-01T12:05:00Z'),
+        emailsFound: 2,
+        emailsIngested: 2,
+        sightingsAdded: 3,
+        trigger: 'api'
+      }
+    });
+
+    const response = await request(app).get('/api/ingestion-status');
+    expect(response.status).toBe(200);
+    expect(response.body.latestRun.status).toBe('success');
+    expect(response.body.latestRun.emailsFound).toBe(2);
+    expect(response.body.startupIngestionEnabled).toBe(false);
   });
 });
