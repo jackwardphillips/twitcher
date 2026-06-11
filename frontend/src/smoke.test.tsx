@@ -3,14 +3,6 @@ import { App } from './App.js';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
 
-// Mock Leaflet
-vi.mock('react-leaflet', () => ({
-  MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
-  TileLayer: () => <div data-testid="tile-layer" />,
-  Marker: ({ children }: any) => <div data-testid="marker">{children}</div>,
-  Popup: ({ children }: any) => <div data-testid="popup">{children}</div>,
-}));
-
 describe('E2E Smoke Test: Main Dashboard Flow', () => {
   const mockIncidents = [
     { 
@@ -63,7 +55,7 @@ describe('E2E Smoke Test: Main Dashboard Flow', () => {
 
     // Verify map
     expect(screen.getByTestId('map-container')).toBeInTheDocument();
-    expect(screen.getByTestId('marker')).toBeInTheDocument();
+    expect(await screen.findByTestId('marker')).toBeInTheDocument();
 
     // Verify ingestion status in header
     expect(screen.getByText(/Last email ingested:/i)).toBeInTheDocument();

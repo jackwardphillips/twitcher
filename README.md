@@ -123,14 +123,13 @@ Use the `backend` directory as the service root.
 Build command:
 
 ```powershell
-npm.cmd install
-npm.cmd run build
+npm install && npx prisma generate && npx prisma migrate deploy && npm run build
 ```
 
 Start command:
 
 ```powershell
-npm.cmd run start:prod
+node dist/index.js
 ```
 
 Set these Render environment variables:
@@ -141,10 +140,11 @@ Set these Render environment variables:
 - `IMAP_USER`
 - `IMAP_PASS`
 - `IMAP_SECURE`
+- `RUN_STARTUP_INGESTION=false`
 - `EBIRD_API_KEY` if enrichment is enabled
 - `GROQ_API_KEY` and/or `GEMINI_API_KEY` if summaries are enabled
 
-`start:prod` runs `prisma migrate deploy` before `node dist/index.js`. Do not use `prisma db push --accept-data-loss` in production.
+Do not use `prisma db push --accept-data-loss` in production.
 
 ### Frontend
 

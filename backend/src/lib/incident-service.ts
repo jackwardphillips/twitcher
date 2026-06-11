@@ -338,11 +338,12 @@ export function formatDate(date: Date): string {
 /**
  * Fetches all OPEN incidents enriched with rarity data and summary fields.
  */
-export async function getOpenIncidents(prisma: PrismaClient) {
+export async function getOpenIncidents(prisma: PrismaClient, sightingTake = 25) {
   const incidents = await prisma.incident.findMany({
     where: { status: IncidentStatus.OPEN },
     include: {
       sightings: {
+        take: sightingTake,
         orderBy: { date: 'desc' }
       }
     }

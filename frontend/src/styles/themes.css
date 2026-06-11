@@ -163,18 +163,73 @@
   overflow: hidden;
 }
 
-.leaflet-container,
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
+.sighting-map,
+.maplibregl-popup-content,
+.maplibregl-popup-tip {
   font-family: var(--font-body);
 }
 
-.leaflet-popup-content-wrapper {
+.sighting-map {
+  height: 100%;
+  width: 100%;
+}
+
+.maplibregl-popup-content {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
   box-shadow: var(--shadow);
+}
+
+.maplibregl-popup-close-button {
+  color: var(--muted-text);
+  font-size: 1.1rem;
+  padding: 0.25rem 0.45rem;
+}
+
+.sighting-map-marker {
+  background: var(--marker-color);
+  border: 2px solid color-mix(in srgb, white, var(--marker-color) 16%);
+  border-radius: 999px 999px 999px 3px;
+  box-shadow:
+    0 0 0 3px rgba(255, 248, 231, 0.82),
+    0 5px 12px rgba(44, 36, 22, 0.28);
+  cursor: pointer;
+  height: 18px;
+  padding: 0;
+  transform: rotate(-45deg);
+  width: 18px;
+}
+
+.sighting-map-marker::after {
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 999px;
+  content: '';
+  height: 5px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 5px;
+}
+
+.sighting-map-marker:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--marker-color), white 35%);
+  outline-offset: 4px;
+}
+
+.sighting-map-config {
+  align-items: center;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(90, 122, 92, 0.16), transparent 24%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface), var(--bg) 34%), var(--bg));
+  color: var(--muted-text);
+  display: flex;
+  font-family: var(--font-body);
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
 }
 
 .dashboard-section-label {

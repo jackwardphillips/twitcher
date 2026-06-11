@@ -33,8 +33,16 @@ app.use(express.json());
 
 let lastIngestionResult: IngestionResult | null = null;
 const photoService = new PhotoService();
+let ingestionInProgress = false;
 
 async function triggerIngestion(enrich = true): Promise<IngestionResult> {
+  if (ingestionInProgress) {
+    const error = new Error('Ingestion already in progress');
+    (error as Error & { statusCode?: number }).statusCode = 409;
+    throw error;
+  }
+
+  ingestionInProgress = true;
   const imapConfig = {
     host: process.env.IMAP_HOST || '',
     port: parseInt(process.env.IMAP_PORT || '993', 10),
@@ -45,21 +53,25 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
 
   const imapClient = new ImapClient(imapConfig);
   const ingestionService = new IngestionService(imapClient);
-  
-  // Close inactive incidents before and after ingestion to ensure status is up to date
-  await closeInactiveIncidents(prisma);
-  const results = await ingestionService.ingest(undefined, enrich);
-  await closeInactiveIncidents(prisma);
 
-  // Trigger summarization cycle in the background if new data was ingested
-  if (results.ingested > 0) {
-    runSummarizationCycle(prisma).catch(err => {
-      console.error('Background summarization cycle failed:', err);
-    });
+  try {
+    // Close inactive incidents before and after ingestion to ensure status is up to date
+    await closeInactiveIncidents(prisma);
+    const results = await ingestionService.ingest(undefined, enrich);
+    await closeInactiveIncidents(prisma);
+
+    // Trigger summarization cycle in the background if new data was ingested
+    if (results.ingested > 0) {
+      runSummarizationCycle(prisma).catch(err => {
+        console.error('Background summarization cycle failed:', err);
+      });
+    }
+
+    lastIngestionResult = results;
+    return results;
+  } finally {
+    ingestionInProgress = false;
   }
-  
-  lastIngestionResult = results;
-  return results;
 }
 
 app.get('/health', (req: Request, res: Response) => {
@@ -95,6 +107,11 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
     res.json({ message: 'Ingestion complete', results });
   } catch (error) {
     console.error('Ingestion failed via API:', error);
+    if (error instanceof Error && (error as Error & { statusCode?: number }).statusCode === 409) {
+      return res.status(409).json({
+        error: 'Ingestion already in progress',
+      });
+    }
     const message = error instanceof Error ? error.message : String(error);
     res.status(500).json({ 
       error: 'Ingestion failed', 
@@ -124,8 +141,15 @@ app.get('/api/ingestion-status', async (req: Request, res: Response) => {
 
 app.get('/api/sightings', async (req: Request, res: Response) => {
   try {
+    const requestedTake = Number.parseInt(String(req.query.take ?? '100'), 10);
+    const take = Number.isFinite(requestedTake) ? Math.min(Math.max(requestedTake, 1), 100) : 100;
+    const requestedPage = Number.parseInt(String(req.query.page ?? '1'), 10);
+    const page = Number.isFinite(requestedPage) ? Math.max(requestedPage, 1) : 1;
+
     const sightings = await prisma.sighting.findMany({
       orderBy: { date: 'desc' },
+      take,
+      skip: (page - 1) * take,
     });
 
     // Calculate streaks in memory for all sightings
@@ -172,7 +196,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
 
 app.get('/api/incidents', async (req: Request, res: Response) => {
   try {
-    const incidents = await getOpenIncidents(prisma);
+    const incidents = await getOpenIncidents(prisma, 25);
     
     // Lazy fetch missing/stale photos in the background
     incidents.forEach(incident => {
@@ -197,14 +221,18 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   app.listen(port, async () => {
     console.log(`Server is running on port ${port}`);
-    
-    // Trigger ingestion on startup
-    console.log('Running startup email ingestion...');
-    try {
-      const results = await triggerIngestion();
-      console.log(`Startup ingestion complete: ${results.status} (enrichment: ${results.enrichmentStatus})`);
-    } catch (error) {
-      console.error('Startup ingestion failed:', error);
+
+    if (process.env.RUN_STARTUP_INGESTION === 'true') {
+      console.log('Running startup email ingestion...');
+      try {
+        const results = await triggerIngestion();
+        console.log(`Startup ingestion complete: ${results.status} (enrichment: ${results.enrichmentStatus})`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Startup ingestion failed:', message);
+      }
+    } else {
+      console.log('Startup ingestion disabled.');
     }
   });
 }
