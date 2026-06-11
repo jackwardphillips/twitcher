@@ -7,9 +7,13 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:prod": "npx prisma migrate deploy && node dist/index.js",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
     "seed:rarity": "tsx src/scripts/seed-rarity.ts",
     "seed:emails": "tsx src/scripts/seed-from-emails.ts",
     "backfill:emails": "tsx src/scripts/backfill-emails.ts",
+    "backfill:summaries": "tsx src/scripts/backfill-summaries.ts",
     "check:counts": "tsx src/scripts/check-counts.ts",
     "test": "node test-setup.js"
   },
@@ -18,12 +22,14 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.5.0",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.6",
     "csv-parse": "^6.2.1",
     "express": "^5.2.1",
-    "imapflow": "^1.2.18"
+    "imapflow": "^1.2.18",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@prisma/adapter-better-sqlite3": "^7.6.0",
@@ -31,6 +37,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
+    "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
     "@vitest/coverage-v8": "^4.1.2",
     "msw": "^2.13.6",

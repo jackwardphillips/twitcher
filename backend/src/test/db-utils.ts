@@ -6,9 +6,7 @@ import { db } from '../lib/db';
  * @returns {Promise<void>}
  */
 export async function clearDatabase() {
-  // Order matters if there are foreign key constraints, 
-  // but with SQLite and Prisma we can often just delete all.
-  // Sighting has a relation to Incident.
+  // Order matters because Sighting has a relation to Incident.
   
   await db.sighting.deleteMany();
   await db.incident.deleteMany();
