@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { Dashboard, Incident } from './Dashboard.js';
+import { Dashboard, type Incident } from './Dashboard.js';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 describe('Dashboard', () => {
@@ -83,7 +83,7 @@ describe('Dashboard', () => {
     render(<Dashboard />);
     
     await screen.findByText('American Robin');
-    const summaries = screen.queryByClassName ? screen.queryByClassName('gemini-summary') : document.querySelectorAll('.gemini-summary');
+    const summaries = document.querySelectorAll('.gemini-summary');
     expect(summaries.length).toBe(0);
   });
 });

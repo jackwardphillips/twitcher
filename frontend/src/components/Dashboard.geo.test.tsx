@@ -76,7 +76,7 @@ describe('Dashboard Geolocation Tests', () => {
 
   it('shows error when location access is denied', async () => {
     const mockGeolocation = {
-      getCurrentPosition: vi.fn((success, error) => {
+      getCurrentPosition: vi.fn((_success, error) => {
         error({ message: 'User denied Geolocation' });
       })
     };
