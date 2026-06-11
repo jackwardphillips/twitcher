@@ -46,6 +46,10 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   return results;
 }
 
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Rare Bird Dashboard API is running' });
 });
@@ -131,7 +135,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
       let streak = 0;
       let currentDate = new Date(`${refDateStr}T12:00:00`);
       
-      while (true) {
+      while (dates) {
         const dateStr = formatDate(currentDate);
         if (dates.includes(dateStr)) {
           streak++;

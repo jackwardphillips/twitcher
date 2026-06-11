@@ -52,16 +52,18 @@ export class ImapClient {
       };
 
       for await (const message of client.fetch(searchCriteria, { envelope: true, source: true })) {
+        if (!message.envelope || !message.source) continue;
+
         const from = message.envelope.from?.[0]?.address || 'unknown';
         const subject = message.envelope.subject || '';
         
         // Filter by sender and ABA Rarities subject
         if (from === 'ebird-alert@birds.cornell.edu' && subject.includes('ABA Rarities')) {
           emails.push({
-            messageId: message.envelope.messageId,
+            messageId: message.envelope.messageId || 'unknown',
             subject: subject,
             from: from,
-            date: message.envelope.date,
+            date: message.envelope.date || new Date(),
             rawBody: message.source.toString(),
           });
         }

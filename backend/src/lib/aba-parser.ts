@@ -23,9 +23,9 @@ export function parseABAChecklist(csvContent: string): ABABirdEntry[] {
     ],
     skip_empty_lines: true,
     trim: true,
-    skip_lines: 3, // Skip the initial metadata lines in the CSV file.
+    from_line: 4, // Skip the initial 3 metadata lines.
     relax_column_count: true // Allow rows with different numbers of columns.
-  });
+  }) as any[];
 
   const parsedBirds: ABABirdEntry[] = [];
 

@@ -123,9 +123,9 @@ export function parseEBirdAlert(content: string, basisDate: Date = new Date()): 
 
       i++;
       // Parse details starting with '-'
-      while (i < lines.length && lines[i] && lines[i].startsWith('-')) {
+      while (i < lines.length) {
         const detailLine = lines[i];
-        if (!detailLine) break;
+        if (!detailLine || !detailLine.startsWith('-')) break;
         
         if (detailLine.startsWith('- Reported ')) {
           const reportedMatch = detailLine.match(/- Reported (.+?) by (.+)$/);
