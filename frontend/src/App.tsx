@@ -1,5 +1,6 @@
 import { Dashboard } from './components/Dashboard.js'
 import './App.css'
+import './styles/themes.css'
 
 function App() {
   return (

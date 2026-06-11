@@ -7,7 +7,14 @@ import { PhotoSlot } from './PhotoSlot.js';
 import { SightingHistogram } from './SightingHistogram.js';
 import { formatDayMonth } from '../lib/date-utils.js';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL ?? '';
+
+const rangerStationLabels = {
+  section: 'Notice Board',
+  count: 'Reports',
+  location: 'Map Note',
+  lastSeen: 'Last Seen'
+};
 
 export interface Incident {
   id: string;
@@ -118,6 +125,19 @@ const Dashboard: React.FC = () => {
     return getRarityUtilityColor(rarity as RarityCode);
   };
 
+  const isRecentIncident = (incident: Incident) => {
+    const lastSeenTime = new Date(incident.lastSeen).getTime();
+    if (Number.isNaN(lastSeenTime)) return false;
+
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    return Date.now() - lastSeenTime <= sevenDays;
+  };
+
+  const isHighRarity = (incident: Incident) => {
+    const rarity = incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode;
+    return rarity >= 5;
+  };
+
   const displayedIncidents = incidents
     .filter((incident): incident is Incident & { abaCode: RarityCode } => {
       // Fallback for missing abaCode to code 5
@@ -131,7 +151,7 @@ const Dashboard: React.FC = () => {
     });
 
   return (
-    <div className="dashboard">
+    <div className="dashboard" data-theme="ranger-station">
       <header className="dashboard-header">
         <div className="header-main">
           <h1>twitcher</h1>
@@ -173,6 +193,7 @@ const Dashboard: React.FC = () => {
           <SightingMap incidents={displayedIncidents} />
           
           <div className="sightings-list">
+            <div className="dashboard-section-label">{rangerStationLabels.section}</div>
             {displayedIncidents.map((incident) => (
               <div 
                 key={incident.id} 
@@ -193,7 +214,7 @@ const Dashboard: React.FC = () => {
                           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                           <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        <p className="location-info">{incident.locationName}</p>
+                        <p className="location-info"><span className="sr-only">{rangerStationLabels.location}: </span>{incident.locationName}</p>
                       </div>
                     </div>
                     <div className="card-actions">
@@ -202,6 +223,7 @@ const Dashboard: React.FC = () => {
                         style={{ 
                           '--rarity-color': getRarityColor(incident) 
                         } as React.CSSProperties}
+                        data-status={isRecentIncident(incident) ? 'recent' : isHighRarity(incident) ? 'high-rarity' : undefined}
                       >
                         Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}
                       </span>
@@ -219,7 +241,7 @@ const Dashboard: React.FC = () => {
 
                   <div className="card-middle-row">
                     <div className="stat-item">
-                      <span className="stat-label">Reports</span>
+                      <span className="stat-label">{rangerStationLabels.count}</span>
                       <span className="stat-value">{incident.sightingCount}</span>
                     </div>
                     <div className="stat-item">
@@ -227,7 +249,7 @@ const Dashboard: React.FC = () => {
                       <span className="stat-value">{formatDayMonth(incident.firstSeen)}</span>
                     </div>
                     <div className="stat-item">
-                      <span className="stat-label">Last Seen</span>
+                      <span className="stat-label">{rangerStationLabels.lastSeen}</span>
                       <span className="stat-value">{formatDayMonth(incident.lastSeen)}</span>
                     </div>
                     <div className="stat-item" style={{ marginLeft: 'auto', width: '240px' }}>

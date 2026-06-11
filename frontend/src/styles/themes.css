@@ -1,0 +1,310 @@
+:root,
+[data-theme="default"] {
+  --bg: #f5f0e8;
+  --surface: #fdf8f0;
+  --surface-raised: #fffaf3;
+  --text: #2c2416;
+  --muted-text: #6b5a3e;
+  --subtle-text: #a08c6e;
+  --primary: #5a7a5c;
+  --primary-strong: #c4622d;
+  --accent: #d4943a;
+  --accent-secondary: #4a7fa5;
+  --alert: #7b3f6e;
+  --border: #d4c4a8;
+  --radius: 4px;
+  --shadow: 2px 3px 8px rgba(44, 36, 22, 0.1);
+  --shadow-hover: 4px 8px 18px rgba(44, 36, 22, 0.16);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-data: 'DM Mono', monospace;
+  --paper-lines: transparent;
+  --texture: none;
+
+  --bg-base: var(--bg);
+  --bg-surface: var(--surface);
+  --clr-rust: var(--primary-strong);
+  --clr-sage: var(--primary);
+  --clr-gold: var(--accent);
+  --clr-sky: var(--accent-secondary);
+  --clr-berry: var(--alert);
+  --text-primary: var(--text);
+  --text-secondary: var(--muted-text);
+  --text-muted: var(--subtle-text);
+  --shadow-sm: var(--shadow);
+  --shadow-md: var(--shadow-hover);
+}
+
+[data-theme="field-notebook"] {
+  --bg: #f5f0e1;
+  --surface: #fffaf0;
+  --surface-raised: #fffdf6;
+  --text: #2f2a1f;
+  --muted-text: #6f6654;
+  --subtle-text: #837661;
+  --primary: #2f6a3a;
+  --primary-strong: #315f38;
+  --accent: #8b6f47;
+  --accent-secondary: #52716a;
+  --alert: #7d3f3f;
+  --border: #d8c7a3;
+  --radius: 6px;
+  --shadow: 0 1px 3px rgba(63, 49, 31, 0.16);
+  --shadow-hover: 0 8px 18px rgba(63, 49, 31, 0.17);
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: Georgia, 'Times New Roman', serif;
+  --font-data: 'DM Mono', Consolas, monospace;
+  --paper-lines: rgba(47, 106, 58, 0.08);
+  --texture:
+    linear-gradient(var(--paper-lines) 1px, transparent 1px),
+    radial-gradient(circle at 18% 12%, rgba(139, 111, 71, 0.06), transparent 20%),
+    radial-gradient(circle at 78% 24%, rgba(47, 106, 58, 0.045), transparent 18%);
+}
+
+[data-theme="ranger-station"] {
+  --bg: #e9dfc7;
+  --surface: #fff8e7;
+  --surface-raised: #fffdf4;
+  --text: #2c2518;
+  --muted-text: #6a5c45;
+  --subtle-text: #88765b;
+  --primary: #315c35;
+  --primary-strong: #315c35;
+  --accent: #b06f2f;
+  --accent-secondary: #536f74;
+  --alert: #8b463d;
+  --border: #c5a878;
+  --radius: 10px;
+  --shadow: 0 6px 14px rgba(54, 38, 18, 0.16);
+  --shadow-hover: 0 14px 26px rgba(54, 38, 18, 0.2);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: system-ui, 'Segoe UI', sans-serif;
+  --font-data: 'DM Mono', Consolas, monospace;
+  --texture:
+    radial-gradient(circle at 10px 10px, rgba(84, 59, 27, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 248, 231, 0.22), transparent);
+}
+
+[data-theme="modern-naturalist"] {
+  --bg: #f7f6f0;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --text: #1f2a24;
+  --muted-text: #617067;
+  --subtle-text: #74867a;
+  --primary: #2f6a3a;
+  --primary-strong: #244f2c;
+  --accent: #5f8d72;
+  --accent-secondary: #447d75;
+  --alert: #7a4c64;
+  --border: #dbe3dc;
+  --radius: 16px;
+  --shadow: 0 8px 24px rgba(31, 42, 36, 0.08);
+  --shadow-hover: 0 16px 34px rgba(31, 42, 36, 0.12);
+  --font-display: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-body: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-data: ui-monospace, Consolas, monospace;
+  --texture: none;
+}
+
+*,
+*::before,
+*::after {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.dashboard {
+  background-color: var(--bg);
+  background-image: var(--texture);
+  background-size: auto, 36px 36px, auto, auto;
+  color: var(--text);
+  min-height: 100svh;
+}
+
+.dashboard-header,
+.sighting-card,
+.dropdown-menu,
+.dropdown-trigger,
+.rarity-btn,
+.rarity-option,
+.filter-btn {
+  border-radius: var(--radius);
+}
+
+.dashboard-header,
+.map-wrapper,
+.sighting-card,
+.loading-state,
+.error-state,
+.no-results {
+  animation: fadeSlideUp 320ms ease both;
+}
+
+.dropdown-trigger:hover,
+.dropdown-trigger:focus-visible,
+.filter-btn:hover,
+.filter-btn:focus-visible,
+.rarity-btn:hover,
+.rarity-btn:focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary), transparent 84%);
+  outline: none;
+}
+
+.map-wrapper {
+  border-block: 1px solid var(--border);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface), transparent 60%);
+  overflow: hidden;
+}
+
+.leaflet-container,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  font-family: var(--font-body);
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.dashboard-section-label {
+  color: var(--muted-text);
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 1.15rem 0.5rem 0.75rem;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.sighting-card {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.sighting-card-horizontal {
+  margin-bottom: 0.85rem;
+}
+
+.sighting-card:hover {
+  border-color: color-mix(in srgb, var(--primary), var(--border) 45%);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+}
+
+.photo-slot {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface), var(--border) 50%), var(--bg));
+}
+
+.gemini-summary {
+  background: color-mix(in srgb, var(--accent), transparent 94%);
+  border-radius: calc(var(--radius) * 0.75);
+}
+
+.card-middle-row {
+  border-top-color: color-mix(in srgb, var(--border), transparent 35%);
+}
+
+.streak-badge[data-status="recent"],
+.streak-badge[data-status="high-rarity"] {
+  animation: softPulse 2.4s ease-in-out infinite;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rarity-color, var(--accent)), transparent 88%);
+}
+
+[data-theme="field-notebook"] .dashboard-header {
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 rgba(47, 42, 31, 0.04);
+}
+
+[data-theme="field-notebook"] .sighting-card {
+  background-image:
+    linear-gradient(rgba(47, 106, 58, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 111, 71, 0.12) 1px, transparent 1px);
+  background-position: 0 1.15rem, 3.7rem 0;
+  background-size: 100% 1.8rem, 100% 100%;
+}
+
+[data-theme="field-notebook"] .sighting-card h3 {
+  font-style: normal;
+}
+
+[data-theme="ranger-station"] .dashboard {
+  background-size: 20px 20px, auto;
+}
+
+[data-theme="ranger-station"] .sighting-card {
+  transform: rotate(-0.15deg);
+}
+
+[data-theme="ranger-station"] .sighting-card:nth-child(2n) {
+  transform: rotate(0.12deg);
+}
+
+[data-theme="ranger-station"] .sighting-card:hover {
+  transform: rotate(0deg) translateY(-3px);
+}
+
+[data-theme="modern-naturalist"] .dashboard-header {
+  border-bottom: 0;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.2rem;
+}
+
+[data-theme="modern-naturalist"] .sightings-list {
+  gap: 1rem;
+}
+
+[data-theme="modern-naturalist"] .sighting-card {
+  border-left-width: 6px;
+}
+
+[data-theme="modern-naturalist"] .sighting-card h3 {
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
