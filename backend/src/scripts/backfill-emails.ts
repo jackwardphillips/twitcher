@@ -23,7 +23,7 @@ async function main() {
   const imapClient = new ImapClient(imapConfig);
   const ingestionService = new IngestionService(imapClient);
 
-  const backfillDate = new Date('2026-01-01');
+  const backfillDate = new Date('2026-02-14');
   console.log(`Backfilling emails since ${backfillDate.toISOString()}...`);
 
   try {

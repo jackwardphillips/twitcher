@@ -1,12 +1,12 @@
 # Rare Bird Dashboard
 
-Rare Bird Dashboard is a personal birding dashboard for tracking ABA rarity alerts from eBird. The current app ingests ABA Rarities emails, parses sightings, enriches them with eBird data when possible, clusters related sightings into incident records, and shows those incidents in a React dashboard with a Leaflet map and card list.
+Rare Bird Dashboard is a personal birding dashboard for tracking ABA rarity alerts from eBird. The app ingests ABA Rarities emails, parses sightings, enriches them with eBird data when possible, clusters related sightings into incident records, and shows those incidents in a React dashboard with a Leaflet map and card list.
 
 ## Current Capabilities
 
 - Email ingestion from an IMAP inbox for eBird ABA Rarities alerts
 - Parsing of quoted-printable `.eml` alert bodies into structured sightings
-- SQLite storage through Prisma
+- PostgreSQL storage through Prisma
 - Optional eBird API enrichment for coordinates, checklist IDs, and related metadata
 - Incident clustering by normalized species name and proximity
 - Background incident summarization using Groq first, with Gemini fallback
@@ -14,7 +14,7 @@ Rare Bird Dashboard is a personal birding dashboard for tracking ABA rarity aler
 
 ## Stack
 
-- Backend: Node.js, Express, TypeScript, Prisma, SQLite, Vitest
+- Backend: Node.js, Express, TypeScript, Prisma, PostgreSQL, Vitest
 - Frontend: React, TypeScript, Vite, Leaflet, React-Leaflet
 - Automation: IMAP via `imapflow`
 
@@ -35,7 +35,8 @@ npm run install:all
 
 Create `backend/.env` from `backend/.env.example` and set what you need:
 
-- `DATABASE_URL`
+- `DATABASE_URL` for the application database
+- `TEST_DATABASE_URL` for tests; use a disposable PostgreSQL database
 - `IMAP_HOST`
 - `IMAP_PORT`
 - `IMAP_USER`
@@ -46,23 +47,25 @@ Create `backend/.env` from `backend/.env.example` and set what you need:
 
 ### Database
 
-The backend is configured for SQLite, not PostgreSQL. A typical local value is:
+The backend is configured for PostgreSQL. A Neon connection string should include SSL:
 
-```bash
-DATABASE_URL="file:./dev.db"
+```powershell
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
 ```
 
-Run Prisma migrations from `backend/` as needed:
+Run Prisma migrations from `backend\` as needed:
 
-```bash
-npx prisma migrate dev
+```powershell
+npx.cmd prisma migrate dev
 ```
+
+The old SQLite database files are intentionally left in `backend\` as backups. The preserved SQLite schema is `backend\prisma\schema.sqlite.prisma`, and the old SQLite migrations remain under `backend\prisma\migrations`. The active Postgres migrations are under `backend\prisma\postgres-migrations`.
 
 ## Run
 
 From the repo root:
 
-```bash
+```powershell
 npm start
 ```
 
@@ -75,10 +78,93 @@ The frontend proxies `/api` requests to the backend during local development.
 
 ## Tests
 
-```bash
-npm test --prefix backend
-npm test --prefix frontend
+```powershell
+npm.cmd test --prefix backend
+npm.cmd test --prefix frontend
 ```
+
+Backend tests require `TEST_DATABASE_URL` and may clear data, so do not point it at production.
+
+## PostgreSQL Rebuild
+
+Run these commands from `backend\` against an empty PostgreSQL database:
+
+```powershell
+npx.cmd prisma migrate deploy
+npm.cmd run seed:rarity
+npm.cmd run backfill:emails
+npm.cmd run backfill:summaries
+npm.cmd run check:counts
+```
+
+Step notes:
+
+- `seed:rarity` is required and idempotent; it upserts ABA checklist rows.
+- `backfill:emails` is required for historical production data and is idempotent by `IncomingEmail.messageId`.
+- `backfill:summaries` is required for chase intel summaries and is safe to rerun; it skips incidents whose summaries are current.
+- `seed:emails` is optional local fixture loading from `references\*.eml`; it is not idempotent for sightings and should not be run in the same production rebuild as `backfill:emails`.
+- `check:counts` verifies table counts after population.
+
+The current local SQLite backup contains populated data, but the Postgres rebuild is intended to use source systems instead of direct SQLite migration. At the time of migration analysis, `backend\dev.db` contained 1161 rarity codes, 24887 sightings, 683 incidents, and 122 incoming emails. The references folder contains the ABA checklist CSV and 3 local `.eml` files; full historical email reconstruction depends on IMAP access.
+
+## Deployment
+
+### Neon
+
+1. Create a Neon project and database.
+2. Copy the pooled or direct connection string.
+3. Ensure the URL ends with `sslmode=require`.
+4. Store it as `DATABASE_URL`; do not commit it.
+
+### Render Backend
+
+Use the `backend` directory as the service root.
+
+Build command:
+
+```powershell
+npm.cmd install
+npm.cmd run build
+```
+
+Start command:
+
+```powershell
+npm.cmd run start:prod
+```
+
+Set these Render environment variables:
+
+- `DATABASE_URL`
+- `IMAP_HOST`
+- `IMAP_PORT`
+- `IMAP_USER`
+- `IMAP_PASS`
+- `IMAP_SECURE`
+- `EBIRD_API_KEY` if enrichment is enabled
+- `GROQ_API_KEY` and/or `GEMINI_API_KEY` if summaries are enabled
+
+`start:prod` runs `prisma migrate deploy` before `node dist/index.js`. Do not use `prisma db push --accept-data-loss` in production.
+
+### Frontend
+
+Deploy the frontend to Vercel or Netlify and point its API configuration/proxy at the Render backend URL.
+
+## Migration Notes
+
+- Prisma datasource provider changed from SQLite to PostgreSQL.
+- Prisma 7 no longer allows `url` in `schema.prisma`; `DATABASE_URL` is read from `prisma.config.ts`, and runtime connections use `@prisma/adapter-pg`.
+- A new Postgres initial migration lives in `backend\prisma\postgres-migrations`.
+- Existing SQLite files and SQLite migration history were not deleted.
+- `statesCovered` remains a `String` containing JSON text to preserve current application behavior with minimal schema change.
+
+## Risks
+
+- Running `seed:emails` repeatedly creates duplicate sightings because `saveSightings` does not enforce a source-level unique key.
+- Running both `seed:emails` and `backfill:emails` can duplicate sightings if the same alerts exist in both local `.eml` files and IMAP.
+- `backfill:emails` needs valid IMAP credentials; without them, full historical production data cannot be rebuilt from source.
+- `backfill:summaries` needs `GROQ_API_KEY` or `GEMINI_API_KEY`; without either key it exits without populating summaries.
+- Tests now require a disposable PostgreSQL `TEST_DATABASE_URL` because the old SQLite test copy flow is incompatible with the active Postgres Prisma client.
 
 ## Notes
 

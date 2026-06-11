@@ -1,0 +1,89 @@
+// Preserved SQLite schema for the legacy dev.db fallback.
+// The active application schema is schema.prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum IncidentStatus {
+  OPEN
+  CLOSED
+  PERMANENTLY_CLOSED
+}
+
+model Sighting {
+  id             Int       @id @default(autoincrement())
+  species        String
+  scientificName String?
+  location       String
+  date           DateTime
+  observer       String
+  rarity         Int       @default(0)
+  details        String?
+  mapUrl         String?
+  checklistUrl   String?
+  latitude       Float?
+  longitude      Float?
+  subId          String?
+  locId          String?
+  speciesCode    String?
+  howMany        Int?
+  incidentId     String?
+  incident       Incident? @relation(fields: [incidentId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Incident {
+  id                 String         @id @default(uuid())
+  scientificName     String
+  commonName         String
+  status             IncidentStatus @default(OPEN)
+  minLat             Float
+  maxLat             Float
+  minLng             Float
+  maxLng             Float
+  firstSeen          DateTime
+  lastSeen           DateTime
+  closedAt           DateTime?
+  sightingCount      Int            @default(1)
+  primaryCounty      String?
+  primaryState       String?
+  primaryCountry     String?
+  statesCovered      String
+  geminiSummary      String?
+  summaryGeneratedAt DateTime?
+  sightings          Sighting[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model RarityCode {
+  id             Int     @id @default(autoincrement())
+  commonName     String  @unique
+  scientificName String? @unique
+  abaCode        Int
+}
+
+model IncomingEmail {
+  id        Int       @id @default(autoincrement())
+  messageId String    @unique
+  subject   String?
+  from      String?
+  date      DateTime?
+  rawBody   String
+  status    String    @default("new")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+}
+
+model SpeciesPhoto {
+  speciesName String   @id
+  photoUrl    String?
+  attribution String?
+  fetchedAt   DateTime @default(now())
+}
