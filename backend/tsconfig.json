@@ -47,6 +47,9 @@
   "exclude": [
     "node_modules",
     "dist",
+    "src/**/*.test.ts",
+    "src/test/**/*",
+    "src/scripts/**/*",
     "prisma.config.ts",
     "vitest.config.ts"
   ]

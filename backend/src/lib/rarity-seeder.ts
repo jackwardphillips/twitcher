@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { parseABAChecklist } from './aba-parser';
-import { prisma } from './db';
+import { parseABAChecklist } from './aba-parser.js';
+import { prisma } from './db.js';
 
 /**
  * Seeds the database with rarity codes from the ABA Checklist CSV.

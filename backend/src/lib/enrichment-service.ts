@@ -200,7 +200,7 @@ export class EnrichmentService {
         subId: match.subId,
         locId: match.locId,
         speciesCode: match.speciesCode,
-        howMany: match.howMany,
+        howMany: match.howMany ?? null,
       },
     });
 

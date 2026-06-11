@@ -1,4 +1,4 @@
-import { prisma } from './db';
+import { prisma } from './db.js';
 
 /**
  * Retrieves the ABA rarity code for a given species by its scientific name.

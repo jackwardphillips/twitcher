@@ -13,7 +13,7 @@ export function normalizeScientificName(raw: string, commonName?: string): strin
   // 1. Try to find a valid binomial (Genus species) within the string.
   // This helps with mangled names like "Mexican) (Setophaga petechia [castaneiceps Group]"
   const binomialMatch = raw.match(/([A-Z][a-z]+ [a-z]+)/);
-  if (binomialMatch) {
+  if (binomialMatch && binomialMatch[1]) {
     return binomialMatch[1];
   }
 
@@ -119,9 +119,9 @@ export async function createIncident(
       firstSeen: sighting.date,
       lastSeen: sighting.date,
       sightingCount: 1,
-      primaryCounty,
-      primaryState,
-      primaryCountry,
+      primaryCounty: primaryCounty ?? null,
+      primaryState: primaryState ?? null,
+      primaryCountry: primaryCountry ?? null,
       statesCovered: JSON.stringify(statesCovered)
     }
   });
