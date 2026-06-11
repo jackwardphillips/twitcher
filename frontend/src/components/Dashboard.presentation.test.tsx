@@ -54,13 +54,13 @@ describe('Dashboard Presentation Behavioral Tests', () => {
 
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn((url) => {
-      if (url === '/api/incidents') {
+      if (url.endsWith('/api/incidents')) {
         return Promise.resolve({
           ok: true,
           json: async () => mockIncidents
         });
       }
-      if (url === '/api/ingestion-status') {
+      if (url.endsWith('/api/ingestion-status')) {
         return Promise.resolve({
           ok: true,
           json: async () => ({})
