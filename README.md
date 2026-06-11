@@ -42,6 +42,9 @@ Create `backend/.env` from `backend/.env.example` and set what you need:
 - `IMAP_USER`
 - `IMAP_PASS`
 - `IMAP_SECURE`
+- `RUN_STARTUP_INGESTION=false`
+- `BACKEND_URL` for ops scripts
+- `FRONTEND_URL` for ops scripts
 - `EBIRD_API_KEY` for enrichment
 - `GROQ_API_KEY` and/or `GEMINI_API_KEY` for summaries
 
@@ -150,6 +153,20 @@ Do not use `prisma db push --accept-data-loss` in production.
 
 Deploy the frontend to Vercel or Netlify and point its API configuration/proxy at the Render backend URL.
 
+### Ops Checks
+
+These commands are read-only monitoring checks:
+
+```powershell
+npm run ops:health
+npm run ops:db
+npm run ops:db-counts
+npm run ops:ingestion
+npm run ops:env
+```
+
+Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider tokens such as `RENDER_API_KEY`, `NEON_API_KEY`, and `VERCEL_TOKEN` out of git.
+
 ## Migration Notes
 
 - Prisma datasource provider changed from SQLite to PostgreSQL.
@@ -168,6 +185,6 @@ Deploy the frontend to Vercel or Netlify and point its API configuration/proxy a
 
 ## Notes
 
-- Startup ingestion runs automatically when the backend starts.
+- Startup ingestion runs only when `RUN_STARTUP_INGESTION=true`; keep it `false` in production unless explicitly supervised.
 - The dashboard currently renders incident cards and map pins, but it does not yet have a drill-down detail view.
 - The "Discuss" link on cards is still a static Discord link, not incident-specific routing.

@@ -12,7 +12,8 @@ describe('General API Tests', () => {
   it('should return 200 OK for the health endpoint', async () => {
     const response = await request(app).get('/api/health');
     expect(response.status).toBe(200);
-    expect(response.body.status).toBe('ok');
+    expect(response.body.ok).toBe(true);
+    expect(response.body.database.ok).toBe(true);
   });
 
   it('should return a list of sightings with streaks', async () => {

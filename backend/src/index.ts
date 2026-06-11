@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { prisma } from './lib/db.js';
 import { IngestionService } from './lib/ingestion-service.js';
 import type { IngestionResult } from './lib/ingestion-service.js';
+import type { IngestionRun } from '@prisma/client';
 import { ImapClient } from './lib/imap-client.js';
 import { closeInactiveIncidents, getOpenIncidents, formatDate } from './lib/incident-service.js';
 import { runSummarizationCycle } from './lib/summarization-service.js';
@@ -31,11 +32,10 @@ app.use(cors({
 
 app.use(express.json());
 
-let lastIngestionResult: IngestionResult | null = null;
 const photoService = new PhotoService();
 let ingestionInProgress = false;
 
-async function triggerIngestion(enrich = true): Promise<IngestionResult> {
+async function triggerIngestion(enrich = true, trigger = 'manual'): Promise<IngestionResult> {
   if (ingestionInProgress) {
     const error = new Error('Ingestion already in progress');
     (error as Error & { statusCode?: number }).statusCode = 409;
@@ -57,7 +57,7 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
   try {
     // Close inactive incidents before and after ingestion to ensure status is up to date
     await closeInactiveIncidents(prisma);
-    const results = await ingestionService.ingest(undefined, enrich);
+    const results = await ingestionService.ingest(undefined, enrich, trigger);
     await closeInactiveIncidents(prisma);
 
     // Trigger summarization cycle in the background if new data was ingested
@@ -67,7 +67,6 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
       });
     }
 
-    lastIngestionResult = results;
     return results;
   } finally {
     ingestionInProgress = false;
@@ -75,11 +74,50 @@ async function triggerIngestion(enrich = true): Promise<IngestionResult> {
 }
 
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok' });
+  res.json({
+    ok: true,
+    service: 'rare-bird-dashboard-backend',
+    timestamp: new Date().toISOString(),
+    uptimeSeconds: Math.floor(process.uptime()),
+  });
 });
 
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', message: 'Rare Bird Dashboard API is running' });
+app.get('/api/health', async (req: Request, res: Response) => {
+  const started = Date.now();
+  let database = { ok: false, latencyMs: 0 };
+  let latestRun: IngestionRun | null = null;
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    database = {
+      ok: true,
+      latencyMs: Date.now() - started,
+    };
+    latestRun = await prisma.ingestionRun.findFirst({
+      orderBy: { startedAt: 'desc' },
+    });
+  } catch (error) {
+    database = {
+      ok: false,
+      latencyMs: Date.now() - started,
+    };
+  }
+
+  const ok = database.ok;
+  res.status(ok ? 200 : 503).json({
+    ok,
+    database,
+    ingestion: {
+      startupIngestionEnabled: process.env.RUN_STARTUP_INGESTION === 'true',
+      inProgress: ingestionInProgress,
+      lastRunAt: latestRun?.finishedAt ?? latestRun?.startedAt ?? null,
+      lastStatus: latestRun?.status ?? null,
+    },
+    environment: {
+      nodeEnv: process.env.NODE_ENV ?? 'development',
+      databaseProvider: 'postgresql',
+    },
+  });
 });
 
 function sanitizeErrorMessage(message: string | undefined): string {
@@ -94,7 +132,7 @@ function sanitizeErrorMessage(message: string | undefined): string {
 app.post('/api/ingest', async (req: Request, res: Response) => {
   try {
     console.log('Triggering ingestion via API...');
-    const results = await triggerIngestion();
+    const results = await triggerIngestion(true, 'api');
     console.log('Ingestion result:', results);
     
     if (results.status === 'imap_error' || results.status === 'error') {
@@ -122,17 +160,24 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
 
 app.get('/api/ingestion-status', async (req: Request, res: Response) => {
   try {
-    const lastEmail = await prisma.incomingEmail.findFirst({
-      orderBy: { date: 'desc' },
-      where: { 
-        status: 'processed',
-        from: 'ebird-alert@birds.cornell.edu'
-      }
-    });
+    const [lastEmail, latestRun] = await Promise.all([
+      prisma.incomingEmail.findFirst({
+        orderBy: { date: 'desc' },
+        where: { 
+          status: 'processed',
+          from: 'ebird-alert@birds.cornell.edu'
+        }
+      }),
+      prisma.ingestionRun.findFirst({
+        orderBy: { startedAt: 'desc' },
+      }),
+    ]);
 
     res.json({
       lastIngestedEmailDate: lastEmail?.date || null,
-      lastRun: lastIngestionResult,
+      inProgress: ingestionInProgress,
+      startupIngestionEnabled: process.env.RUN_STARTUP_INGESTION === 'true',
+      latestRun,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch ingestion status' });
@@ -225,7 +270,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (process.env.RUN_STARTUP_INGESTION === 'true') {
       console.log('Running startup email ingestion...');
       try {
-        const results = await triggerIngestion();
+        const results = await triggerIngestion(true, 'startup');
         console.log(`Startup ingestion complete: ${results.status} (enrichment: ${results.enrichmentStatus})`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

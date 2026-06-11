@@ -4,12 +4,21 @@ import { parseEBirdAlert } from './ebird-parser.js';
 import { saveSightings } from './sighting-service.js';
 
 export interface IngestionResult {
+  emailsFound: number;
   ingested: number;
   skipped: number;
   failed: number;
   status: 'success' | 'no_new_emails' | 'imap_error' | 'error';
   enrichmentStatus?: 'success' | 'failed' | 'partial_failure' | 'not_requested';
   error?: string;
+}
+
+function sanitizeIngestionError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/DATABASE_URL|postgresql:\/\/|password|secret|Prisma| at /i.test(message)) {
+    return 'An unexpected internal error occurred';
+  }
+  return message;
 }
 
 /**
@@ -34,7 +43,34 @@ export class IngestionService {
    * @param {boolean} [enrich=true] - Whether to perform eBird API enrichment for discovered sightings.
    * @returns {Promise<IngestionResult>} Summary of the ingestion process.
    */
-  async ingest(since?: Date, enrich = true): Promise<IngestionResult> {
+  async ingest(since?: Date, enrich = true, trigger = 'manual'): Promise<IngestionResult> {
+    const run = await db.ingestionRun.create({
+      data: {
+        status: 'running',
+        trigger,
+      },
+    });
+    const sightingsBefore = await db.sighting.count();
+
+    const finishRun = async (result: IngestionResult) => {
+      try {
+        const sightingsAfter = await db.sighting.count();
+        await db.ingestionRun.update({
+          where: { id: run.id },
+          data: {
+            finishedAt: new Date(),
+            status: result.status,
+            emailsFound: result.emailsFound,
+            emailsIngested: result.ingested,
+            sightingsAdded: Math.max(sightingsAfter - sightingsBefore, 0),
+            errorMessage: result.error ?? null,
+          },
+        });
+      } catch (error) {
+        console.error('Failed to update ingestion run:', sanitizeIngestionError(error));
+      }
+    };
+
     try {
       const newEmails = await this.imapClient.fetchRecentAlerts(since);
       
@@ -61,7 +97,9 @@ export class IngestionService {
       let enrichmentFailed = 0;
 
       if (newEmails.length === 0 && pendingEmails.length === 0) {
-        return { ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
+        const result: IngestionResult = { emailsFound: 0, ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
+        await finishRun(result);
+        return result;
       }
 
       console.log(`Found ${newEmails.length} new emails and ${pendingEmails.length} pending emails.`);
@@ -92,6 +130,7 @@ export class IngestionService {
       }
 
       const allEmails = Array.from(emailMap.values());
+      const emailsFound = allEmails.length;
       let count = 0;
       for (const email of allEmails) {
         count++;
@@ -219,19 +258,24 @@ export class IngestionService {
         }
       }
 
-      return { ingested, skipped, failed, status: 'success', enrichmentStatus };
+      const result: IngestionResult = { emailsFound, ingested, skipped, failed, status: 'success', enrichmentStatus };
+      await finishRun(result);
+      return result;
     } catch (error) {
       console.error('Ingestion failed:', error);
       const isImapError = error instanceof Error && 
         (error.message.includes('IMAP') || error.message.includes('connection') || error.message.includes('auth'));
         
-      return { 
+      const result: IngestionResult = { 
+        emailsFound: 0,
         ingested: 0, 
         skipped: 0, 
         failed: 0, 
         status: isImapError ? 'imap_error' : 'error',
-        error: error instanceof Error ? error.message : String(error)
+        error: sanitizeIngestionError(error)
       };
+      await finishRun(result);
+      return result;
     }
   }
 }

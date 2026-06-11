@@ -8,6 +8,7 @@ node_modules/
 
 # Databases
 *.sql
+!backend/prisma/postgres-migrations/**/migration.sql
 *.db
 *.db-journal
 
