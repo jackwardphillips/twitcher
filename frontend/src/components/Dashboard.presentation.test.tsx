@@ -3,18 +3,6 @@ import { Dashboard } from './Dashboard.js';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
 
-// Mock Leaflet as it doesn't work well in JSDOM
-vi.mock('react-leaflet', () => ({
-  MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
-  TileLayer: () => <div data-testid="tile-layer" />,
-  Marker: ({ children, position }: any) => (
-    <div data-testid="marker" data-position={JSON.stringify(position)}>
-      {children}
-    </div>
-  ),
-  Popup: ({ children }: any) => <div data-testid="popup">{children}</div>,
-}));
-
 describe('Dashboard Presentation Behavioral Tests', () => {
   const mockIncidents = [
     { 
@@ -112,7 +100,7 @@ describe('Dashboard Presentation Behavioral Tests', () => {
     render(<Dashboard />);
     await screen.findByRole('heading', { name: 'Rare Bird' });
 
-    const markers = screen.getAllByTestId('marker');
+    const markers = await screen.findAllByTestId('marker');
     expect(markers).toHaveLength(2);
     
     // Check positions

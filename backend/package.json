@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "start:prod": "npx prisma migrate deploy && node dist/index.js",
+    "start:prod": "node dist/index.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "seed:rarity": "tsx src/scripts/seed-rarity.ts",
