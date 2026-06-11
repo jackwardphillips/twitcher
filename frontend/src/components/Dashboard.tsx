@@ -7,7 +7,8 @@ import { PhotoSlot } from './PhotoSlot.js';
 import { SightingHistogram } from './SightingHistogram.js';
 import { formatDayMonth } from '../lib/date-utils.js';
 
-// ... (keep types and state definitions)
+const API_URL = import.meta.env.VITE_API_URL;
+
 export interface Incident {
   id: string;
   scientificName: string;
@@ -26,7 +27,6 @@ export interface Incident {
   dailyCounts: { date: string; count: number }[];
   photo: { url: string; attribution: string } | null;
 }
-// ...
 
 interface IngestionStatus {
   lastIngestedEmailDate: string | null;
@@ -53,7 +53,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     // Fetch incidents
-    fetch('/api/incidents')
+    fetch(`${API_URL}/api/incidents`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch incidents');
         return res.json();
@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
       });
 
     // Fetch ingestion status
-    fetch('/api/ingestion-status')
+    fetch(`${API_URL}/api/ingestion-status`)
       .then((res) => res.json())
       .then((data) => setIngestionStatus(data))
       .catch((err) => console.error('Failed to fetch ingestion status:', err));

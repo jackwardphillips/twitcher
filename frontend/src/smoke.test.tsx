@@ -28,16 +28,16 @@ describe('E2E Smoke Test: Main Dashboard Flow', () => {
 
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn((url) => {
-      if (url === '/api/incidents') {
+      if (url.endsWith('/api/incidents')) {
         return Promise.resolve({ ok: true, json: async () => mockIncidents });
       }
-      if (url === '/api/ingestion-status') {
+      if (url.endsWith('/api/ingestion-status')) {
         return Promise.resolve({ ok: true, json: async () => ({
           lastIngestedEmailDate: '2026-05-20T10:00:00Z',
           lastRun: { status: 'success', ingested: 1 }
         })});
       }
-      if (url === '/api/ingest') {
+      if (url.endsWith('/api/ingest')) {
         return Promise.resolve({ ok: true, json: async () => ({ message: 'Ingestion complete' }) });
       }
       return Promise.reject(new Error('Unknown API'));
@@ -72,10 +72,10 @@ describe('E2E Smoke Test: Main Dashboard Flow', () => {
 
   it('preserves failure messaging when ingestion dependency degrades (IMAP error)', async () => {
     (global.fetch as any).mockImplementation((url: string) => {
-      if (url === '/api/incidents') {
+      if (url.endsWith('/api/incidents')) {
         return Promise.resolve({ ok: true, json: async () => mockIncidents });
       }
-      if (url === '/api/ingestion-status') {
+      if (url.endsWith('/api/ingestion-status')) {
         return Promise.resolve({ ok: true, json: async () => ({
           lastIngestedEmailDate: '2026-05-20T10:00:00Z',
           lastRun: { status: 'imap_error', error: 'Connection failed' }
