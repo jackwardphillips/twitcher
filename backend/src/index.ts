@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import type { Request, Response } from 'express';
 import { fileURLToPath } from 'url';
 import { prisma } from './lib/db.js';
@@ -12,6 +13,21 @@ import 'dotenv/config';
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://twitcher-sigma.vercel.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS'));
+  }
+}));
 
 app.use(express.json());
 
