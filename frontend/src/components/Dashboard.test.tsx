@@ -86,4 +86,78 @@ describe('Dashboard', () => {
     const summaries = document.querySelectorAll('.gemini-summary');
     expect(summaries.length).toBe(0);
   });
+
+  it('does not render geminiSummary when shorter than five trimmed characters', async () => {
+    const mockIncident: Incident = {
+      id: 'inc-1',
+      scientificName: 'Turdus migratorius',
+      commonName: 'American Robin',
+      abaCode: 4,
+      centroidLat: 40.0,
+      centroidLng: -75.0,
+      locationName: 'PA, US',
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      sightingCount: 1,
+      activeDays: 1,
+      latestMapUrl: null,
+      latestChecklistUrl: null,
+      geminiSummary: '  abcd  ',
+      dailyCounts: [],
+      photo: null
+    };
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [mockIncident]
+    });
+
+    // Mock ingestion status
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({})
+    });
+
+    render(<Dashboard />);
+
+    await screen.findByText('American Robin');
+    expect(document.querySelectorAll('.gemini-summary').length).toBe(0);
+  });
+
+  it('does not render geminiSummary when it contains no useful', async () => {
+    const mockIncident: Incident = {
+      id: 'inc-1',
+      scientificName: 'Turdus migratorius',
+      commonName: 'American Robin',
+      abaCode: 4,
+      centroidLat: 40.0,
+      centroidLng: -75.0,
+      locationName: 'PA, US',
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      sightingCount: 1,
+      activeDays: 1,
+      latestMapUrl: null,
+      latestChecklistUrl: null,
+      geminiSummary: 'No useful field notes were available.',
+      dailyCounts: [],
+      photo: null
+    };
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [mockIncident]
+    });
+
+    // Mock ingestion status
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({})
+    });
+
+    render(<Dashboard />);
+
+    await screen.findByText('American Robin');
+    expect(document.querySelectorAll('.gemini-summary').length).toBe(0);
+  });
 });
