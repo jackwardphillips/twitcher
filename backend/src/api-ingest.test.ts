@@ -105,3 +105,31 @@ describe('POST /api/ingest', () => {
     });
   });
 });
+
+describe('GET /api/ingest', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should start ingestion for URL-fetch cron services and return immediately', async () => {
+    const mockResult = {
+      ingested: 1,
+      skipped: 0,
+      failed: 0,
+      status: 'success',
+      enrichmentStatus: 'success'
+    };
+    (IngestionService.prototype.ingest as any).mockResolvedValue(mockResult);
+
+    const response = await request(app).get('/api/ingest');
+
+    expect(response.status).toBe(202);
+    expect(response.body).toEqual({
+      message: 'Ingestion started'
+    });
+
+    await vi.waitFor(() => {
+      expect(IngestionService.prototype.ingest).toHaveBeenCalledWith(undefined, true, 'cron');
+    });
+  });
+});

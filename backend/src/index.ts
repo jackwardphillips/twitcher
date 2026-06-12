@@ -158,6 +158,27 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
   }
 });
 
+app.get('/api/ingest', (req: Request, res: Response) => {
+  if (ingestionInProgress) {
+    return res.status(409).json({
+      error: 'Ingestion already in progress',
+    });
+  }
+
+  console.log('Triggering ingestion via cron...');
+  void triggerIngestion(true, 'cron')
+    .then(results => {
+      console.log('Cron ingestion result:', results);
+    })
+    .catch(error => {
+      console.error('Cron ingestion failed:', error);
+    });
+
+  res.status(202).json({
+    message: 'Ingestion started',
+  });
+});
+
 app.get('/api/ingestion-status', async (req: Request, res: Response) => {
   try {
     const [lastEmail, latestRun] = await Promise.all([
