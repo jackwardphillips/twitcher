@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import type { Request, Response } from 'express';
 import { fileURLToPath } from 'url';
-import { prisma } from './lib/db.js';
+import { databaseProvider, prisma } from './lib/db.js';
 import { IngestionService } from './lib/ingestion-service.js';
 import type { IngestionResult } from './lib/ingestion-service.js';
 import type { IngestionRun } from '@prisma/client';
@@ -14,6 +14,7 @@ import 'dotenv/config';
 
 const app = express();
 const port = process.env.PORT || 3001;
+const localOfflineMode = process.env.LOCAL_OFFLINE === 'true';
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -93,14 +94,21 @@ app.get('/api/health', async (req: Request, res: Response) => {
       ok: true,
       latencyMs: Date.now() - started,
     };
-    latestRun = await prisma.ingestionRun.findFirst({
-      orderBy: { startedAt: 'desc' },
-    });
   } catch (error) {
     database = {
       ok: false,
       latencyMs: Date.now() - started,
     };
+  }
+
+  if (database.ok) {
+    try {
+      latestRun = await prisma.ingestionRun.findFirst({
+        orderBy: { startedAt: 'desc' },
+      });
+    } catch (error) {
+      latestRun = null;
+    }
   }
 
   const ok = database.ok;
@@ -115,7 +123,8 @@ app.get('/api/health', async (req: Request, res: Response) => {
     },
     environment: {
       nodeEnv: process.env.NODE_ENV ?? 'development',
-      databaseProvider: 'postgresql',
+      databaseProvider,
+      localOfflineMode,
     },
   });
 });
@@ -130,6 +139,12 @@ function sanitizeErrorMessage(message: string | undefined): string {
 }
 
 app.post('/api/ingest', async (req: Request, res: Response) => {
+  if (localOfflineMode) {
+    return res.status(403).json({
+      error: 'Ingestion is disabled in local offline mode',
+    });
+  }
+
   try {
     console.log('Triggering ingestion via API...');
     const results = await triggerIngestion(true, 'api');
@@ -159,6 +174,12 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
 });
 
 app.get('/api/ingest', (req: Request, res: Response) => {
+  if (localOfflineMode) {
+    return res.status(403).json({
+      error: 'Ingestion is disabled in local offline mode',
+    });
+  }
+
   if (ingestionInProgress) {
     return res.status(409).json({
       error: 'Ingestion already in progress',
@@ -181,23 +202,28 @@ app.get('/api/ingest', (req: Request, res: Response) => {
 
 app.get('/api/ingestion-status', async (req: Request, res: Response) => {
   try {
-    const [lastEmail, latestRun] = await Promise.all([
-      prisma.incomingEmail.findFirst({
-        orderBy: { date: 'desc' },
-        where: { 
-          status: 'processed',
-          from: 'ebird-alert@birds.cornell.edu'
-        }
-      }),
-      prisma.ingestionRun.findFirst({
+    const lastEmail = await prisma.incomingEmail.findFirst({
+      orderBy: { date: 'desc' },
+      where: { 
+        status: 'processed',
+        from: 'ebird-alert@birds.cornell.edu'
+      }
+    });
+
+    let latestRun: IngestionRun | null = null;
+    try {
+      latestRun = await prisma.ingestionRun.findFirst({
         orderBy: { startedAt: 'desc' },
-      }),
-    ]);
+      });
+    } catch (error) {
+      latestRun = null;
+    }
 
     res.json({
       lastIngestedEmailDate: lastEmail?.date || null,
       inProgress: ingestionInProgress,
       startupIngestionEnabled: process.env.RUN_STARTUP_INGESTION === 'true',
+      localOfflineMode,
       latestRun,
     });
   } catch (error) {
@@ -263,21 +289,26 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
 app.get('/api/incidents', async (req: Request, res: Response) => {
   try {
     const incidents = await getOpenIncidents(prisma, 25);
+    const responseIncidents = localOfflineMode
+      ? incidents.map(incident => ({ ...incident, photo: null }))
+      : incidents;
     
     // Lazy fetch missing/stale photos in the background
-    incidents.forEach(incident => {
-      photoService.needsFetch(incident.scientificName)
-        .then(needed => {
-          if (needed) {
-            return photoService.fetchSpeciesPhoto(incident.scientificName);
-          }
-        })
-        .catch(err => {
-          console.error(`Background photo check/fetch failed for ${incident.scientificName}:`, err);
-        });
-    });
+    if (!localOfflineMode) {
+      incidents.forEach(incident => {
+        photoService.needsFetch(incident.scientificName)
+          .then(needed => {
+            if (needed) {
+              return photoService.fetchSpeciesPhoto(incident.scientificName);
+            }
+          })
+          .catch(err => {
+            console.error(`Background photo check/fetch failed for ${incident.scientificName}:`, err);
+          });
+      });
+    }
 
-    res.json(incidents);
+    res.json(responseIncidents);
   } catch (error) {
     console.error('Failed to fetch incidents:', error);
     res.status(500).json({ error: 'Failed to fetch incidents' });
@@ -288,7 +319,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   app.listen(port, async () => {
     console.log(`Server is running on port ${port}`);
 
-    if (process.env.RUN_STARTUP_INGESTION === 'true') {
+    if (process.env.RUN_STARTUP_INGESTION === 'true' && !localOfflineMode) {
       console.log('Running startup email ingestion...');
       try {
         const results = await triggerIngestion(true, 'startup');
@@ -298,7 +329,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         console.error('Startup ingestion failed:', message);
       }
     } else {
-      console.log('Startup ingestion disabled.');
+      console.log(localOfflineMode ? 'Startup ingestion disabled by local offline mode.' : 'Startup ingestion disabled.');
     }
   });
 }
