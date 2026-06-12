@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:local": "set DATABASE_URL=file:./dev.db&& set LOCAL_OFFLINE=true&& set RUN_STARTUP_INGESTION=false&& tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "start:prod": "node dist/index.js",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:generate:sqlite": "prisma generate --schema prisma/schema.sqlite.prisma",
     "prisma:deploy": "prisma migrate deploy",
     "seed:rarity": "tsx src/scripts/seed-rarity.ts",
     "seed:emails": "tsx src/scripts/seed-from-emails.ts",

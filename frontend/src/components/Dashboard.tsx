@@ -198,7 +198,10 @@ const Dashboard: React.FC = () => {
               <div 
                 key={incident.id} 
                 className="sighting-card sighting-card-horizontal"
-                style={{ borderLeftColor: getRarityColor(incident) }}
+                style={{ 
+                  borderLeftColor: getRarityColor(incident),
+                  '--rarity-color': getRarityColor(incident)
+                } as React.CSSProperties}
               >
                 <div className="photo-slot">
                   <PhotoSlot photo={incident.photo} />

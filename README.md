@@ -79,6 +79,24 @@ That starts:
 
 The frontend proxies `/api` requests to the backend during local development.
 
+### Run Offline Against Local SQLite
+
+Use this mode when you want to test the dashboard against the populated local SQLite backup without hitting IMAP, eBird, iNaturalist, Groq, or Gemini.
+
+Start the app from the repo root:
+
+```powershell
+npm.cmd run dev
+```
+
+That generates the SQLite Prisma client, uses `backend\dev.db`, sets `LOCAL_OFFLINE=true`, disables startup ingestion, blocks `POST /api/ingest`, and skips background photo refreshes from `/api/incidents`.
+
+`npm.cmd start` remains the normal environment-backed dev command and will use the `DATABASE_URL` from `backend\.env`. To switch back to PostgreSQL development after running local SQLite mode, regenerate the default client from `backend\`:
+
+```powershell
+npx.cmd prisma generate
+```
+
 ## Tests
 
 ```powershell
