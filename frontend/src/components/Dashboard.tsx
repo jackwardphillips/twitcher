@@ -16,6 +16,11 @@ const rangerStationLabels = {
   lastSeen: 'Last Seen'
 };
 
+const shouldShowSummary = (summary?: string | null) => {
+  const trimmedSummary = summary?.trim();
+  return Boolean(trimmedSummary && trimmedSummary.length >= 5 && !trimmedSummary.toLowerCase().includes('no useful'));
+};
+
 export interface Incident {
   id: string;
   scientificName: string;
@@ -233,7 +238,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {incident.geminiSummary && (
+                  {shouldShowSummary(incident.geminiSummary) && (
                     <blockquote 
                       className="gemini-summary"
                       style={{ borderLeftColor: getRarityColor(incident) }}
