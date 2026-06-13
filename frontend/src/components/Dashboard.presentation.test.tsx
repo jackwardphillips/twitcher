@@ -108,4 +108,105 @@ describe('Dashboard Presentation Behavioral Tests', () => {
     expect(positions).toContainEqual([42, -71]);
     expect(positions).toContainEqual([42.1, -71.1]);
   });
+
+  it('groups cards without summaries together in the layout order', async () => {
+    const mixedIncidents = [
+      {
+        id: 'incident-1',
+        abaCode: 5,
+        commonName: 'No Summary A',
+        scientificName: 'No summaryus a',
+        locationName: 'Secret Spot',
+        centroidLat: 42,
+        centroidLng: -71,
+        firstSeen: '2026-05-10',
+        lastSeen: '2026-05-15',
+        sightingCount: 10,
+        activeDays: 6,
+        dailyCounts: [],
+        photo: null,
+        geminiSummary: null
+      },
+      {
+        id: 'incident-2',
+        abaCode: 5,
+        commonName: 'With Summary A',
+        scientificName: 'With summaryus a',
+        locationName: 'Secret Spot',
+        centroidLat: 42,
+        centroidLng: -71,
+        firstSeen: '2026-05-10',
+        lastSeen: '2026-05-15',
+        sightingCount: 10,
+        activeDays: 6,
+        dailyCounts: [],
+        photo: null,
+        geminiSummary: 'A concise summary for the bird.'
+      },
+      {
+        id: 'incident-3',
+        abaCode: 5,
+        commonName: 'No Summary B',
+        scientificName: 'No summaryus b',
+        locationName: 'Secret Spot',
+        centroidLat: 42,
+        centroidLng: -71,
+        firstSeen: '2026-05-10',
+        lastSeen: '2026-05-15',
+        sightingCount: 10,
+        activeDays: 6,
+        dailyCounts: [],
+        photo: null,
+        geminiSummary: null
+      },
+      {
+        id: 'incident-4',
+        abaCode: 5,
+        commonName: 'With Summary B',
+        scientificName: 'With summaryus b',
+        locationName: 'Secret Spot',
+        centroidLat: 42,
+        centroidLng: -71,
+        firstSeen: '2026-05-10',
+        lastSeen: '2026-05-15',
+        sightingCount: 10,
+        activeDays: 6,
+        dailyCounts: [],
+        photo: null,
+        geminiSummary: 'Another concise summary.'
+      }
+    ];
+
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.endsWith('/api/incidents')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mixedIncidents
+        });
+      }
+
+      if (url.endsWith('/api/ingestion-status')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({})
+        });
+      }
+
+      return Promise.reject(new Error('Unknown API'));
+    });
+
+    render(<Dashboard />);
+    await screen.findByText('No Summary A');
+
+    const orderedHeadings = Array.from(document.querySelectorAll('.sighting-card h3')).map(
+      (node) => node.textContent
+    );
+
+    expect(orderedHeadings).toEqual([
+      'With Summary A',
+      'With Summary B',
+      'No Summary A',
+      'No Summary B'
+    ]);
+  });
 });

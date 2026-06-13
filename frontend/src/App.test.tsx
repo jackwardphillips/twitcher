@@ -21,8 +21,8 @@ describe('App', () => {
     
     render(<App />)
     expect(screen.getByText(/twitcher/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /dashboard/i })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('button', { name: /aba codes/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument()
     expect(screen.getByText(/Loading sightings.../i)).toBeInTheDocument()
   })
 
@@ -31,9 +31,9 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: /about aba codes/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /aba codes/i })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('button', { name: /dashboard/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /about the aba/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /about/i })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument()
     expect(screen.queryByText(/Loading sightings.../i)).not.toBeInTheDocument()
   })
 })

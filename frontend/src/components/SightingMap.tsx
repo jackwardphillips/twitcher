@@ -229,14 +229,14 @@ export const SightingMap = ({ incidents }: SightingMapProps) => {
 
   if (!styleUrl) {
     return (
-      <div className="map-wrapper sighting-map-config" style={{ height: '400px', width: '100%', marginBottom: '20px' }}>
+      <div className="map-wrapper sighting-map-config" style={{ height: '400px', width: '100%', marginBottom: '24px' }}>
         Add <code>VITE_MAPTILER_STYLE_URL</code> and <code>VITE_MAPTILER_API_KEY</code> to render the MapTiler map.
       </div>
     );
   }
 
   return (
-    <div className="map-wrapper" style={{ height: '400px', width: '100%', marginBottom: '20px' }}>
+    <div className="map-wrapper" style={{ height: '400px', width: '100%', marginBottom: '24px' }}>
       <div ref={containerRef} className="sighting-map" data-testid="map-container" />
     </div>
   );

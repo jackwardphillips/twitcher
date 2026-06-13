@@ -6,8 +6,8 @@ interface NotebookTabsProps {
 }
 
 const notebookTabs = [
-  { key: 'dashboard' as const, label: 'Dashboard' },
-  { key: 'about' as const, label: 'ABA Codes' },
+  { key: 'dashboard' as const, label: 'Dashboard', href: '/' },
+  { key: 'about' as const, label: 'About', href: '/about' },
 ]
 
 const NotebookTabs = ({ activeTab, onNavigate }: NotebookTabsProps) => {
@@ -17,15 +17,18 @@ const NotebookTabs = ({ activeTab, onNavigate }: NotebookTabsProps) => {
         const isActive = tab.key === activeTab
 
         return (
-          <button
+          <a
             key={tab.key}
-            type="button"
             className={`notebook-tab ${isActive ? 'active' : ''}`}
+            href={tab.href}
             aria-current={isActive ? 'page' : undefined}
-            onClick={() => onNavigate(tab.key)}
-          >
-            {tab.label}
-          </button>
+            onClick={(event) => {
+              event.preventDefault()
+              onNavigate(tab.key)
+            }}
+            >
+            <span className="ui-control-label">{tab.label}</span>
+          </a>
         )
       })}
     </nav>
