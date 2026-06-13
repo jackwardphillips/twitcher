@@ -6,6 +6,7 @@ import { RarityFilter, type RarityCode } from './RarityFilter.js';
 import { PhotoSlot } from './PhotoSlot.js';
 import { SightingHistogram } from './SightingHistogram.js';
 import { formatDayMonth } from '../lib/date-utils.js';
+import { NotebookTabs, type NotebookTabKey } from './NotebookTabs.js';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -49,7 +50,11 @@ interface IngestionStatus {
   } | null;
 }
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onNavigate?: (tab: NotebookTabKey) => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,6 +162,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard" data-theme="ranger-station">
+      <NotebookTabs activeTab="dashboard" onNavigate={onNavigate} />
+
       <header className="dashboard-header">
         <div className="header-main">
           <h1>twitcher</h1>
