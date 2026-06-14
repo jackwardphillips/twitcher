@@ -27,6 +27,7 @@ Its purpose is to give any track - especially data/logic tracks that do not touc
 - A **"Near Me" toggle** filters incidents to within 50km of the user's browser-detected location using incident centroids.
 - Uses the default OpenStreetMap tile layer from Leaflet.
 - Popups display species name, location, active days, and report count.
+- Includes an **expand/collapse control** in the bottom-left corner that grows the map from its standard height to fill the remaining viewport height without leaving the dashboard page.
 
 ### Incident Cards
 The dashboard uses an **incident-based view** with a horizontal card layout:

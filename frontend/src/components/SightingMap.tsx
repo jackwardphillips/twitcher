@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import maplibregl, { type Map, type Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDayMonth } from '../lib/date-utils.js';
@@ -9,10 +9,11 @@ interface SightingMapProps {
   incidents: Incident[];
 }
 
-const DEFAULT_CENTER: [number, number] = [-95, 45];
+const DEFAULT_CENTER: [number, number] = [-95, 39];
 const DEFAULT_ZOOM = 3;
 const MAP_PITCH = 0;
 const MAP_BEARING = 0;
+const EXPANDED_MAP_BOTTOM_GAP = 16;
 const TERRAIN_SOURCE_IDS = ['terrain', 'maptiler-terrain'];
 const FIELD_JOURNAL_COLORS = {
   background: '#d8c7a4',
@@ -172,9 +173,12 @@ const applyFieldJournalMapColors = (map: Map) => {
 };
 
 export const SightingMap = ({ incidents }: SightingMapProps) => {
+  const wrapperRef = useRef<HTMLElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
   const markerRefs = useRef<Marker[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedHeight, setExpandedHeight] = useState<number | null>(null);
   const styleUrl = buildMaptilerStyleUrl();
 
   useEffect(() => {
@@ -227,17 +231,82 @@ export const SightingMap = ({ incidents }: SightingMapProps) => {
     });
   }, [incidents]);
 
+  useEffect(() => {
+    if (!isExpanded) {
+      setExpandedHeight(null);
+      return;
+    }
+
+    const updateExpandedHeight = () => {
+      const wrapperTop = wrapperRef.current?.getBoundingClientRect().top ?? 0;
+      const nextHeight = Math.max(400, window.innerHeight - wrapperTop - EXPANDED_MAP_BOTTOM_GAP);
+      setExpandedHeight(nextHeight);
+    };
+
+    updateExpandedHeight();
+    window.addEventListener('resize', updateExpandedHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateExpandedHeight);
+    };
+  }, [isExpanded]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || typeof map.resize !== 'function') return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      map.resize();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [isExpanded, expandedHeight]);
+
   if (!styleUrl) {
     return (
-      <div className="map-wrapper sighting-map-config" style={{ height: '400px', width: '100%', marginBottom: '24px' }}>
+      <div className="map-wrapper sighting-map-config">
         Add <code>VITE_MAPTILER_STYLE_URL</code> and <code>VITE_MAPTILER_API_KEY</code> to render the MapTiler map.
       </div>
     );
   }
 
   return (
-    <div className="map-wrapper" style={{ height: '400px', width: '100%', marginBottom: '24px' }}>
+    <section
+      ref={wrapperRef}
+      className={`map-wrapper ${isExpanded ? 'map-wrapper-expanded' : ''}`}
+      style={
+        isExpanded && expandedHeight
+          ? ({ '--expanded-map-height': `${expandedHeight}px` } as CSSProperties)
+          : undefined
+      }
+    >
+      <button
+        type="button"
+        className="map-expand-toggle"
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? 'Collapse map' : 'Expand map'}
+        onClick={() => setIsExpanded((current) => !current)}
+      >
+        <span>{isExpanded ? 'Collapse map' : 'Expand map'}</span>
+        <svg
+          className="map-expand-toggle-icon"
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M3.5 6 8 10.5 12.5 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
       <div ref={containerRef} className="sighting-map" data-testid="map-container" />
-    </div>
+    </section>
   );
 };

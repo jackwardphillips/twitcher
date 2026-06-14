@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { SightingMap } from './SightingMap.js';
 import { RARITY_COLOR_MAP } from '../lib/rarity-utils.js';
@@ -52,5 +52,20 @@ describe('SightingMap', () => {
     expect(markers).toHaveLength(2);
     expect(markers[0]).toHaveStyle({ '--marker-color': RARITY_COLOR_MAP[4] });
     expect(markers[1]).toHaveStyle({ '--marker-color': RARITY_COLOR_MAP[5] });
+  });
+
+  it('toggles the expanded map state from the map control', () => {
+    render(<SightingMap incidents={[]} />);
+
+    const toggle = screen.getByRole('button', { name: 'Expand map' });
+    const wrapper = toggle.closest('.map-wrapper');
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(wrapper).not.toHaveClass('map-wrapper-expanded');
+
+    fireEvent.click(toggle);
+
+    expect(screen.getByRole('button', { name: 'Collapse map' })).toHaveAttribute('aria-expanded', 'true');
+    expect(wrapper).toHaveClass('map-wrapper-expanded');
   });
 });

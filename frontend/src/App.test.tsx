@@ -32,6 +32,9 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: /about the aba/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /about the project/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /about the cards/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /yellow-headed caracara/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /about/i })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument()
     expect(screen.queryByText(/Loading sightings.../i)).not.toBeInTheDocument()
