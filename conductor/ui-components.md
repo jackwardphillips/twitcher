@@ -55,6 +55,7 @@ This file is the **living contract** between data/logic tracks and the frontend.
 | Popup: Active days | live | `Incident.activeDays` | |
 | Popup: Report count | live | `Incident.sightingCount` | |
 | Basemap style | live | Leaflet default tiles | |
+| Expand/collapse control | live | local `SightingMap` state | Toggles the map between standard height and a viewport-filling expanded height in place |
 
 ---
 

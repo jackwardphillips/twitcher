@@ -289,10 +289,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
 app.get('/api/incidents', async (req: Request, res: Response) => {
   try {
     const incidents = await getOpenIncidents(prisma, 25);
-    const responseIncidents = localOfflineMode
-      ? incidents.map(incident => ({ ...incident, photo: null }))
-      : incidents;
-    
+
     // Lazy fetch missing/stale photos in the background
     if (!localOfflineMode) {
       incidents.forEach(incident => {
@@ -308,7 +305,7 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
       });
     }
 
-    res.json(responseIncidents);
+    res.json(incidents);
   } catch (error) {
     console.error('Failed to fetch incidents:', error);
     res.status(500).json({ error: 'Failed to fetch incidents' });

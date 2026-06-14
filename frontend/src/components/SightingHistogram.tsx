@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { formatDayMonth } from '../lib/date-utils.js';
 
 interface DailyCount {
@@ -13,21 +13,31 @@ interface SightingHistogramProps {
 
 const SightingHistogram: React.FC<SightingHistogramProps> = ({ dailyCounts, rarityColor }) => {
   const [hovered, setHovered] = useState<DailyCount | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [tooltipAnchor, setTooltipAnchor] = useState<'left' | 'center' | 'right'>('center');
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const maxCount = Math.max(...dailyCounts.map(d => d.count), 1);
 
   const handleMouseMove = (e: React.MouseEvent, d: DailyCount) => {
     setHovered(d);
-    // Position relative to the container, not just the bar's offsetX
-    const rect = e.currentTarget.parentElement?.parentElement?.getBoundingClientRect();
+    const rect = containerRef.current?.getBoundingClientRect();
     if (rect) {
-      setTooltipPos({ x: e.clientX - rect.left, y: 5 });
+      const relativeX = e.clientX - rect.left;
+      const tooltipWidthEstimate = 170;
+      const padding = 10;
+
+      if (relativeX < tooltipWidthEstimate / 2 + padding) {
+        setTooltipAnchor('left');
+      } else if (relativeX > rect.width - (tooltipWidthEstimate / 2 + padding)) {
+        setTooltipAnchor('right');
+      } else {
+        setTooltipAnchor('center');
+      }
     }
   };
 
   return (
-    <div className="sighting-histogram" style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
+    <div ref={containerRef} className="sighting-histogram" style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
       <span className="stat-label">Activity</span>
       <div className="histogram-bars" style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '30px', width: '100%' }}>
         {dailyCounts.map((d, i) => (
@@ -53,19 +63,31 @@ const SightingHistogram: React.FC<SightingHistogramProps> = ({ dailyCounts, rari
           data-testid="histogram-tooltip" 
           style={{ 
             position: 'absolute', 
-            left: `${tooltipPos.x}px`, 
-            top: `${tooltipPos.y}px`, 
-            background: 'rgba(253, 248, 240, 0.75)', 
-            color: '#6b5a3e', 
-            padding: '4px 8px', 
-            borderRadius: '4px', 
-            fontSize: '11px', 
-            whiteSpace: 'nowrap', 
+            insetInline: 0,
+            top: '5px',
+            zIndex: 20,
+            display: 'flex',
+            justifyContent: tooltipAnchor === 'left' ? 'flex-start' : tooltipAnchor === 'right' ? 'flex-end' : 'center',
+            paddingInline: '4px',
             pointerEvents: 'none',
-            boxShadow: '2px 2px 5px rgba(44, 36, 22, 0.1)'
           }}
         >
-          {formatDayMonth(hovered.date)}: {hovered.count} {hovered.count === 1 ? 'sighting' : 'sightings'}
+          <span
+            style={{
+              display: 'inline-block',
+              maxWidth: 'calc(100% - 8px)',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              whiteSpace: 'nowrap',
+              background: 'rgba(253, 248, 240, 0.75)',
+              color: '#6b5a3e',
+              pointerEvents: 'none',
+              boxShadow: '2px 2px 5px rgba(44, 36, 22, 0.1)'
+            }}
+          >
+            {formatDayMonth(hovered.date)}: {hovered.count} {hovered.count === 1 ? 'sighting' : 'sightings'}
+          </span>
         </div>
       )}
     </div>

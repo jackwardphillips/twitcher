@@ -31,8 +31,8 @@ export const RarityFilter: React.FC<RarityFilterProps> = ({ selectedRarities, on
     return (
       <div className="rarity-filter-mobile">
         <div className="custom-dropdown">
-          <button className="dropdown-trigger" aria-haspopup="listbox" aria-label="Select Rarities">
-            Rarities ({selectedRarities.length})
+              <button className="dropdown-trigger" aria-haspopup="listbox" aria-label="Select Rarities">
+            <span className="ui-control-label">Rarities ({selectedRarities.length})</span>
           </button>
           <ul className="dropdown-menu" role="listbox">
             {codes.map((code) => (
@@ -43,7 +43,7 @@ export const RarityFilter: React.FC<RarityFilterProps> = ({ selectedRarities, on
                   style={{ '--rarity-color': RARITY_COLOR_MAP[code] } as React.CSSProperties}
                   aria-label={code.toString()}
                 >
-                  Code {code}
+                  <span className="ui-control-label">Code {code}</span>
                 </button>
               </li>
             ))}
@@ -67,7 +67,7 @@ export const RarityFilter: React.FC<RarityFilterProps> = ({ selectedRarities, on
           className={`rarity-btn ${selectedRarities.includes(code) ? 'active' : ''} ${selectedRarities.length === 1 && selectedRarities.includes(code) ? 'last-active' : ''}`}
           style={{ '--rarity-color': RARITY_COLOR_MAP[code] } as React.CSSProperties}
         >
-          {code}
+          <span className="ui-control-label">{code}</span>
         </button>
       ))}
     </div>
