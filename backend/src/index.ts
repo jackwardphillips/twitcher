@@ -288,7 +288,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
 
 app.get('/api/incidents', async (req: Request, res: Response) => {
   try {
-    const incidents = await getOpenIncidents(prisma, 25);
+    const incidents = await getOpenIncidents(prisma);
 
     // Lazy fetch missing/stale photos in the background
     if (!localOfflineMode) {
