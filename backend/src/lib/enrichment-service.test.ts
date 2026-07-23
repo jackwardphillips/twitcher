@@ -12,8 +12,12 @@ describe('EnrichmentService', () => {
 
   beforeEach(async () => {
     // Clean up DB before each test
+    await prisma.ebirdApiCallLog.deleteMany({});
+    await prisma.enrichmentAttempt.deleteMany({});
+    await prisma.emailIngestionAttempt.deleteMany({});
     await prisma.sighting.deleteMany({});
     await prisma.incident.deleteMany({});
+    await prisma.ingestionRun.deleteMany({});
     await prisma.incomingEmail.deleteMany({});
     
     matchEngine = {
@@ -59,7 +63,8 @@ describe('EnrichmentService', () => {
       locationPrivate: false,
     };
 
-    (matchEngine.findMatch as any).mockResolvedValue(mockMatch);
+    (matchEngine.ebirdClient.getNearbyNotableObservations as any).mockResolvedValue([mockMatch]);
+    (matchEngine.selectBestMatch as any).mockReturnValue(mockMatch);
 
     // 2. Act: Run enrichment
     await enrichmentService.enrichSighting(sighting.id);
@@ -106,7 +111,9 @@ describe('EnrichmentService', () => {
       locationPrivate: false,
     };
 
-    (matchEngine.findMatch as any).mockResolvedValue(mockMatch);
+    (matchEngine.ebirdClient.getNotableObservations as any).mockResolvedValue([mockMatch]);
+    (matchEngine.selectBestMatch as any).mockReturnValue(mockMatch);
+    (regionService.findSubregionCode as any).mockResolvedValue(null);
 
     await enrichmentService.enrichSighting(sighting.id);
 
@@ -135,7 +142,9 @@ describe('EnrichmentService', () => {
       },
     });
 
-    (matchEngine.findMatch as any).mockResolvedValue(null);
+    (matchEngine.ebirdClient.getNotableObservations as any).mockResolvedValue([]);
+    (matchEngine.selectBestMatch as any).mockReturnValue(null);
+    (regionService.findSubregionCode as any).mockResolvedValue(null);
 
     await enrichmentService.enrichSighting(sighting.id);
 
@@ -169,5 +178,114 @@ describe('EnrichmentService', () => {
 
     const sightings = await prisma.sighting.findMany();
     expect(sightings.every(s => s.subId === 'S1')).toBe(true);
+  });
+
+  it('should use stored latitude and longitude for geo enrichment when location text has no coordinates', async () => {
+    const sighting = await prisma.sighting.create({
+      data: {
+        species: 'Curlew Sandpiper',
+        scientificName: 'Calidris ferruginea',
+        location: 'Pte. Mouillee SGA, Monroe, Michigan',
+        date: new Date('2026-07-21T15:40:00Z'),
+        observer: 'Jane Doe',
+        latitude: 41.961,
+        longitude: -83.190,
+      },
+    });
+    const mockMatch: EbirdObservation = {
+      speciesCode: 'cursan',
+      comName: 'Curlew Sandpiper',
+      sciName: 'Calidris ferruginea',
+      locId: 'L456',
+      locName: 'Pte. Mouillee SGA',
+      obsDt: '2026-07-21 15:42',
+      lat: 41.962,
+      lng: -83.191,
+      subId: 'S456',
+      howMany: 1,
+      obsValid: true,
+      obsReviewed: true,
+      locationPrivate: false,
+    };
+
+    (matchEngine.ebirdClient.getNearbyNotableObservations as any).mockResolvedValue([mockMatch]);
+    (matchEngine.selectBestMatch as any).mockReturnValue(mockMatch);
+
+    await enrichmentService.enrichSighting(sighting.id);
+
+    expect(matchEngine.ebirdClient.getNearbyNotableObservations).toHaveBeenCalledWith(
+      41.961,
+      -83.190,
+      10,
+      30,
+      expect.anything()
+    );
+    expect(matchEngine.ebirdClient.getNotableObservations).not.toHaveBeenCalled();
+
+    const enriched = await prisma.sighting.findUnique({ where: { id: sighting.id } });
+    expect(enriched?.subId).toBe('S456');
+  });
+
+  it('should resolve newly covered US and Canada region mappings', async () => {
+    await prisma.sighting.createMany({
+      data: [
+        {
+          species: 'Curlew Sandpiper',
+          location: 'Pte. Mouillee SGA, Monroe, Michigan',
+          date: new Date('2026-07-21T15:40:00Z'),
+          observer: 'A',
+        },
+        {
+          species: 'Kelp Gull',
+          location: 'stakeout Kelp Gull, Milwaukee, Wisconsin',
+          date: new Date('2026-07-22T15:15:00Z'),
+          observer: 'B',
+        },
+        {
+          species: 'Rare Bird',
+          location: 'Yellowknife, NWT',
+          date: new Date('2026-07-22T15:15:00Z'),
+          observer: 'C',
+        },
+        {
+          species: 'Christmas Shearwater',
+          location: 'Midway Atoll NWR--Eastern Island, Midway Islands',
+          date: new Date('2026-07-22T15:15:00Z'),
+          observer: 'D',
+        },
+        {
+          species: 'Lesser Frigatebird',
+          location: '262 Surfview Ct',
+          date: new Date('2026-07-22T15:15:00Z'),
+          observer: 'E',
+        },
+      ],
+    });
+
+    (regionService.findSubregionCode as any)
+      .mockResolvedValueOnce('US-MI-115')
+      .mockResolvedValueOnce('US-WI-079')
+      .mockResolvedValueOnce(null);
+    (matchEngine.ebirdClient.getNotableObservations as any).mockResolvedValue([]);
+    (matchEngine.selectBestMatch as any).mockReturnValue(null);
+
+    await enrichmentService.enrichAllUnenriched();
+
+    expect(regionService.findSubregionCode).toHaveBeenCalledWith('Monroe', 'US-MI', expect.anything());
+    expect(regionService.findSubregionCode).toHaveBeenCalledWith('Milwaukee', 'US-WI', expect.anything());
+    expect(regionService.findSubregionCode).toHaveBeenCalledWith('Yellowknife', 'CA-NT', expect.anything());
+    expect(regionService.findSubregionCode).toHaveBeenCalledWith('Midway Atoll NWR--Eastern Island', 'UM-71', expect.anything());
+    expect(matchEngine.ebirdClient.getNotableObservations).toHaveBeenCalledWith('US-MI-115', 30, undefined);
+    expect(matchEngine.ebirdClient.getNotableObservations).toHaveBeenCalledWith('US-WI-079', 30, undefined);
+    expect(matchEngine.ebirdClient.getNotableObservations).toHaveBeenCalledWith('CA-NT', 30, undefined);
+    expect(matchEngine.ebirdClient.getNotableObservations).toHaveBeenCalledWith('UM-71', 30, undefined);
+
+    const unresolved = await prisma.enrichmentAttempt.findFirst({
+      where: {
+        species: 'Lesser Frigatebird',
+        location: '262 Surfview Ct',
+      },
+    });
+    expect(unresolved?.rejectionReason).toBe('region_not_found');
   });
 });

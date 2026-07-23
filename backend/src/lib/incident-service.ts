@@ -2,6 +2,106 @@ import { PrismaClient, IncidentStatus } from '@prisma/client';
 import type { Incident, Sighting } from '@prisma/client';
 import { calculateDistance } from './geo-utils.js';
 
+const REGION_NAMES = new Set([
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+  'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+  'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+  'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico',
+  'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
+  'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming',
+  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+  'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec',
+  'Saskatchewan', 'Yukon', 'Midway Islands',
+]);
+
+function isCoordinatePart(part: string): boolean {
+  return /[-+]?\d{1,3}\.\d+/.test(part) || /\b[A-Z]{2}-[A-Z]{2}\b/.test(part);
+}
+
+export function extractLocationComponents(location: string): { county: string | null; state: string | null; country: string | null } {
+  const parts = location.split(',')
+    .map(p => p.trim())
+    .filter(part => part && !isCoordinatePart(part));
+
+  if (parts.length >= 3 && REGION_NAMES.has(parts[parts.length - 1]!)) {
+    return {
+      county: parts[parts.length - 2] ?? null,
+      state: parts[parts.length - 1] ?? null,
+      country: null,
+    };
+  }
+
+  if (parts.length >= 4) {
+    return {
+      county: parts[parts.length - 3] ?? null,
+      state: parts[parts.length - 2] ?? null,
+      country: parts[parts.length - 1] ?? null,
+    };
+  }
+
+  if (parts.length === 3) {
+    return {
+      county: parts[1] ?? null,
+      state: parts[2] ?? null,
+      country: null,
+    };
+  }
+
+  if (parts.length === 2) {
+    if (REGION_NAMES.has(parts[0]!)) {
+      return {
+        county: null,
+        state: parts[0] ?? null,
+        country: parts[1] ?? null,
+      };
+    }
+
+    if (!REGION_NAMES.has(parts[1]!)) {
+      return {
+        county: parts[1] ?? null,
+        state: null,
+        country: null,
+      };
+    }
+
+    return {
+      county: null,
+      state: parts[1] ?? null,
+      country: null,
+    };
+  }
+
+  return {
+    county: null,
+    state: null,
+    country: parts[0] ?? null,
+  };
+}
+
+function getSightingLocationComponents(sighting: Sighting): { county: string | null; state: string | null; country: string | null } {
+  if (sighting.displayCounty || sighting.displayState || sighting.displayCountry) {
+    return {
+      county: sighting.displayCounty ?? null,
+      state: sighting.displayState ?? null,
+      country: sighting.displayCountry ?? null,
+    };
+  }
+
+  return extractLocationComponents(sighting.location);
+}
+
+function formatIncidentLocation(incident: Incident): string {
+  if (incident.primaryCounty && incident.primaryState) {
+    return `${formatCountyName(incident.primaryCounty)}, ${incident.primaryState}`;
+  }
+  return incident.primaryState ?? incident.primaryCountry ?? 'Unknown location';
+}
+
+function formatCountyName(county: string): string {
+  return county.replace(/\s+County$/i, '').trim();
+}
+
 /**
  * Normalizes a scientific name by stripping parenthetical qualifiers and trimming whitespace.
  * If the resulting name is only one word, it fallbacks to the common name if provided.
@@ -100,11 +200,10 @@ export async function createIncident(
 ): Promise<Incident> {
   const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
   
-  // Extract location components if possible (format: "Location, County, State, Country")
-  const parts = sighting.location.split(',').map(p => p.trim());
-  const primaryCounty = parts.length >= 2 ? parts[parts.length - 3] : null;
-  const primaryState = parts.length >= 2 ? parts[parts.length - 2] : null;
-  const primaryCountry = parts.length >= 1 ? parts[parts.length - 1] : null;
+  const location = getSightingLocationComponents(sighting);
+  const primaryCounty = location.county;
+  const primaryState = location.state;
+  const primaryCountry = location.country;
   const statesCovered = primaryState ? [primaryState] : [];
 
   const incident = await prisma.incident.create({
@@ -174,9 +273,8 @@ export async function mergeIncidents(
     
     const allStates = new Set<string>();
     allSightings.forEach(s => {
-      const parts = s.location.split(',').map(p => p.trim());
-      const state = parts.length >= 2 ? parts[parts.length - 2] : null;
-      if (state) allStates.add(state);
+      const location = getSightingLocationComponents(s);
+      if (location.state) allStates.add(location.state);
     });
 
     // 1. Reassign sightings
@@ -251,8 +349,8 @@ export async function addSightingToIncident(
     }
 
     const currentStates: string[] = JSON.parse(latestIncident.statesCovered);
-    const parts = sighting.location.split(',').map(p => p.trim());
-    const newState = parts.length >= 2 ? parts[parts.length - 2] : null;
+    const location = getSightingLocationComponents(sighting);
+    const newState = location.state;
     
     if (newState && !currentStates.includes(newState)) {
       currentStates.push(newState);
@@ -340,9 +438,15 @@ export function formatDate(date: Date): string {
  */
 export async function getOpenIncidents(prisma: PrismaClient) {
   const incidents = await prisma.incident.findMany({
-    where: { status: IncidentStatus.OPEN },
+    where: {
+      status: IncidentStatus.OPEN,
+      sightings: {
+        some: { status: 'present' },
+      },
+    },
     include: {
       sightings: {
+        where: { status: 'present' },
         orderBy: { date: 'desc' }
       }
     }
@@ -417,7 +521,7 @@ export async function getOpenIncidents(prisma: PrismaClient) {
       photo,
       centroidLat: (incident.minLat + incident.maxLat) / 2,
       centroidLng: (incident.minLng + incident.maxLng) / 2,
-      locationName: `${incident.primaryState}, ${incident.primaryCountry}`,
+      locationName: formatIncidentLocation(incident),
       latestMapUrl: latestSighting?.mapUrl || null,
       latestChecklistUrl: latestSighting?.checklistUrl || null,
       activeDays,

@@ -33,6 +33,28 @@ export interface EbirdChecklist {
   }[];
 }
 
+export interface EbirdTaxonomyEntry {
+  speciesCode: string;
+  comName: string;
+  sciName: string;
+  category: string;
+}
+
+export interface EbirdLocationInfo {
+  locId: string;
+  locName: string;
+  name?: string;
+  countryCode?: string;
+  countryName?: string;
+  subnational1Name?: string;
+  subnational1Code?: string;
+  subnational2Name?: string;
+  subnational2Code?: string;
+  hierarchicalName?: string;
+  lat?: number;
+  lng?: number;
+}
+
 async function logApiCall(context: EnrichmentLoggingContext | undefined, data: {
   endpoint: string;
   params: Record<string, string | number | boolean>;
@@ -131,7 +153,8 @@ export class EbirdClient {
         const isLastRetry = i === retries - 1;
         const isRetryableError = (error instanceof Error && 
           (error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'))) ||
-          (error instanceof Error && error.message.startsWith('eBird API error 5'));
+          (error instanceof Error && error.message.startsWith('eBird API error 5')) ||
+          (error instanceof Error && error.message.startsWith('eBird API error 429'));
         
         if (!(error instanceof Error && error.message.startsWith('eBird API error '))) {
           await logApiCall(context, {
@@ -148,7 +171,9 @@ export class EbirdClient {
           throw error;
         }
         
-        const delay = Math.pow(2, i) * 1000;
+        const delay = error instanceof Error && error.message.startsWith('eBird API error 429')
+          ? Math.pow(2, i) * 5000
+          : Math.pow(2, i) * 1000;
         console.warn(`eBird API request failed (attempt ${i + 1}/${retries}), retrying in ${delay}ms...`, error instanceof Error ? error.message : error);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
@@ -167,6 +192,15 @@ export class EbirdClient {
       back,
       detail: 'full',
       maxResults: 10000,
+    }, 3, context);
+  }
+
+  async getSpeciesObservations(regionCode: string, speciesCode: string, back: number = 14, context?: EnrichmentLoggingContext): Promise<EbirdObservation[]> {
+    return this.get(`/data/obs/${regionCode}/recent/${speciesCode}`, {
+      back,
+      detail: 'full',
+      maxResults: 10000,
+      includeProvisional: true,
     }, 3, context);
   }
 
@@ -209,5 +243,15 @@ export class EbirdClient {
    */
   async getSubregions(regionType: 'country' | 'subnational1' | 'subnational2', parentRegionCode: string, context?: EnrichmentLoggingContext): Promise<{ code: string; name: string }[]> {
     return this.get(`/ref/region/list/${regionType}/${parentRegionCode}`, {}, 3, context);
+  }
+
+  async getTaxonomy(context?: EnrichmentLoggingContext): Promise<EbirdTaxonomyEntry[]> {
+    return this.get('/ref/taxonomy/ebird', {
+      fmt: 'json',
+    }, 3, context);
+  }
+
+  async getLocationInfo(locId: string, context?: EnrichmentLoggingContext): Promise<EbirdLocationInfo> {
+    return this.get(`/ref/hotspot/info/${locId}`, {}, 3, context);
   }
 }
