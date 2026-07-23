@@ -1,4 +1,4 @@
-type NotebookTabKey = 'dashboard' | 'about'
+type NotebookTabKey = 'dashboard' | 'statistics' | 'about'
 
 interface NotebookTabsProps {
   activeTab: NotebookTabKey
@@ -7,6 +7,7 @@ interface NotebookTabsProps {
 
 const notebookTabs = [
   { key: 'dashboard' as const, label: 'Dashboard', href: '/' },
+  { key: 'statistics' as const, label: 'Statistics', href: '/statistics' },
   { key: 'about' as const, label: 'About', href: '/about' },
 ]
 

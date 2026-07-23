@@ -39,4 +39,16 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument()
     expect(screen.queryByText(/Loading sightings.../i)).not.toBeInTheDocument()
   })
+
+  it('renders the Statistics page when the path is /statistics', () => {
+    window.history.pushState({}, '', '/statistics')
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: /states with the most rarities/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /statistics/i })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument()
+    expect(screen.queryByText(/Loading sightings.../i)).not.toBeInTheDocument()
+  })
 })

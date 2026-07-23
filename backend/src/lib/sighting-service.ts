@@ -5,6 +5,7 @@ import { MatchEngine } from './match-engine.js';
 import { EnrichmentService } from './enrichment-service.js';
 import { RegionService } from './region-service.js';
 import { findMatchingIncident, createIncident, addSightingToIncident, normalizeScientificName } from './incident-service.js';
+import type { EnrichmentLoggingContext } from './enrichment-logging.js';
 import 'dotenv/config';
 
 // Initialize services for background enrichment
@@ -19,7 +20,7 @@ export interface EnrichmentResult {
   failed: number;
 }
 
-export async function saveSightings(sightings: SightingData[], enrich = true): Promise<EnrichmentResult | null> {
+export async function saveSightings(sightings: SightingData[], enrich = true, context?: EnrichmentLoggingContext): Promise<EnrichmentResult | null> {
   // Fetch rarity codes for all species in this batch
   const uniqueScientificNames = [...new Set(sightings.map(s => s.scientificName))].filter(Boolean) as string[];
   const rarityRecords = await prisma.rarityCode.findMany({
@@ -84,7 +85,10 @@ export async function saveSightings(sightings: SightingData[], enrich = true): P
     });
 
     try {
-      return await enrichmentService.enrichSightings(recentUnenriched);
+      return await enrichmentService.enrichSightings(
+        recentUnenriched,
+        context?.ingestionRunId ? { ingestionRunId: context.ingestionRunId } : undefined
+      );
     } catch (err) {
       console.error('Background enrichment failed:', err);
       return { attempted: recentUnenriched.length, succeeded: 0, failed: recentUnenriched.length };

@@ -499,8 +499,284 @@ body {
   padding: 6px 0 2rem;
 }
 
+.statistics-page {
+  background-color: var(--bg);
+  background-image: var(--texture);
+  background-size: auto, 36px 36px, auto, auto;
+  min-height: 100svh;
+  padding: 6px 0 2rem;
+}
+
 .dashboard {
   padding-top: 6px;
+}
+
+.statistics-shell {
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 1.5rem;
+  width: 100%;
+}
+
+.statistics-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.statistics-card-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(212, 196, 168, 0.45);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+}
+
+.statistics-card h2 {
+  color: var(--clr-rust);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.statistics-toggle {
+  align-items: center;
+  background: rgba(212, 196, 168, 0.28);
+  border: 1px solid rgba(188, 174, 151, 0.85);
+  border-radius: 6px;
+  display: inline-flex;
+  padding: 0.2rem;
+}
+
+.statistics-toggle button {
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.45rem 0.7rem;
+}
+
+.statistics-toggle button.active {
+  background: var(--bg-surface);
+  box-shadow: 0 1px 3px rgba(44, 36, 22, 0.12);
+  color: var(--clr-rust);
+}
+
+.statistics-toggle button:focus-visible {
+  outline: 2px solid rgba(196, 98, 45, 0.35);
+  outline-offset: 2px;
+}
+
+.statistics-filters {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+.statistics-header-filters {
+  justify-content: flex-end;
+  transform: translateY(0.25rem);
+}
+
+.statistics-filters label {
+  color: var(--text-secondary);
+  display: block;
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.statistics-filters label span {
+  bottom: calc(100% + 0.12rem);
+  left: 0;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.statistics-filters select {
+  background: var(--bg-surface);
+  border: 1px solid rgba(188, 174, 151, 0.85);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  padding: 0.45rem 0.55rem;
+  width: 10rem;
+}
+
+.statistics-state {
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-style: italic;
+  padding: 2rem 0 0.75rem;
+}
+
+.state-rarity-chart {
+  display: grid;
+  gap: 0.85rem;
+  padding-top: 1rem;
+}
+
+.state-rarity-row {
+  align-items: center;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: minmax(16rem, 34rem) minmax(12rem, 1fr);
+}
+
+.state-rarity-label {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  justify-self: start;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.state-rarity-label:focus-visible {
+  outline: 2px solid rgba(196, 98, 45, 0.35);
+  outline-offset: 3px;
+}
+
+.state-rarity-region {
+  color: var(--text-primary);
+  display: block;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.state-rarity-total {
+  color: var(--text-muted);
+  display: inline-block;
+  font-family: var(--font-data);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: left;
+  width: 2rem;
+}
+
+.state-rarity-bar-wrap {
+  align-items: center;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  min-width: 0;
+}
+
+.state-rarity-bar {
+  height: 1rem;
+  min-width: 0;
+}
+
+.state-rarity-fill {
+  border-radius: 6px;
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.state-rarity-segment {
+  background: var(--rarity-color);
+  display: block;
+  height: 100%;
+  min-width: 2px;
+}
+
+.state-rarity-birds {
+  background: rgba(212, 196, 168, 0.12);
+  border-left: 3px solid rgba(196, 98, 45, 0.45);
+  display: grid;
+  gap: 0.45rem;
+  grid-column: 1 / 2;
+  margin: 0.15rem 0 0.35rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.state-rarity-bird {
+  align-items: center;
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: 1.6rem minmax(5rem, 1fr) 4rem 4.8rem 4.8rem;
+}
+
+.state-rarity-bird-header {
+  align-items: center;
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.state-rarity-bird-code {
+  align-items: center;
+  background: var(--rarity-color);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 2px white;
+  color: white;
+  display: inline-flex;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  height: 1.45rem;
+  justify-content: center;
+  justify-self: center;
+  width: 1.45rem;
+}
+
+.state-rarity-bird-name {
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.state-rarity-bird-meta {
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.state-rarity-active-pill {
+  align-self: center;
+  border-color: var(--clr-sage);
+  color: var(--clr-sage);
+  justify-self: center;
+  margin: 0;
+  text-align: center;
+  width: fit-content;
 }
 
 .about-hero {
@@ -879,6 +1155,27 @@ body {
 
   .about-stack {
     padding-inline: 0;
+  }
+
+  .statistics-shell {
+    padding-inline: 1rem;
+  }
+
+  .statistics-card-header {
+    flex-direction: column;
+  }
+
+  .statistics-header-filters {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .statistics-filters {
+    justify-content: flex-start;
+  }
+
+  .state-rarity-row {
+    grid-template-columns: 1fr;
   }
 
   .about-demo-card {

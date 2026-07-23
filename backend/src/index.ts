@@ -10,6 +10,7 @@ import { ImapClient } from './lib/imap-client.js';
 import { closeInactiveIncidents, getOpenIncidents, formatDate } from './lib/incident-service.js';
 import { runSummarizationCycle } from './lib/summarization-service.js';
 import { PhotoService } from './lib/photo-service.js';
+import { getRarityStatsOptions, getStateRarityStats } from './lib/statistics-service.js';
 import 'dotenv/config';
 
 const app = express();
@@ -231,6 +232,182 @@ app.get('/api/ingestion-status', async (req: Request, res: Response) => {
   }
 });
 
+function parsePositiveInt(value: unknown, fallback: number, max: number): number {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, 1), max);
+}
+
+function increment(map: Map<string, number>, key: string, amount = 1) {
+  map.set(key, (map.get(key) ?? 0) + amount);
+}
+
+function topEntries(map: Map<string, number>, take = 10) {
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, take);
+}
+
+app.get('/api/ops/enrichment-summary', async (req: Request, res: Response) => {
+  try {
+    const days = parsePositiveInt(req.query.days, 7, 30);
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const [attempts, apiCalls] = await Promise.all([
+      prisma.enrichmentAttempt.findMany({
+        where: { startedAt: { gte: since } },
+        orderBy: { startedAt: 'desc' },
+        take: 5000,
+      }),
+      prisma.ebirdApiCallLog.findMany({
+        where: { startedAt: { gte: since } },
+        orderBy: { startedAt: 'desc' },
+        take: 5000,
+      }),
+    ]);
+
+    const missedBySpecies = new Map<string, number>();
+    const missedByRegion = new Map<string, number>();
+    const rejectionReasons = new Map<string, number>();
+    const apiErrorsByEndpoint = new Map<string, number>();
+    const apiCallsByEndpoint = new Map<string, number>();
+
+    let matched = 0;
+    let missed = 0;
+    let errored = 0;
+
+    for (const attempt of attempts) {
+      if (attempt.status === 'matched') {
+        matched++;
+        continue;
+      }
+      if (attempt.status === 'error') errored++;
+      else missed++;
+
+      increment(missedBySpecies, attempt.species);
+      increment(missedByRegion, attempt.regionCode ?? 'unknown');
+      increment(rejectionReasons, attempt.rejectionReason ?? attempt.status);
+    }
+
+    for (const call of apiCalls) {
+      increment(apiCallsByEndpoint, call.endpoint);
+      if (call.errorMessage || (call.httpStatus !== null && call.httpStatus >= 400)) {
+        increment(apiErrorsByEndpoint, call.endpoint);
+      }
+    }
+
+    res.json({
+      window: {
+        days,
+        since: since.toISOString(),
+      },
+      totals: {
+        enrichmentAttempts: attempts.length,
+        matched,
+        missed,
+        errored,
+        ebirdApiCalls: apiCalls.length,
+      },
+      topMissedSpecies: topEntries(missedBySpecies),
+      topMissedRegions: topEntries(missedByRegion),
+      topRejectionReasons: topEntries(rejectionReasons),
+      apiCallsByEndpoint: topEntries(apiCallsByEndpoint),
+      apiErrorsByEndpoint: topEntries(apiErrorsByEndpoint),
+      examples: attempts
+        .filter(attempt => attempt.status !== 'matched')
+        .slice(0, 10)
+        .map(attempt => ({
+          id: attempt.id,
+          species: attempt.species,
+          location: attempt.location,
+          sightingDate: attempt.sightingDate,
+          strategy: attempt.strategy,
+          regionCode: attempt.regionCode,
+          status: attempt.status,
+          rejectionReason: attempt.rejectionReason,
+          apiCandidateCount: attempt.apiCandidateCount,
+          speciesMatchCount: attempt.speciesMatchCount,
+          timeWindowMatchCount: attempt.timeWindowMatchCount,
+        })),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch enrichment summary' });
+  }
+});
+
+app.get('/api/ops/ingestion-runs/:id/logs', async (req: Request, res: Response) => {
+  try {
+    const run = await prisma.ingestionRun.findUnique({
+      where: { id: String(req.params.id) },
+      include: {
+        emailAttempts: { orderBy: { startedAt: 'asc' } },
+        enrichmentAttempts: { orderBy: { startedAt: 'asc' } },
+        ebirdApiCallLogs: { orderBy: { startedAt: 'asc' } },
+      },
+    });
+
+    if (!run) {
+      return res.status(404).json({ error: 'Ingestion run not found' });
+    }
+
+    res.json(run);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch ingestion run logs' });
+  }
+});
+
+app.get('/api/ops/enrichment-logs', async (req: Request, res: Response) => {
+  try {
+    const days = parsePositiveInt(req.query.days, 7, 30);
+    const limit = parsePositiveInt(req.query.limit, 100, 500);
+    const since = req.query.since ? new Date(String(req.query.since)) : new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const logs = await prisma.enrichmentAttempt.findMany({
+      where: {
+        startedAt: { gte: since },
+        ...(req.query.species ? { species: { contains: String(req.query.species) } } : {}),
+        ...(req.query.region ? { regionCode: String(req.query.region) } : {}),
+        ...(req.query.status ? { status: String(req.query.status) } : {}),
+      },
+      orderBy: { startedAt: 'desc' },
+      take: limit,
+    });
+
+    res.json({ since: since.toISOString(), logs });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch enrichment logs' });
+  }
+});
+
+app.get('/api/ops/ebird-api-calls', async (req: Request, res: Response) => {
+  try {
+    const days = parsePositiveInt(req.query.days, 7, 30);
+    const limit = parsePositiveInt(req.query.limit, 100, 500);
+    const since = req.query.since ? new Date(String(req.query.since)) : new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const logs = await prisma.ebirdApiCallLog.findMany({
+      where: {
+        startedAt: { gte: since },
+        ...(req.query.endpoint ? { endpoint: { contains: String(req.query.endpoint) } } : {}),
+        ...(req.query.region ? {
+          OR: [
+            { endpoint: { contains: String(req.query.region) } },
+            { paramsJson: { contains: String(req.query.region) } },
+          ],
+        } : {}),
+        ...(req.query.status ? { httpStatus: Number.parseInt(String(req.query.status), 10) } : {}),
+      },
+      orderBy: { startedAt: 'desc' },
+      take: limit,
+    });
+
+    res.json({ since: since.toISOString(), logs });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch eBird API call logs' });
+  }
+});
+
 app.get('/api/sightings', async (req: Request, res: Response) => {
   try {
     const requestedTake = Number.parseInt(String(req.query.take ?? '100'), 10);
@@ -309,6 +486,36 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Failed to fetch incidents:', error);
     res.status(500).json({ error: 'Failed to fetch incidents' });
+  }
+});
+
+app.get('/api/statistics/state-rarities', async (req: Request, res: Response) => {
+  try {
+    const groupBy = req.query.groupBy === 'state' ? 'state' : 'county';
+    const state = typeof req.query.state === 'string' && req.query.state.trim() ? req.query.state.trim() : undefined;
+    const active = req.query.year === 'active';
+    const requestedYear = Number.parseInt(String(req.query.year ?? ''), 10);
+    const year = !active && Number.isFinite(requestedYear) ? requestedYear : undefined;
+    const filters = {
+      ...(state ? { state } : {}),
+      ...(year ? { year } : {}),
+      ...(active ? { active } : {}),
+    };
+    const stats = await getStateRarityStats(prisma, groupBy, filters);
+    res.json(stats);
+  } catch (error) {
+    console.error('Failed to fetch state rarity statistics:', error);
+    res.status(500).json({ error: 'Failed to fetch state rarity statistics' });
+  }
+});
+
+app.get('/api/statistics/state-rarities/options', async (req: Request, res: Response) => {
+  try {
+    const options = await getRarityStatsOptions(prisma);
+    res.json(options);
+  } catch (error) {
+    console.error('Failed to fetch state rarity statistic options:', error);
+    res.status(500).json({ error: 'Failed to fetch state rarity statistic options' });
   }
 });
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard.js'
 import { AboutPage } from './components/AboutPage.js'
+import { StatisticsPage } from './components/StatisticsPage.js'
 import './App.css'
 import './styles/themes.css'
 
@@ -24,12 +25,28 @@ function App() {
     setPathname(path)
   }
 
+  const handleNavigate = (tab: 'dashboard' | 'statistics' | 'about') => {
+    if (tab === 'about') {
+      navigate('/about')
+      return
+    }
+
+    if (tab === 'statistics') {
+      navigate('/statistics')
+      return
+    }
+
+    navigate('/')
+  }
+
   return (
       <div className="app-container">
-      {pathname === '/about' ? (
-        <AboutPage onNavigate={(tab) => navigate(tab === 'about' ? '/about' : '/')} />
+      {pathname === '/statistics' ? (
+        <StatisticsPage onNavigate={handleNavigate} />
+      ) : pathname === '/about' ? (
+        <AboutPage onNavigate={handleNavigate} />
       ) : (
-        <Dashboard onNavigate={(tab) => navigate(tab === 'about' ? '/about' : '/')} />
+        <Dashboard onNavigate={handleNavigate} />
       )}
     </div>
   )

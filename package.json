@@ -11,10 +11,12 @@
     "setup": "npm run install:all && npm run prisma:migrate --prefix backend",
     "prisma:migrate": "npm run prisma:migrate --prefix backend",
     "test": "npm test --prefix backend && npm test --prefix frontend",
+    "enrich:recent": "npm run enrich:recent --prefix backend",
     "ops:health": "npm run ops:health --prefix backend",
     "ops:db": "npm run ops:db --prefix backend",
     "ops:db-counts": "npm run ops:db-counts --prefix backend",
     "ops:ingestion": "npm run ops:ingestion --prefix backend",
+    "ops:enrichment-summary": "npm run ops:enrichment-summary --prefix backend",
     "ops:env": "npm run ops:env --prefix backend"
   },
   "keywords": [],
