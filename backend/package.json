@@ -17,6 +17,7 @@
     "seed:imap-emails": "tsx src/scripts/seed-recent-imap-emails.ts",
     "backfill:emails": "tsx src/scripts/backfill-emails.ts",
     "backfill:summaries": "tsx src/scripts/backfill-summaries.ts",
+    "backfill:incident-locations": "tsx src/scripts/backfill-incident-locations.ts",
     "enrich:recent": "tsx src/scripts/enrich-recent.ts",
     "shadow:alert-poll": "tsx src/scripts/shadow-alert-poll.ts",
     "check:counts": "tsx src/scripts/check-counts.ts",
