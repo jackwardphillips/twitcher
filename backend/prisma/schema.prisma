@@ -32,11 +32,22 @@ model Sighting {
   locId          String?
   speciesCode    String?
   howMany        Int?
+  displayCounty  String?
+  displayState   String?
+  displayCountry String?
+  locationResolutionSource String?
+  status         String    @default("present")
+  missingSince   DateTime?
+  missingPollCount Int     @default(0)
+  removedAt      DateTime?
   incidentId     String?
   incident       Incident? @relation(fields: [incidentId], references: [id])
   enrichmentAttempts EnrichmentAttempt[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+  @@index([removedAt])
 }
 
 model Incident {
@@ -81,6 +92,7 @@ model IncomingEmail {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   attempts  EmailIngestionAttempt[]
+  alertTargets AlertTarget[]
 }
 
 model IngestionRun {
@@ -187,6 +199,123 @@ model EbirdApiCallLog {
   @@index([endpoint])
   @@index([httpStatus])
   @@index([startedAt])
+}
+
+model AlertTarget {
+  id                 String    @id @default(cuid())
+  speciesName        String
+  speciesCode        String?
+  regionName         String
+  regionCode         String
+  expectedReports    Int       @default(0)
+  status             String    @default("active")
+  sourceEmailId      Int?
+  firstSeenInEmailAt DateTime  @default(now())
+  lastSeenInEmailAt  DateTime  @default(now())
+  lastPolledAt       DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sourceEmail IncomingEmail? @relation(fields: [sourceEmailId], references: [id], onDelete: SetNull)
+  pollAttempts AlertTargetPollAttempt[]
+  observations AlertTargetObservation[]
+
+  @@unique([speciesName, regionCode])
+  @@index([status])
+  @@index([regionCode])
+  @@index([speciesCode])
+  @@index([lastSeenInEmailAt])
+  @@index([lastPolledAt])
+}
+
+model AlertPollRun {
+  id                       String    @id @default(cuid())
+  startedAt                DateTime  @default(now())
+  finishedAt               DateTime?
+  status                   String
+  mode                     String
+  backDays                 Int       @default(3)
+  targetsPolled            Int       @default(0)
+  totalExpectedReports     Int       @default(0)
+  totalObservationsFound   Int       @default(0)
+  zeroObservationTargets   Int       @default(0)
+  errorMessage             String?
+
+  pollAttempts AlertTargetPollAttempt[]
+  lastSeenObservations AlertTargetObservation[]
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model AlertTargetPollAttempt {
+  id                 String    @id @default(cuid())
+  alertPollRunId     String?
+  alertTargetId      String
+  startedAt          DateTime  @default(now())
+  finishedAt         DateTime?
+  status             String
+  speciesName        String
+  speciesCode        String?
+  regionName         String
+  regionCode         String
+  expectedReports    Int       @default(0)
+  observationsFound  Int       @default(0)
+  sightingsCreated   Int       @default(0)
+  incidentsTouched   Int       @default(0)
+  observationsMissing Int      @default(0)
+  observationsRemoved Int      @default(0)
+  observationsRestored Int     @default(0)
+  errorMessage       String?
+
+  alertPollRun AlertPollRun? @relation(fields: [alertPollRunId], references: [id], onDelete: Cascade)
+  alertTarget AlertTarget @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
+
+  @@index([alertPollRunId])
+  @@index([alertTargetId])
+  @@index([speciesName])
+  @@index([regionCode])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model AlertTargetObservation {
+  id             String   @id @default(cuid())
+  alertTargetId  String
+  subId          String
+  locId          String?
+  speciesCode    String
+  commonName     String
+  scientificName String?
+  locationName   String
+  obsDt          String
+  howMany        Int?
+  latitude       Float?
+  longitude      Float?
+  displayCounty  String?
+  displayState   String?
+  displayCountry String?
+  locationResolutionSource String?
+  status         String   @default("present")
+  missingSince   DateTime?
+  missingPollCount Int    @default(0)
+  removedAt      DateTime?
+  lastSeenInPollRunId String?
+  firstSeenAt    DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+
+  alertTarget AlertTarget @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
+  lastSeenInPollRun AlertPollRun? @relation(fields: [lastSeenInPollRunId], references: [id], onDelete: SetNull)
+
+  @@unique([alertTargetId, subId])
+  @@index([alertTargetId])
+  @@index([speciesCode])
+  @@index([subId])
+  @@index([status])
+  @@index([missingSince])
+  @@index([removedAt])
+  @@index([lastSeenInPollRunId])
+  @@index([lastSeenAt])
 }
 
 model SpeciesPhoto {

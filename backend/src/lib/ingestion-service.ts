@@ -2,6 +2,8 @@ import { ImapClient } from './imap-client.js';
 import { db } from './db.js';
 import { parseEBirdAlert } from './ebird-parser.js';
 import { saveSightings } from './sighting-service.js';
+import { AlertTargetService } from './alert-target-service.js';
+import { EbirdClient } from './ebird-client.js';
 import {
   createEmailAttempt,
   finishEmailAttempt,
@@ -34,12 +36,14 @@ function sanitizeIngestionError(error: unknown): string {
  */
 export class IngestionService {
   private imapClient: ImapClient;
+  private alertTargetService: AlertTargetService;
 
   /**
    * @param {ImapClient} imapClient - The IMAP client used to fetch emails.
    */
   constructor(imapClient: ImapClient) {
     this.imapClient = imapClient;
+    this.alertTargetService = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
   }
 
   /**
@@ -254,6 +258,7 @@ export class IngestionService {
           // Auto-parse immediately
           try {
             const sightings = parseEBirdAlert(email.rawBody, email.date);
+            await this.alertTargetService.upsertTargetsFromEmail(email.rawBody, savedId, email.date ?? new Date());
             if (sightings.length > 0) {
               const enrichment = await saveSightings(sightings, enrich, { ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
               if (enrichment) {

@@ -9,26 +9,73 @@ import { createEnrichmentAttempt, finishEnrichmentAttempt, sanitizeLogError } fr
 
 export class EnrichmentService {
   private static readonly STATE_MAPPINGS: Record<string, string> = {
-    'Maine': 'US-ME', 'ME': 'US-ME',
-    'New York': 'US-NY', 'NY': 'US-NY',
-    'Pennsylvania': 'US-PA', 'PA': 'US-PA',
-    'Florida': 'US-FL', 'FL': 'US-FL',
-    'Texas': 'US-TX', 'TX': 'US-TX',
-    'California': 'US-CA', 'CA': 'US-CA',
-    'British Columbia': 'CA-BC', 'BC': 'CA-BC',
-    'Quebec': 'CA-QC', 'QC': 'CA-QC',
-    'Ontario': 'CA-ON', 'ON': 'CA-ON',
-    'Massachusetts': 'US-MA', 'MA': 'US-MA',
-    'Vermont': 'US-VT', 'VT': 'US-VT',
-    'Newfoundland and Labrador': 'CA-NL', 'Newfoundland': 'CA-NL', 'NL': 'CA-NL',
-    'Nebraska': 'US-NE', 'NE': 'US-NE',
-    'Hawaii': 'US-HI', 'HI': 'US-HI',
-    'Arizona': 'US-AZ', 'AZ': 'US-AZ',
+    'Alabama': 'US-AL', 'AL': 'US-AL',
     'Alaska': 'US-AK', 'AK': 'US-AK',
-    'Yukon': 'CA-YT', 'YT': 'CA-YT',
-    'Oregon': 'US-OR', 'OR': 'US-OR',
-    'Washington': 'US-WA', 'WA': 'US-WA',
+    'Arizona': 'US-AZ', 'AZ': 'US-AZ',
+    'Arkansas': 'US-AR', 'AR': 'US-AR',
+    'California': 'US-CA', 'CA': 'US-CA',
+    'Colorado': 'US-CO', 'CO': 'US-CO',
+    'Connecticut': 'US-CT', 'CT': 'US-CT',
+    'Delaware': 'US-DE', 'DE': 'US-DE',
+    'District of Columbia': 'US-DC', 'Washington DC': 'US-DC', 'DC': 'US-DC',
+    'Florida': 'US-FL', 'FL': 'US-FL',
+    'Georgia': 'US-GA', 'GA': 'US-GA',
+    'Hawaii': 'US-HI', 'HI': 'US-HI',
+    'Idaho': 'US-ID', 'ID': 'US-ID',
+    'Illinois': 'US-IL', 'IL': 'US-IL',
+    'Indiana': 'US-IN', 'IN': 'US-IN',
+    'Iowa': 'US-IA', 'IA': 'US-IA',
+    'Kansas': 'US-KS', 'KS': 'US-KS',
+    'Kentucky': 'US-KY', 'KY': 'US-KY',
+    'Louisiana': 'US-LA', 'LA': 'US-LA',
+    'Maine': 'US-ME', 'ME': 'US-ME',
+    'Maryland': 'US-MD', 'MD': 'US-MD',
+    'Massachusetts': 'US-MA', 'MA': 'US-MA',
+    'Michigan': 'US-MI', 'MI': 'US-MI',
+    'Minnesota': 'US-MN', 'MN': 'US-MN',
+    'Mississippi': 'US-MS', 'MS': 'US-MS',
+    'Missouri': 'US-MO', 'MO': 'US-MO',
+    'Montana': 'US-MT', 'MT': 'US-MT',
+    'Nebraska': 'US-NE', 'NE': 'US-NE',
+    'Nevada': 'US-NV', 'NV': 'US-NV',
+    'New Hampshire': 'US-NH', 'NH': 'US-NH',
     'New Jersey': 'US-NJ', 'NJ': 'US-NJ',
+    'New Mexico': 'US-NM', 'NM': 'US-NM',
+    'New York': 'US-NY', 'NY': 'US-NY',
+    'North Carolina': 'US-NC', 'NC': 'US-NC',
+    'North Dakota': 'US-ND', 'ND': 'US-ND',
+    'Ohio': 'US-OH', 'OH': 'US-OH',
+    'Oklahoma': 'US-OK', 'OK': 'US-OK',
+    'Oregon': 'US-OR', 'OR': 'US-OR',
+    'Pennsylvania': 'US-PA', 'PA': 'US-PA',
+    'Rhode Island': 'US-RI', 'RI': 'US-RI',
+    'South Carolina': 'US-SC', 'SC': 'US-SC',
+    'South Dakota': 'US-SD', 'SD': 'US-SD',
+    'Tennessee': 'US-TN', 'TN': 'US-TN',
+    'Texas': 'US-TX', 'TX': 'US-TX',
+    'Utah': 'US-UT', 'UT': 'US-UT',
+    'Vermont': 'US-VT', 'VT': 'US-VT',
+    'Virginia': 'US-VA', 'VA': 'US-VA',
+    'Washington': 'US-WA', 'WA': 'US-WA',
+    'West Virginia': 'US-WV', 'WV': 'US-WV',
+    'Wisconsin': 'US-WI', 'WI': 'US-WI',
+    'Wyoming': 'US-WY', 'WY': 'US-WY',
+
+    'Alberta': 'CA-AB', 'AB': 'CA-AB',
+    'British Columbia': 'CA-BC', 'BC': 'CA-BC',
+    'Manitoba': 'CA-MB', 'MB': 'CA-MB',
+    'New Brunswick': 'CA-NB', 'NB': 'CA-NB',
+    'Newfoundland and Labrador': 'CA-NL', 'Newfoundland': 'CA-NL', 'Labrador': 'CA-NL', 'NL': 'CA-NL',
+    'Northwest Territories': 'CA-NT', 'Northwest Territory': 'CA-NT', 'NWT': 'CA-NT', 'NT': 'CA-NT',
+    'Nova Scotia': 'CA-NS', 'NS': 'CA-NS',
+    'Nunavut': 'CA-NU', 'NU': 'CA-NU',
+    'Ontario': 'CA-ON', 'ON': 'CA-ON',
+    'Prince Edward Island': 'CA-PE', 'PEI': 'CA-PE', 'PE': 'CA-PE',
+    'Quebec': 'CA-QC', 'QC': 'CA-QC',
+    'Saskatchewan': 'CA-SK', 'SK': 'CA-SK',
+    'Yukon': 'CA-YT', 'YT': 'CA-YT',
+
+    'Midway Islands': 'UM-71', 'Midway Atoll': 'UM-71',
   };
 
   constructor(
@@ -78,7 +125,7 @@ export class EnrichmentService {
     const withoutCoords: Sighting[] = [];
 
     for (const sighting of sightings) {
-      if (sighting.location.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/)) {
+      if (this.getSightingCoordinates(sighting)) {
         withCoords.push(sighting);
       } else {
         withoutCoords.push(sighting);
@@ -96,13 +143,13 @@ export class EnrichmentService {
         sightingDate: sighting.date,
       });
       const attemptContext = { ...context, enrichmentAttemptId: attempt.id };
-      const coords = sighting.location.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+      const coords = this.getSightingCoordinates(sighting);
       if (coords) {
-        const key = `${coords[1]},${coords[2]}`;
+        const key = `${coords.lat},${coords.lng}`;
         if (!geoCache.has(key)) {
           try {
             const observations = await this.matchEngine.ebirdClient.getNearbyNotableObservations(
-              parseFloat(coords[1]!), parseFloat(coords[2]!), 10, 30, attemptContext
+              coords.lat, coords.lng, 10, 30, attemptContext
             );
             geoCache.set(key, observations);
           } catch (error) {
@@ -126,7 +173,7 @@ export class EnrichmentService {
           }
         }
 
-        const diagnostics = this.analyzeMatch(geoCache.get(key)!, sighting);
+        const diagnostics = this.analyzeMatch(geoCache.get(key)!, sighting, coords);
         if (diagnostics.match) {
           await this.applyMatch(sighting.id, diagnostics.match);
           await finishEnrichmentAttempt(attempt.id, {
@@ -234,16 +281,17 @@ export class EnrichmentService {
     return { attempted: sightings.length, succeeded, failed };
   }
 
-  private analyzeMatch(candidates: EbirdObservation[], sighting: Sighting): MatchDiagnostics {
+  private analyzeMatch(candidates: EbirdObservation[], sighting: Sighting, coords?: { lat: number; lng: number }): MatchDiagnostics {
     const analyzer = (this.matchEngine as MatchEngine & {
       analyzeBestMatch?: (candidates: EbirdObservation[], species: string, location: string, date: Date) => MatchDiagnostics;
     }).analyzeBestMatch;
+    const locationForMatch = coords ? `${sighting.location} (${coords.lat},${coords.lng})` : sighting.location;
 
     if (typeof analyzer === 'function') {
-      return analyzer.call(this.matchEngine, candidates, sighting.species, sighting.location, sighting.date);
+      return analyzer.call(this.matchEngine, candidates, sighting.species, locationForMatch, sighting.date);
     }
 
-    const match = this.matchEngine.selectBestMatch(candidates, sighting.species, sighting.location, sighting.date);
+    const match = this.matchEngine.selectBestMatch(candidates, sighting.species, locationForMatch, sighting.date);
     const fallback: MatchDiagnostics = {
       match,
       apiCandidateCount: candidates.length,
@@ -256,6 +304,20 @@ export class EnrichmentService {
     return fallback;
   }
 
+  private getSightingCoordinates(sighting: Sighting): { lat: number; lng: number } | null {
+    if (sighting.latitude !== null && sighting.longitude !== null) {
+      return { lat: sighting.latitude, lng: sighting.longitude };
+    }
+
+    const coords = sighting.location.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+    if (!coords) return null;
+
+    return {
+      lat: parseFloat(coords[1]!),
+      lng: parseFloat(coords[2]!),
+    };
+  }
+
   private async extractDetailedRegionCode(location: string, context?: EnrichmentLoggingContext): Promise<string | null> {
     const parts = location.split(',').map(p => p.trim());
 
@@ -264,7 +326,7 @@ export class EnrichmentService {
 
     for (let i = parts.length - 1; i >= 0; i--) {
       const part = parts[i]!;
-      const stateCode = this.getStateCode(part);
+      const stateCode = EnrichmentService.getRegionCode(part);
       if (stateCode) {
         subnational1Code = stateCode;
         if (i > 0) {
@@ -284,10 +346,19 @@ export class EnrichmentService {
     return subnational1Code;
   }
 
-  private getStateCode(part: string): string | null {
+  static getRegionCode(part: string): string | null {
     if (EnrichmentService.STATE_MAPPINGS[part]) return EnrichmentService.STATE_MAPPINGS[part]!;
-    for (const [name, code] of Object.entries(EnrichmentService.STATE_MAPPINGS)) {
-      if (part.includes(name)) return code;
+    const entries = Object.entries(EnrichmentService.STATE_MAPPINGS)
+      .sort(([a], [b]) => b.length - a.length);
+    const lowerPart = part.toLowerCase();
+
+    for (const [name, code] of entries) {
+      if (name.length <= 3) {
+        const abbreviation = new RegExp(`\\b${name}\\b`);
+        if (abbreviation.test(part)) return code;
+      } else if (lowerPart.includes(name.toLowerCase())) {
+        return code;
+      }
     }
 
     const strict = part.match(/\b([A-Z]{2}-[A-Z]{2,3})\b/);

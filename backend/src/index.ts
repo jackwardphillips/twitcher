@@ -19,6 +19,7 @@ const localOfflineMode = process.env.LOCAL_OFFLINE === 'true';
 
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'https://twitcher-sigma.vercel.app'
 ];
 
@@ -416,6 +417,7 @@ app.get('/api/sightings', async (req: Request, res: Response) => {
     const page = Number.isFinite(requestedPage) ? Math.max(requestedPage, 1) : 1;
 
     const sightings = await prisma.sighting.findMany({
+      where: { status: 'present' },
       orderBy: { date: 'desc' },
       take,
       skip: (page - 1) * take,

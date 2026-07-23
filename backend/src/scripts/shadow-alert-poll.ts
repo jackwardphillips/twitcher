@@ -1,0 +1,204 @@
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { prisma } from '../lib/db.js';
+import { EbirdClient } from '../lib/ebird-client.js';
+import { AlertTargetService } from '../lib/alert-target-service.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function getNumberArg(name: string, fallback: number): number {
+  const prefix = `--${name}=`;
+  const arg = process.argv.find(value => value.startsWith(prefix));
+  if (!arg) return fallback;
+  const value = Number(arg.slice(prefix.length));
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function hasFlag(name: string): boolean {
+  return process.argv.includes(`--${name}`);
+}
+
+async function main() {
+  const emailLimit = getNumberArg('emails', 3);
+  const targetLimit = getNumberArg('targets', 25);
+  const back = getNumberArg('back', 3);
+  const writeShadow = hasFlag('write-shadow');
+  const writeSightings = hasFlag('write-sightings');
+  const seedReferences = hasFlag('seed-references');
+
+  if (writeSightings && !writeShadow) {
+    throw new Error('--write-sightings requires --write-shadow');
+  }
+
+  const service = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
+  if (seedReferences) {
+    const referencesDir = path.resolve(__dirname, '../../../references');
+    const files = fs.readdirSync(referencesDir).filter(file => file.endsWith('.eml'));
+
+    for (const file of files) {
+      const filePath = path.join(referencesDir, file);
+      const rawBody = fs.readFileSync(filePath, 'utf-8');
+      await prisma.incomingEmail.upsert({
+        where: { messageId: `local-reference:${file}` },
+        create: {
+          messageId: `local-reference:${file}`,
+          subject: file,
+          from: 'local-reference',
+          date: new Date(),
+          rawBody,
+          status: 'processed',
+        },
+        update: {
+          rawBody,
+          status: 'processed',
+          date: new Date(),
+        },
+      });
+    }
+
+    console.log(`seeded ${files.length} reference emails`);
+  }
+
+  const emails = await prisma.incomingEmail.findMany({
+    where: { status: 'processed' },
+    orderBy: { date: 'desc' },
+    take: emailLimit,
+  });
+
+  const targetMap = new Map<string, {
+    id: string;
+    speciesName: string;
+    speciesCode: string | null;
+    regionName: string;
+    regionCode: string;
+    expectedReports: number;
+  }>();
+
+  for (const email of emails) {
+    const parsed = service.parseTargetsFromEmail(email.rawBody);
+    console.log(`email ${email.id}: ${parsed.length} summary targets`);
+
+    if (writeShadow) {
+      const saved = await service.upsertTargetsFromEmail(email.rawBody, email.id, email.date ?? new Date());
+      for (const target of saved) {
+        targetMap.set(target.id, {
+          id: target.id,
+          speciesName: target.speciesName,
+          speciesCode: target.speciesCode,
+          regionName: target.regionName,
+          regionCode: target.regionCode,
+          expectedReports: target.expectedReports,
+        });
+      }
+    } else {
+      for (const target of parsed) {
+        const id = `${target.speciesName}|${target.regionCode}`;
+        targetMap.set(id, {
+          id,
+          speciesName: target.speciesName,
+          speciesCode: null,
+          regionName: target.regionName,
+          regionCode: target.regionCode,
+          expectedReports: target.expectedReports,
+        });
+      }
+    }
+  }
+
+  const targets = Array.from(targetMap.values()).slice(0, targetLimit);
+  const mode = writeSightings ? 'write-sightings' : writeShadow ? 'write-shadow' : 'dry-run';
+  let pollRunId: string | undefined;
+
+  if (writeShadow) {
+    const pollRun = await prisma.alertPollRun.create({
+      data: {
+        status: 'running',
+        mode,
+        backDays: back,
+      },
+    });
+    pollRunId = pollRun.id;
+    console.log(`pollRunId=${pollRun.id}`);
+  }
+
+  console.log(`polling ${targets.length} targets, back=${back}, mode=${mode}, writeSightings=${writeSightings}`);
+
+  const results = [];
+  try {
+    for (const target of targets) {
+      const result = await service.pollTarget(target, {
+        back,
+        dryRun: !writeShadow,
+        writeSightings,
+        alertPollRunId: pollRunId,
+      });
+      results.push(result);
+      console.log(`${result.status.padEnd(20)} ${target.speciesName} / ${target.regionName} (${target.regionCode}) expected=${target.expectedReports} ebird=${result.observationsFound} missing=${result.observationsMissing} removed=${result.observationsRemoved} restored=${result.observationsRestored}`);
+    }
+  } catch (error) {
+    if (pollRunId) {
+      await prisma.alertPollRun.update({
+        where: { id: pollRunId },
+        data: {
+          status: 'error',
+          finishedAt: new Date(),
+          errorMessage: error instanceof Error ? error.message : String(error),
+        },
+      });
+    }
+    throw error;
+  }
+
+  const totals = results.reduce((acc, result, index) => {
+    acc.observationsFound += result.observationsFound;
+    acc.shadowObservationsWritten += result.shadowObservationsWritten;
+    acc.sightingsCreated += result.sightingsCreated;
+    acc.incidentsTouched += result.incidentsTouched;
+    acc.observationsMissing += result.observationsMissing;
+    acc.observationsRemoved += result.observationsRemoved;
+    acc.observationsRestored += result.observationsRestored;
+    acc.expectedReports += targets[index]?.expectedReports ?? 0;
+    if (result.observationsFound === 0) acc.zeroObservationTargets++;
+    if (result.status !== 'success') acc.failed++;
+    return acc;
+  }, {
+    expectedReports: 0,
+    observationsFound: 0,
+    shadowObservationsWritten: 0,
+    sightingsCreated: 0,
+    incidentsTouched: 0,
+    observationsMissing: 0,
+    observationsRemoved: 0,
+    observationsRestored: 0,
+    zeroObservationTargets: 0,
+    failed: 0,
+  });
+
+  if (pollRunId) {
+    await prisma.alertPollRun.update({
+      where: { id: pollRunId },
+      data: {
+        status: totals.failed > 0 ? 'partial_failure' : 'success',
+        finishedAt: new Date(),
+        targetsPolled: results.length,
+        totalExpectedReports: totals.expectedReports,
+        totalObservationsFound: totals.observationsFound,
+        zeroObservationTargets: totals.zeroObservationTargets,
+      },
+    });
+  }
+
+  console.log('--- Summary ---');
+  console.log(JSON.stringify(totals, null, 2));
+}
+
+main()
+  .catch(error => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
