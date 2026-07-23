@@ -8,6 +8,9 @@ import { db } from '../lib/db';
 export async function clearDatabase() {
   // Order matters because Sighting has a relation to Incident.
   
+  await db.ebirdApiCallLog.deleteMany();
+  await db.enrichmentAttempt.deleteMany();
+  await db.emailIngestionAttempt.deleteMany();
   await db.sighting.deleteMany();
   await db.incident.deleteMany();
   await db.incomingEmail.deleteMany();

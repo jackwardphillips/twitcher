@@ -34,6 +34,7 @@ model Sighting {
   howMany        Int?
   incidentId     String?
   incident       Incident? @relation(fields: [incidentId], references: [id])
+  enrichmentAttempts EnrichmentAttempt[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -79,6 +80,7 @@ model IncomingEmail {
   status    String    @default("new")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
+  attempts  EmailIngestionAttempt[]
 }
 
 model IngestionRun {
@@ -91,7 +93,99 @@ model IngestionRun {
   sightingsAdded Int       @default(0)
   errorMessage   String?
   trigger        String?
+  emailAttempts  EmailIngestionAttempt[]
+  enrichmentAttempts EnrichmentAttempt[]
+  ebirdApiCallLogs EbirdApiCallLog[]
 
+  @@index([startedAt])
+}
+
+model EmailIngestionAttempt {
+  id              String    @id @default(cuid())
+  ingestionRunId  String
+  incomingEmailId Int?
+  messageId       String
+  subject         String?
+  from            String?
+  emailDate       DateTime?
+  source          String
+  status          String
+  parsedSightings Int       @default(0)
+  parsedSummary   String?
+  errorMessage    String?
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+
+  ingestionRun       IngestionRun        @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
+  incomingEmail      IncomingEmail?      @relation(fields: [incomingEmailId], references: [id], onDelete: SetNull)
+  enrichmentAttempts EnrichmentAttempt[]
+
+  @@index([ingestionRunId])
+  @@index([incomingEmailId])
+  @@index([messageId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model EnrichmentAttempt {
+  id                   String    @id @default(cuid())
+  ingestionRunId        String?
+  emailAttemptId        String?
+  sightingId            Int?
+  species               String
+  location              String
+  sightingDate          DateTime
+  strategy              String?
+  regionCode            String?
+  status                String
+  rejectionReason       String?
+  apiCandidateCount     Int       @default(0)
+  speciesMatchCount     Int       @default(0)
+  timeWindowMatchCount  Int       @default(0)
+  selectedSubId         String?
+  selectedSpecies       String?
+  selectedLocation      String?
+  selectedObsDt         String?
+  errorMessage          String?
+  startedAt             DateTime  @default(now())
+  finishedAt            DateTime?
+
+  ingestionRun  IngestionRun?          @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
+  emailAttempt  EmailIngestionAttempt? @relation(fields: [emailAttemptId], references: [id], onDelete: SetNull)
+  sighting      Sighting?              @relation(fields: [sightingId], references: [id], onDelete: SetNull)
+  apiCallLogs   EbirdApiCallLog[]
+
+  @@index([ingestionRunId])
+  @@index([emailAttemptId])
+  @@index([sightingId])
+  @@index([species])
+  @@index([regionCode])
+  @@index([status])
+  @@index([rejectionReason])
+  @@index([startedAt])
+}
+
+model EbirdApiCallLog {
+  id                  String    @id @default(cuid())
+  ingestionRunId       String?
+  enrichmentAttemptId  String?
+  endpoint             String
+  paramsJson           String
+  httpStatus           Int?
+  durationMs           Int
+  attemptNumber        Int
+  maxAttempts          Int
+  responseItemCount    Int?
+  errorMessage         String?
+  startedAt            DateTime @default(now())
+
+  ingestionRun      IngestionRun?      @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
+  enrichmentAttempt EnrichmentAttempt? @relation(fields: [enrichmentAttemptId], references: [id], onDelete: SetNull)
+
+  @@index([ingestionRunId])
+  @@index([enrichmentAttemptId])
+  @@index([endpoint])
+  @@index([httpStatus])
   @@index([startedAt])
 }
 

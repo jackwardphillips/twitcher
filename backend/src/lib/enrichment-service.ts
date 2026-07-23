@@ -4,6 +4,8 @@ import { RegionService } from './region-service.js';
 import { findMatchingIncident, createIncident, addSightingToIncident, normalizeScientificName } from './incident-service.js';
 import type { Sighting } from '@prisma/client';
 import type { EbirdObservation } from './ebird-client.js';
+import type { EnrichmentLoggingContext, MatchDiagnostics } from './enrichment-logging.js';
+import { createEnrichmentAttempt, finishEnrichmentAttempt, sanitizeLogError } from './enrichment-logging.js';
 
 export class EnrichmentService {
   private static readonly STATE_MAPPINGS: Record<string, string> = {
@@ -39,7 +41,7 @@ export class EnrichmentService {
    * 
    * @param sightingId The ID of the sighting to enrich.
    */
-  async enrichSighting(sightingId: number): Promise<void> {
+  async enrichSighting(sightingId: number, context?: EnrichmentLoggingContext): Promise<void> {
     const sighting = await prisma.sighting.findUnique({
       where: { id: sightingId },
     });
@@ -47,20 +49,17 @@ export class EnrichmentService {
     if (!sighting) return;
     if (sighting.subId) return;
 
-    const match = await this.matchEngine.findMatch(sighting);
-    if (match) {
-      await this.applyMatch(sightingId, match);
-    }
+    await this.enrichSightings([sighting], context);
   }
 
   /**
    * Enriches all sightings that do not yet have an eBird subId.
    */
-  async enrichAllUnenriched(): Promise<void> {
+  async enrichAllUnenriched(context?: EnrichmentLoggingContext): Promise<void> {
     const unenriched = await prisma.sighting.findMany({
       where: { subId: null },
     });
-    await this.enrichSightings(unenriched);
+    await this.enrichSightings(unenriched, context);
   }
 
   /**
@@ -69,9 +68,10 @@ export class EnrichmentService {
    * 
    * @param sightings The array of Sighting objects to enrich.
    */
-  async enrichSightings(sightings: Sighting[]): Promise<{ attempted: number; succeeded: number; failed: number }> {
+  async enrichSightings(sightings: Sighting[], context?: EnrichmentLoggingContext): Promise<{ attempted: number; succeeded: number; failed: number }> {
     if (sightings.length === 0) return { attempted: 0, succeeded: 0, failed: 0 };
 
+    type RegionalSighting = Sighting & { enrichmentAttemptId: string };
     let succeeded = 0;
     let failed = 0;
     const withCoords: Sighting[] = [];
@@ -89,40 +89,92 @@ export class EnrichmentService {
     const failedGeoSearch: Sighting[] = [];
 
     for (const sighting of withCoords) {
+      const attempt = await createEnrichmentAttempt(context ?? {}, {
+        sightingId: sighting.id,
+        species: sighting.species,
+        location: sighting.location,
+        sightingDate: sighting.date,
+      });
+      const attemptContext = { ...context, enrichmentAttemptId: attempt.id };
       const coords = sighting.location.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
       if (coords) {
         const key = `${coords[1]},${coords[2]}`;
         if (!geoCache.has(key)) {
           try {
             const observations = await this.matchEngine.ebirdClient.getNearbyNotableObservations(
-              parseFloat(coords[1]!), parseFloat(coords[2]!), 10, 30
+              parseFloat(coords[1]!), parseFloat(coords[2]!), 10, 30, attemptContext
             );
             geoCache.set(key, observations);
           } catch (error) {
             console.error(`Failed to fetch nearby notable observations for ${key}:`, error instanceof Error ? error.message : error);
             geoCache.set(key, []); // Mark as empty to avoid retrying in this batch
+            await finishEnrichmentAttempt(attempt.id, {
+              status: 'error',
+              strategy: 'geo_notable',
+              regionCode: key,
+              errorMessage: sanitizeLogError(error),
+              diagnostics: {
+                match: null,
+                apiCandidateCount: 0,
+                speciesMatchCount: 0,
+                timeWindowMatchCount: 0,
+                rejectionReason: 'api_error',
+              },
+            });
+            failedGeoSearch.push(sighting);
+            continue;
           }
         }
 
-        const match = this.matchEngine.selectBestMatch(geoCache.get(key)!, sighting.species, sighting.location, sighting.date);
-        if (match) {
-          await this.applyMatch(sighting.id, match);
+        const diagnostics = this.analyzeMatch(geoCache.get(key)!, sighting);
+        if (diagnostics.match) {
+          await this.applyMatch(sighting.id, diagnostics.match);
+          await finishEnrichmentAttempt(attempt.id, {
+            status: 'matched',
+            strategy: 'geo_notable',
+            regionCode: key,
+            diagnostics,
+          });
           succeeded++;
         } else {
+          await finishEnrichmentAttempt(attempt.id, {
+            status: 'missed',
+            strategy: 'geo_notable',
+            regionCode: key,
+            diagnostics,
+          });
           failedGeoSearch.push(sighting);
         }
       }
     }
 
     const regionalPool = [...withoutCoords, ...failedGeoSearch];
-    const regionGroups = new Map<string, Sighting[]>();
+    const regionGroups = new Map<string, RegionalSighting[]>();
 
     for (const sighting of regionalPool) {
-      const regionCode = await this.extractDetailedRegionCode(sighting.location);
+      const attempt = await createEnrichmentAttempt(context ?? {}, {
+        sightingId: sighting.id,
+        species: sighting.species,
+        location: sighting.location,
+        sightingDate: sighting.date,
+      });
+      const attemptContext = { ...context, enrichmentAttemptId: attempt.id };
+      const regionCode = await this.extractDetailedRegionCode(sighting.location, attemptContext);
       if (regionCode) {
         if (!regionGroups.has(regionCode)) regionGroups.set(regionCode, []);
-        regionGroups.get(regionCode)!.push(sighting);
+        regionGroups.get(regionCode)!.push({ ...sighting, enrichmentAttemptId: attempt.id });
       } else {
+        await finishEnrichmentAttempt(attempt.id, {
+          status: 'missed',
+          strategy: 'regional_notable',
+          diagnostics: {
+            match: null,
+            apiCandidateCount: 0,
+            speciesMatchCount: 0,
+            timeWindowMatchCount: 0,
+            rejectionReason: 'region_not_found',
+          },
+        });
         failed++; // Could not determine region
       }
     }
@@ -130,19 +182,50 @@ export class EnrichmentService {
     for (const [regionCode, regionSightings] of regionGroups.entries()) {
       try {
         console.log(`Fetching notable observations for region: ${regionCode}...`);
-        const observations = await this.matchEngine.ebirdClient.getNotableObservations(regionCode, 30);
+        const observations = await this.matchEngine.ebirdClient.getNotableObservations(
+          regionCode,
+          30,
+          context?.ingestionRunId ? { ingestionRunId: context.ingestionRunId } : undefined
+        );
         console.log(`Found ${observations.length} notable observations in ${regionCode}. Matching ${regionSightings.length} sightings...`);
         for (const sighting of regionSightings) {
-          const match = this.matchEngine.selectBestMatch(observations, sighting.species, sighting.location, sighting.date);
-          if (match) {
-            await this.applyMatch(sighting.id, match);
+          const diagnostics = this.analyzeMatch(observations, sighting);
+          if (diagnostics.match) {
+            await this.applyMatch(sighting.id, diagnostics.match);
+            await finishEnrichmentAttempt(sighting.enrichmentAttemptId, {
+              status: 'matched',
+              strategy: 'regional_notable',
+              regionCode,
+              diagnostics,
+            });
             succeeded++;
           } else {
+            await finishEnrichmentAttempt(sighting.enrichmentAttemptId, {
+              status: 'missed',
+              strategy: 'regional_notable',
+              regionCode,
+              diagnostics,
+            });
             failed++;
           }
         }
       } catch (error) {
         console.error(`Failed to enrich sightings for region ${regionCode}:`, error instanceof Error ? error.message : error);
+        for (const sighting of regionSightings) {
+          await finishEnrichmentAttempt(sighting.enrichmentAttemptId, {
+            status: 'error',
+            strategy: 'regional_notable',
+            regionCode,
+            errorMessage: sanitizeLogError(error),
+            diagnostics: {
+              match: null,
+              apiCandidateCount: 0,
+              speciesMatchCount: 0,
+              timeWindowMatchCount: 0,
+              rejectionReason: 'api_error',
+            },
+          });
+        }
         failed += regionSightings.length;
       }
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -151,7 +234,29 @@ export class EnrichmentService {
     return { attempted: sightings.length, succeeded, failed };
   }
 
-  private async extractDetailedRegionCode(location: string): Promise<string | null> {
+  private analyzeMatch(candidates: EbirdObservation[], sighting: Sighting): MatchDiagnostics {
+    const analyzer = (this.matchEngine as MatchEngine & {
+      analyzeBestMatch?: (candidates: EbirdObservation[], species: string, location: string, date: Date) => MatchDiagnostics;
+    }).analyzeBestMatch;
+
+    if (typeof analyzer === 'function') {
+      return analyzer.call(this.matchEngine, candidates, sighting.species, sighting.location, sighting.date);
+    }
+
+    const match = this.matchEngine.selectBestMatch(candidates, sighting.species, sighting.location, sighting.date);
+    const fallback: MatchDiagnostics = {
+      match,
+      apiCandidateCount: candidates.length,
+      speciesMatchCount: match ? 1 : 0,
+      timeWindowMatchCount: match ? 1 : 0,
+    };
+    if (!match) {
+      fallback.rejectionReason = candidates.length === 0 ? 'no_api_candidates' : 'no_best_match';
+    }
+    return fallback;
+  }
+
+  private async extractDetailedRegionCode(location: string, context?: EnrichmentLoggingContext): Promise<string | null> {
     const parts = location.split(',').map(p => p.trim());
 
     let subnational1Code: string | null = null;
@@ -172,7 +277,7 @@ export class EnrichmentService {
     if (!subnational1Code) return null;
 
     if (countyName) {
-      const subnational2Code = await this.regionService.findSubregionCode(countyName, subnational1Code);
+      const subnational2Code = await this.regionService.findSubregionCode(countyName, subnational1Code, context);
       if (subnational2Code) return subnational2Code;
     }
 

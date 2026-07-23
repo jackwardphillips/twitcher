@@ -1,3 +1,7 @@
+import { prisma } from './db.js';
+import type { EnrichmentLoggingContext } from './enrichment-logging.js';
+import { sanitizeLogError } from './enrichment-logging.js';
+
 export interface EbirdObservation {
   speciesCode: string;
   comName: string;
@@ -29,6 +33,38 @@ export interface EbirdChecklist {
   }[];
 }
 
+async function logApiCall(context: EnrichmentLoggingContext | undefined, data: {
+  endpoint: string;
+  params: Record<string, string | number | boolean>;
+  httpStatus?: number;
+  durationMs: number;
+  attemptNumber: number;
+  maxAttempts: number;
+  responseItemCount?: number;
+  errorMessage?: string;
+}) {
+  if (!context?.ingestionRunId && !context?.enrichmentAttemptId) return;
+
+  try {
+    await prisma.ebirdApiCallLog.create({
+      data: {
+        ingestionRunId: context.ingestionRunId ?? null,
+        enrichmentAttemptId: context.enrichmentAttemptId ?? null,
+        endpoint: data.endpoint,
+        paramsJson: JSON.stringify(data.params),
+        httpStatus: data.httpStatus ?? null,
+        durationMs: data.durationMs,
+        attemptNumber: data.attemptNumber,
+        maxAttempts: data.maxAttempts,
+        responseItemCount: data.responseItemCount ?? null,
+        errorMessage: data.errorMessage ?? null,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to log eBird API call:', sanitizeLogError(error));
+  }
+}
+
 /**
  * Client for interacting with the eBird API (v2).
  * Provides methods for fetching notable observations, checklists, and subregions.
@@ -51,13 +87,14 @@ export class EbirdClient {
    * @returns {Promise<any>} The parsed JSON response.
    * @private
    */
-  private async get(path: string, params: Record<string, string | number | boolean> = {}, retries = 3) {
+  private async get(path: string, params: Record<string, string | number | boolean> = {}, retries = 3, context?: EnrichmentLoggingContext) {
     const url = new URL(`${this.baseUrl}${path}`);
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, String(value));
     });
 
     for (let i = 0; i < retries; i++) {
+      const started = Date.now();
       try {
         const response = await fetch(url.toString(), {
           headers: {
@@ -67,16 +104,46 @@ export class EbirdClient {
 
         if (!response.ok) {
           const errorText = await response.text();
+          await logApiCall(context, {
+            endpoint: path,
+            params,
+            httpStatus: response.status,
+            durationMs: Date.now() - started,
+            attemptNumber: i + 1,
+            maxAttempts: retries,
+            errorMessage: `eBird API error ${response.status}: ${errorText}`,
+          });
           throw new Error(`eBird API error ${response.status}: ${errorText}`);
         }
 
-        return await response.json();
+        const data = await response.json();
+        const logData = {
+          endpoint: path,
+          params,
+          httpStatus: response.status,
+          durationMs: Date.now() - started,
+          attemptNumber: i + 1,
+          maxAttempts: retries,
+        };
+        await logApiCall(context, Array.isArray(data) ? { ...logData, responseItemCount: data.length } : logData);
+        return data;
       } catch (error) {
         const isLastRetry = i === retries - 1;
         const isRetryableError = (error instanceof Error && 
           (error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'))) ||
           (error instanceof Error && error.message.startsWith('eBird API error 5'));
         
+        if (!(error instanceof Error && error.message.startsWith('eBird API error '))) {
+          await logApiCall(context, {
+            endpoint: path,
+            params,
+            durationMs: Date.now() - started,
+            attemptNumber: i + 1,
+            maxAttempts: retries,
+            errorMessage: sanitizeLogError(error),
+          });
+        }
+
         if (isLastRetry || !isRetryableError) {
           throw error;
         }
@@ -95,12 +162,12 @@ export class EbirdClient {
    * @param {number} [back=14] - Number of days to look back.
    * @returns {Promise<EbirdObservation[]>} List of notable observations.
    */
-  async getNotableObservations(regionCode: string, back: number = 14): Promise<EbirdObservation[]> {
+  async getNotableObservations(regionCode: string, back: number = 14, context?: EnrichmentLoggingContext): Promise<EbirdObservation[]> {
     return this.get(`/data/obs/${regionCode}/recent/notable`, {
       back,
       detail: 'full',
       maxResults: 10000,
-    });
+    }, 3, context);
   }
 
   /**
@@ -112,7 +179,7 @@ export class EbirdClient {
    * @param {number} [back=14] - Number of days to look back.
    * @returns {Promise<EbirdObservation[]>} List of notable observations nearby.
    */
-  async getNearbyNotableObservations(lat: number, lng: number, dist: number = 50, back: number = 14): Promise<EbirdObservation[]> {
+  async getNearbyNotableObservations(lat: number, lng: number, dist: number = 50, back: number = 14, context?: EnrichmentLoggingContext): Promise<EbirdObservation[]> {
     return this.get('/data/obs/geo/recent/notable', {
       lat,
       lng,
@@ -120,7 +187,7 @@ export class EbirdClient {
       back,
       detail: 'full',
       maxResults: 10000,
-    });
+    }, 3, context);
   }
 
   /**
@@ -129,8 +196,8 @@ export class EbirdClient {
    * @param {string} subId - The eBird submission/checklist ID.
    * @returns {Promise<EbirdChecklist>} The checklist details.
    */
-  async getChecklist(subId: string): Promise<EbirdChecklist> {
-    return this.get(`/product/checklist/view/${subId}`);
+  async getChecklist(subId: string, context?: EnrichmentLoggingContext): Promise<EbirdChecklist> {
+    return this.get(`/product/checklist/view/${subId}`, {}, 3, context);
   }
 
   /**
@@ -140,7 +207,7 @@ export class EbirdClient {
    * @param {string} parentRegionCode - The parent region code.
    * @returns {Promise<{ code: string; name: string }[]>} List of subregions.
    */
-  async getSubregions(regionType: 'country' | 'subnational1' | 'subnational2', parentRegionCode: string): Promise<{ code: string; name: string }[]> {
-    return this.get(`/ref/region/list/${regionType}/${parentRegionCode}`);
+  async getSubregions(regionType: 'country' | 'subnational1' | 'subnational2', parentRegionCode: string, context?: EnrichmentLoggingContext): Promise<{ code: string; name: string }[]> {
+    return this.get(`/ref/region/list/${regionType}/${parentRegionCode}`, {}, 3, context);
   }
 }

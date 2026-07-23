@@ -1,12 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EbirdClient } from './ebird-client.js';
+import { prisma } from './db.js';
 
 describe('EbirdClient', () => {
   const apiKey = 'test-api-key';
   let client: EbirdClient;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.stubGlobal('fetch', vi.fn());
+    await prisma.ebirdApiCallLog.deleteMany();
+    await prisma.ingestionRun.deleteMany();
     client = new EbirdClient(apiKey);
   });
 
@@ -55,5 +58,28 @@ describe('EbirdClient', () => {
 
     await expect(client.getNotableObservations('US-NY'))
       .rejects.toThrow('eBird API error 403: Forbidden');
+  });
+
+  it('should log compact API call details when logging context is provided', async () => {
+    const run = await prisma.ingestionRun.create({
+      data: { status: 'running', trigger: 'test' },
+    });
+    const mockData = [{ speciesCode: 'ruff', comName: 'Ruff' }];
+    (fetch as any).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockData,
+    });
+
+    await client.getNotableObservations('US-NE', 30, { ingestionRunId: run.id });
+
+    const log = await prisma.ebirdApiCallLog.findFirst({
+      where: { ingestionRunId: run.id },
+    });
+    expect(log?.endpoint).toBe('/data/obs/US-NE/recent/notable');
+    expect(log?.httpStatus).toBe(200);
+    expect(log?.responseItemCount).toBe(1);
+    expect(log?.paramsJson).toContain('"back":30');
+    expect(log?.paramsJson).not.toContain(apiKey);
   });
 });

@@ -93,6 +93,13 @@ describe('IngestionService Integration', () => {
     expect(savedSighting).not.toBeNull();
     expect(savedSighting?.observer).toBe('John Doe');
     expect(savedSighting?.rarity).toBe(4);
+
+    const emailAttempt = await db.emailIngestionAttempt.findFirst({
+      where: { messageId: 'msg-int-1' }
+    });
+    expect(emailAttempt?.status).toBe('processed');
+    expect(emailAttempt?.parsedSightings).toBe(1);
+    expect(emailAttempt?.parsedSummary).toContain('Common Crane');
   });
 
   it('should handle eBird API failures by marking email as processed but with partial enrichment failure', async () => {
@@ -123,6 +130,16 @@ describe('IngestionService Integration', () => {
       where: { messageId: 'msg-int-fail-enrich' }
     });
     expect(savedEmail?.status).toBe('processed');
+
+    const enrichmentAttempt = await db.enrichmentAttempt.findFirst({
+      where: { species: 'Common Crane', status: 'error' }
+    });
+    expect(enrichmentAttempt?.rejectionReason).toBe('api_error');
+
+    const apiCall = await db.ebirdApiCallLog.findFirst({
+      where: { endpoint: '/data/obs/geo/recent/notable' }
+    });
+    expect(apiCall?.httpStatus).toBe(429);
   });
 
   it('should retry failed ingestions from previous runs', async () => {
@@ -189,6 +206,11 @@ describe('IngestionService Integration', () => {
     const result = await service.ingest();
     expect(result.skipped).toBe(1);
     expect(result.ingested).toBe(0);
+
+    const emailAttempt = await db.emailIngestionAttempt.findFirst({
+      where: { messageId: 'msg-skip' }
+    });
+    expect(emailAttempt?.status).toBe('skipped_processed');
   });
 
   it('should mark email as failed if saveSightings throws', async () => {

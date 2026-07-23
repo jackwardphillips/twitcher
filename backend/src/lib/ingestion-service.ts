@@ -2,6 +2,13 @@ import { ImapClient } from './imap-client.js';
 import { db } from './db.js';
 import { parseEBirdAlert } from './ebird-parser.js';
 import { saveSightings } from './sighting-service.js';
+import {
+  createEmailAttempt,
+  finishEmailAttempt,
+  pruneOldEnrichmentLogs,
+  sanitizeLogError,
+  summarizeParsedSightings,
+} from './enrichment-logging.js';
 
 export interface IngestionResult {
   emailsFound: number;
@@ -51,6 +58,11 @@ export class IngestionService {
       },
     });
     const sightingsBefore = await db.sighting.count();
+    try {
+      await pruneOldEnrichmentLogs(30);
+    } catch (error) {
+      console.error('Failed to prune enrichment logs:', sanitizeLogError(error));
+    }
 
     const finishRun = async (result: IngestionResult) => {
       try {
@@ -137,6 +149,15 @@ export class IngestionService {
         if (count % 10 === 0 || count === allEmails.length) {
           console.log(`Processing email ${count}/${allEmails.length}...`);
         }
+        const emailAttempt = await createEmailAttempt({
+          ingestionRunId: run.id,
+          incomingEmailId: email.dbId ?? null,
+          messageId: email.messageId,
+          subject: email.subject,
+          from: email.from,
+          emailDate: email.date,
+          source: email.isRetry ? 'retry' : 'imap',
+        });
         try {
           let savedId = email.dbId;
           let claimed = false;
@@ -158,6 +179,11 @@ export class IngestionService {
             });
             if (result.count === 1) {
               claimed = true;
+            } else {
+              await finishEmailAttempt(emailAttempt.id, {
+                status: 'skipped_claimed_elsewhere',
+                incomingEmailId: savedId ?? null,
+              });
             }
           } else {
             // New email from IMAP: try to create with 'processing' status
@@ -204,6 +230,15 @@ export class IngestionService {
                   });
                   if (existing?.status === 'processed') {
                     skipped++;
+                    await finishEmailAttempt(emailAttempt.id, {
+                      status: 'skipped_processed',
+                      incomingEmailId: existing.id,
+                    });
+                  } else {
+                    await finishEmailAttempt(emailAttempt.id, {
+                      status: 'skipped_claimed_elsewhere',
+                      incomingEmailId: existing?.id ?? null,
+                    });
                   }
                 }
               } else {
@@ -220,7 +255,7 @@ export class IngestionService {
           try {
             const sightings = parseEBirdAlert(email.rawBody, email.date);
             if (sightings.length > 0) {
-              const enrichment = await saveSightings(sightings, enrich);
+              const enrichment = await saveSightings(sightings, enrich, { ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
               if (enrichment) {
                 enrichmentAttempted += enrichment.attempted;
                 enrichmentSucceeded += enrichment.succeeded;
@@ -232,6 +267,12 @@ export class IngestionService {
               where: { id: savedId },
               data: { status: 'processed' },
             });
+            await finishEmailAttempt(emailAttempt.id, {
+              status: 'processed',
+              incomingEmailId: savedId,
+              parsedSightings: sightings.length,
+              parsedSummary: summarizeParsedSightings(sightings),
+            });
             ingested++;
           } catch (parseError) {
             console.error(`Failed to parse/save email ${email.messageId}:`, parseError);
@@ -239,10 +280,20 @@ export class IngestionService {
               where: { id: savedId },
               data: { status: 'failed' },
             });
+            await finishEmailAttempt(emailAttempt.id, {
+              status: 'failed',
+              incomingEmailId: savedId,
+              errorMessage: sanitizeLogError(parseError),
+            });
             failed++;
           }
         } catch (error) {
           console.error(`Failed to ingest email:`, error);
+          await finishEmailAttempt(emailAttempt.id, {
+            status: 'failed',
+            incomingEmailId: email.dbId ?? null,
+            errorMessage: sanitizeLogError(error),
+          });
           failed++;
         }
       }
