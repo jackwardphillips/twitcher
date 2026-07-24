@@ -1,6 +1,6 @@
 # Plan - Poller Image Delivery
 
-## Phase 1: Application and delivery implementation
+## Phase 1: Application and delivery implementation [checkpoint: cce9e4f]
 
 - [x] Add tests for production poller preflight, awaited summarization, partial
   failures, and structured completion output.
