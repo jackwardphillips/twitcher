@@ -57,14 +57,16 @@ describe('IncidentService Concurrency', () => {
     
     const originalUpdate = db.incident.update;
     let updateCallCount = 0;
-    vi.spyOn(db.incident, 'update').mockImplementation(async (args) => {
+    vi.spyOn(db.incident, 'update').mockImplementation((async (
+      args: Parameters<typeof originalUpdate>[0],
+    ) => {
         updateCallCount++;
         if (updateCallCount === 1) {
             // First call stalls to let the second call start and potentially use same stale state
             await new Promise(resolve => setTimeout(resolve, 200));
         }
         return originalUpdate.call(db.incident, args);
-    });
+    }) as never);
 
     // Run concurrent updates
     await Promise.all([

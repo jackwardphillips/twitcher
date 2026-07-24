@@ -28,7 +28,10 @@
     "ops:ingestion": "tsx src/scripts/check-ingestion.ts",
     "ops:enrichment-summary": "tsx src/scripts/check-enrichment-summary.ts",
     "ops:env": "tsx src/scripts/check-env.ts",
-    "test": "node test-setup.js"
+    "test": "npm run test:unit && npm run test:db",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:db": "node test-setup.js",
+    "typecheck:test": "tsc --project tsconfig.test.json"
   },
   "keywords": [],
   "author": "",

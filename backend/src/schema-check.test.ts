@@ -25,8 +25,6 @@ describe('Prisma Schema Updates', () => {
   });
 
   it('should have the SpeciesPhoto model in the Prisma client', () => {
-    // This will fail if the model is not in the schema and generated
-    // @ts-expect-error - SpeciesPhotoScalarFieldEnum will not exist yet
     const photoFields = Object.values(Prisma.SpeciesPhotoScalarFieldEnum);
 
     expect(photoFields).toContain('speciesName');

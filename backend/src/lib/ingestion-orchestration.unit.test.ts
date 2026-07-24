@@ -48,7 +48,7 @@ vi.mock('./db.js', () => ({
   },
 }));
 
-describe('Ingestion Integration', () => {
+describe('Ingestion orchestration with mocked boundaries', () => {
   let service: IngestionService;
   let mockImapClient: any;
 

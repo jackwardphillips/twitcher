@@ -61,6 +61,8 @@ const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
   }, [])
 
   useEffect(() => {
+    // Loading and error state belong to the request started by this dependency change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     setError(null)
 

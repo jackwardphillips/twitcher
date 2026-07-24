@@ -232,10 +232,7 @@ export const SightingMap = ({ incidents }: SightingMapProps) => {
   }, [incidents]);
 
   useEffect(() => {
-    if (!isExpanded) {
-      setExpandedHeight(null);
-      return;
-    }
+    if (!isExpanded) return;
 
     const updateExpandedHeight = () => {
       const wrapperTop = wrapperRef.current?.getBoundingClientRect().top ?? 0;
@@ -250,6 +247,13 @@ export const SightingMap = ({ incidents }: SightingMapProps) => {
       window.removeEventListener('resize', updateExpandedHeight);
     };
   }, [isExpanded]);
+
+  const handleExpandedToggle = () => {
+    if (isExpanded) {
+      setExpandedHeight(null);
+    }
+    setIsExpanded(!isExpanded);
+  };
 
   useEffect(() => {
     const map = mapRef.current;
@@ -287,7 +291,7 @@ export const SightingMap = ({ incidents }: SightingMapProps) => {
         className="map-expand-toggle"
         aria-expanded={isExpanded}
         aria-label={isExpanded ? 'Collapse map' : 'Expand map'}
-        onClick={() => setIsExpanded((current) => !current)}
+        onClick={handleExpandedToggle}
       >
         <span>{isExpanded ? 'Collapse map' : 'Expand map'}</span>
         <svg
