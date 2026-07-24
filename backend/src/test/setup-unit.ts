@@ -1,8 +1,9 @@
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { server } from './mocks/server';
+import { rejectUnhandledExternalRequest } from './network-policy';
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledRequest: rejectUnhandledExternalRequest });
 });
 
 afterEach(() => {

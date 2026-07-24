@@ -6,8 +6,10 @@
 
 - Split backend tests into database-free and database-backed tiers, and added
   fail-closed disposable PostgreSQL checks before destructive test cleanup.
-- Changed backend MSW setup to reject unhandled network requests in both test
-  tiers.
+- Changed backend MSW setup to permit intentional loopback integration traffic
+  while rejecting unhandled external requests in both test tiers.
+- Replaced global provider fetch stubs in concurrency coverage with explicit MSW
+  handlers so network isolation and request-count assertions share one boundary.
 - Renamed a mock-only integration test so its name reflects its unit-test
   boundaries.
 - Removed stale Prisma schema-test suppressions and corrected comments that
@@ -39,6 +41,9 @@
   poller workflow.
 - Generate the Prisma client explicitly in fresh backend CI checkouts before
   running tests or builds.
+- Correct the hosted database-test network policy after CI showed that strict
+  unhandled-request rejection also blocked temporary loopback application
+  servers.
 
 ### Audit and documentation
 

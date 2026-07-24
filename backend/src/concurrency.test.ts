@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import { app } from './index.js';
 import { ImapClient } from './lib/imap-client.js';
@@ -7,12 +7,12 @@ import { addSightingToIncident } from './lib/incident-service.js';
 import { IncidentStatus } from '@prisma/client';
 import { runSummarizationCycle } from './lib/summarization-service.js';
 import { PhotoService } from './lib/photo-service.js';
+import { http, HttpResponse } from 'msw';
+import { server } from './test/mocks/server';
 
 vi.mock('./lib/imap-client.js');
 
-// Mock fetch for summarization and photo tests
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockProviderRequest = vi.fn();
 
 describe('Ingestion Concurrency', () => {
   let mockImapClient: any;
@@ -31,26 +31,26 @@ describe('Ingestion Concurrency', () => {
       return mockImapClient;
     });
 
-    // Default fetch mock
-    mockFetch.mockImplementation(async () => {
-      return {
-        ok: true,
-        json: async () => ({
-          choices: [{ message: { content: 'Test summary' } }],
+    server.use(
+      http.get('https://api.inaturalist.org/v1/taxa', async () => {
+        mockProviderRequest();
+        return HttpResponse.json({
           results: [{
             default_photo: {
               medium_url: 'http://inat.com/photo.jpg',
               attribution: '(c) John Doe'
             }
           }]
-        })
-      };
-    });
+        });
+      }),
+      http.post('https://api.groq.com/openai/v1/chat/completions', () => {
+        mockProviderRequest();
+        return HttpResponse.json({
+          choices: [{ message: { content: 'Test summary' } }],
+        });
+      }),
+    );
     process.env.GROQ_API_KEY = 'test-key';
-  });
-
-  afterAll(() => {
-    vi.unstubAllGlobals();
   });
 
   it('should not fan out duplicate photo fetches for the same species', async () => {
@@ -59,21 +59,20 @@ describe('Ingestion Concurrency', () => {
     const photoService = new PhotoService();
     const species = 'Grus grus';
 
-    // Mock fetch to simulate a slow API response
-    mockFetch.mockImplementation(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      return {
-        ok: true,
-        json: async () => ({
+    server.use(
+      http.get('https://api.inaturalist.org/v1/taxa', async () => {
+        mockProviderRequest();
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return HttpResponse.json({
           results: [{
             default_photo: {
               medium_url: 'http://inat.com/photo.jpg',
               attribution: '(c) John Doe'
             }
           }]
-        })
-      };
-    });
+        });
+      }),
+    );
 
     // Trigger two photo fetches concurrently
     await Promise.all([
@@ -82,7 +81,7 @@ describe('Ingestion Concurrency', () => {
     ]);
 
     // Assert: Fetch should have been called only once
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockProviderRequest).toHaveBeenCalledTimes(1);
   });
 
   it('should not create duplicate sightings when multiple ingestions run concurrently', async () => {
@@ -278,6 +277,6 @@ describe('Ingestion Concurrency', () => {
     ]);
 
     // 3. Assert: Fetch should have been called only once for this incident
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockProviderRequest).toHaveBeenCalledTimes(1);
   });
 });

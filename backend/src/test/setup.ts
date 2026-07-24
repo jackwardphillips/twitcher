@@ -1,6 +1,7 @@
 import { beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { clearDatabase } from './db-utils';
 import { server } from './mocks/server';
+import { rejectUnhandledExternalRequest } from './network-policy';
 import { db } from '../lib/db';
 import {
   validateConnectedIdentity,
@@ -21,7 +22,7 @@ beforeAll(async () => {
   validateConnectedIdentity(target, identity);
 
   // Start msw server
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledRequest: rejectUnhandledExternalRequest });
 });
 
 beforeEach(async () => {

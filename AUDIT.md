@@ -72,7 +72,7 @@ changed during the audit.
 | Backend test type-check | Passed | Dedicated test configuration checks tests, support files, and mocks |
 | Frontend production dependency audit | Passed | No known production vulnerabilities |
 | Backend production dependency audit | Failed | 9 advisories: 3 high, 5 moderate, 1 low |
-| Backend unit tests | Passed | 17 files, 47 tests; ran without database environment variables |
+| Backend unit tests | Passed | 17 files, 49 tests; ran without database environment variables |
 | Backend database tests | Not run locally | Requires an explicitly disposable PostgreSQL database; CI is configured to provide one |
 | Container/service health | Not checked | No runtime changes were made |
 
@@ -532,11 +532,14 @@ These are grouping candidates, not approved implementation stories.
   mock handlers; keep any true live-provider tests separate and disabled by
   default.
 - **Resolution:** Both database-free and database-backed backend MSW setup now
-  fails on unhandled requests instead of bypassing them. No test is opted into
-  live provider access.
-- **Verification:** All 47 database-free backend tests passed with the fail-closed
-  policy. The database-backed tier uses the same policy and remains pending its
-  next run against CI's ephemeral PostgreSQL service.
+  permits intentional loopback requests to temporary application servers but
+  rejects unhandled external requests. Provider-facing concurrency tests use
+  explicit MSW handlers instead of global fetch replacement. No test is opted
+  into live provider access.
+- **Verification:** All 49 database-free backend tests passed, including policy
+  checks for loopback and unknown external targets. CI's database-backed run
+  exposed the original over-broad policy; the corrected policy remains pending
+  its next hosted run against ephemeral PostgreSQL.
 
 ### F027 — Backend tests are not TypeScript-checked
 
