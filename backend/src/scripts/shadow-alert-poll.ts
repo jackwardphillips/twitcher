@@ -20,6 +20,42 @@ function hasFlag(name: string): boolean {
   return process.argv.includes(`--${name}`);
 }
 
+function getStringArg(name: string, fallback: string | undefined): string | undefined {
+  const prefix = `--${name}=`;
+  const arg = process.argv.find(value => value.startsWith(prefix));
+  return arg ? arg.slice(prefix.length) : fallback;
+}
+
+async function wakeBackend() {
+  if (hasFlag('no-wake')) return;
+
+  const backendUrl = getStringArg('wake-url', process.env.BACKEND_URL);
+  if (!backendUrl) return;
+
+  const healthUrl = `${backendUrl.replace(/\/$/, '')}/api/health`;
+  const attempts = getNumberArg('wake-attempts', 12);
+  const delayMs = getNumberArg('wake-delay-ms', 10000);
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(healthUrl);
+      if (response.ok) {
+        console.log(`backend awake: ${healthUrl}`);
+        return;
+      }
+      console.log(`backend wake attempt ${attempt}/${attempts} returned HTTP ${response.status}`);
+    } catch (error) {
+      console.log(`backend wake attempt ${attempt}/${attempts} failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    if (attempt < attempts) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw new Error(`backend did not become healthy at ${healthUrl}`);
+}
+
 async function main() {
   const emailLimit = getNumberArg('emails', 3);
   const targetLimit = getNumberArg('targets', 25);
@@ -31,6 +67,8 @@ async function main() {
   if (writeSightings && !writeShadow) {
     throw new Error('--write-sightings requires --write-shadow');
   }
+
+  await wakeBackend();
 
   const service = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
   if (seedReferences) {

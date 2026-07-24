@@ -1,0 +1,8 @@
+services:
+  twitcher-poller:
+    build:
+      context: .
+      dockerfile: Dockerfile.poller
+    env_file:
+      - .env.poller
+    restart: "no"
