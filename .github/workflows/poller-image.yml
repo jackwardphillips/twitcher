@@ -7,6 +7,7 @@ on:
       - backend/Dockerfile.poller
       - backend/package.json
       - backend/package-lock.json
+      - backend/prisma.config.ts
       - backend/tsconfig.json
       - backend/prisma/**
       - backend/src/**
@@ -16,6 +17,7 @@ on:
       - backend/Dockerfile.poller
       - backend/package.json
       - backend/package-lock.json
+      - backend/prisma.config.ts
       - backend/tsconfig.json
       - backend/prisma/**
       - backend/src/**
