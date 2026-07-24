@@ -3,7 +3,6 @@ import { Prisma } from '@prisma/client';
 
 describe('Incident Schema', () => {
   it('should have the Incident model in the Prisma client', () => {
-    // @ts-expect-error - Incident model should not exist yet
     const incidentFields = Object.values(Prisma.IncidentScalarFieldEnum);
 
     expect(incidentFields).toContain('id');
@@ -25,7 +24,6 @@ describe('Incident Schema', () => {
   });
 
   it('should have the incidentId field in the Sighting model', () => {
-    // @ts-expect-error - incidentId should not exist yet
     const sightingFields = Object.values(Prisma.SightingScalarFieldEnum);
 
     expect(sightingFields).toContain('incidentId');

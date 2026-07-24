@@ -3,7 +3,7 @@ import { App } from './App.js'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import '@testing-library/jest-dom'
 
-describe('E2E Smoke Test: Main Dashboard Flow', () => {
+describe('Dashboard component flow', () => {
   const mockIncidents = [
     {
       id: 'i1',

@@ -219,13 +219,15 @@ describe('Ingestion Concurrency', () => {
     // Inject delay into FIRST update to force overlap
     const originalUpdate = prisma.incident.update;
     let updateCallCount = 0;
-    vi.spyOn(prisma.incident, 'update').mockImplementation(async (args) => {
+    vi.spyOn(prisma.incident, 'update').mockImplementation((async (
+      args: Parameters<typeof originalUpdate>[0],
+    ) => {
         updateCallCount++;
         if (updateCallCount === 1) {
             await new Promise(resolve => setTimeout(resolve, 200));
         }
         return originalUpdate.call(prisma.incident, args);
-    });
+    }) as never);
 
     // 2. Act: Concurrent updates
     await Promise.all(sightings.map(s => addSightingToIncident(prisma, incident, s)));

@@ -62,7 +62,7 @@ describe('EbirdClient Integration', () => {
     );
 
     const result = await client.getNotableObservations('US-PA', 1);
-    expect(result[0].speciesCode).toBe('slow-test');
+    expect(result[0]!.speciesCode).toBe('slow-test');
   });
 
   it('should NOT retry on 401 Unauthorized', async () => {

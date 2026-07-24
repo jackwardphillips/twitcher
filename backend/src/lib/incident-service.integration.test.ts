@@ -108,7 +108,7 @@ describe('Sighting -> Incident Integration Flow', () => {
     // 4. Verify only one remains open
     const openAfter = await getOpenIncidents(db);
     expect(openAfter).toHaveLength(1);
-    expect(openAfter[0].scientificName).toBe('Bird active');
+    expect(openAfter[0]!.scientificName).toBe('Bird active');
 
     const closedIncident = await db.incident.findFirst({
       where: { scientificName: 'Bird inactive' }

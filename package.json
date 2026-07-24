@@ -10,6 +10,7 @@
     "install:all": "npm install --prefix backend && npm install --prefix frontend",
     "setup": "npm run install:all && npm run prisma:migrate --prefix backend",
     "prisma:migrate": "npm run prisma:migrate --prefix backend",
+    "lint": "npm run lint --prefix frontend",
     "test": "npm test --prefix backend && npm test --prefix frontend",
     "enrich:recent": "npm run enrich:recent --prefix backend",
     "ops:health": "npm run ops:health --prefix backend",
@@ -24,8 +25,5 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^8.2.2"
-  },
-  "dependencies": {
-    "cors": "^2.8.6"
   }
 }

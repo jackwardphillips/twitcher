@@ -86,7 +86,7 @@ describe('IncidentService', () => {
       });
 
       expect(result).toHaveLength(1);
-      const enriched = result[0];
+      const enriched = result[0]!;
       expect(enriched.id).toBe('inc-1');
       expect(enriched.abaCode).toBe(1);
       expect(enriched.centroidLat).toBe(40.1);
@@ -120,7 +120,7 @@ describe('IncidentService', () => {
       prismaMock.rarityCode.findMany.mockResolvedValue([mockRarity]);
 
       const result = await getOpenIncidents(prismaMock as any);
-      expect(result[0].abaCode).toBe(4);
+      expect(result[0]!.abaCode).toBe(4);
     });
 
     it('should handle incidents without matching rarity codes gracefully', async () => {
@@ -137,7 +137,7 @@ describe('IncidentService', () => {
       prismaMock.rarityCode.findMany.mockResolvedValue([]);
 
       const result = await getOpenIncidents(prismaMock as any);
-      expect(result[0].abaCode).toBeNull();
+      expect(result[0]!.abaCode).toBeNull();
     });
 
     it('should include species photo data', async () => {
@@ -166,7 +166,7 @@ describe('IncidentService', () => {
       };
 
       const result = await getOpenIncidents(prismaMock as any);
-      expect(result[0].photo).toEqual({
+      expect(result[0]!.photo).toEqual({
         url: 'https://inat.com/bluejay.jpg',
         attribution: '(c) Photographer'
       });

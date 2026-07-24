@@ -85,14 +85,16 @@ describe('IngestionService Concurrency', () => {
     // Inject a delay into the FIRST updateMany to force the second worker to attempt a concurrent claim
     const originalUpdateMany = db.incomingEmail.updateMany;
     let claimCallCount = 0;
-    vi.spyOn(db.incomingEmail, 'updateMany').mockImplementation(async (args) => {
+    vi.spyOn(db.incomingEmail, 'updateMany').mockImplementation((async (
+      args: Parameters<typeof originalUpdateMany>[0],
+    ) => {
         claimCallCount++;
         if (claimCallCount === 1) {
             // First worker stalls during claim
             await new Promise(resolve => setTimeout(resolve, 200));
         }
         return originalUpdateMany.call(db.incomingEmail, args);
-    });
+    }) as never);
 
     // Run two ingestions concurrently
     const [res1, res2] = await Promise.all([

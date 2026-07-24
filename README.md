@@ -99,12 +99,26 @@ npx.cmd prisma generate
 
 ## Tests
 
+Database-free backend tests are safe to run without PostgreSQL:
+
 ```powershell
-npm.cmd test --prefix backend
+npm.cmd run test:unit --prefix backend
 npm.cmd test --prefix frontend
 ```
 
-Backend tests require `TEST_DATABASE_URL` and may clear data, so do not point it at production.
+Database-backed backend tests delete application data between tests. They refuse
+to start unless the PostgreSQL database name and role both end in `_test`, the
+connected identity matches the URL, and destructive cleanup is explicitly
+acknowledged:
+
+```powershell
+$env:TEST_DATABASE_URL="postgresql://twitcher_test:password@localhost:5432/twitcher_test"
+$env:ALLOW_TEST_DATABASE_RESET="1"
+npm.cmd run test:db --prefix backend
+```
+
+Use only a disposable database created for this test run. `npm.cmd test --prefix
+backend` runs the unit tier first and then the guarded database tier.
 
 ## PostgreSQL Rebuild
 

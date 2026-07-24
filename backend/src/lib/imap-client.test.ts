@@ -72,8 +72,8 @@ describe('ImapClient', () => {
       { envelope: true, source: true }
     );
     expect(emails).toHaveLength(1);
-    expect(emails[0].messageId).toBe('msg1');
-    expect(emails[0].subject).toContain('ABA Rarities');
+    expect(emails[0]!.messageId).toBe('msg1');
+    expect(emails[0]!.subject).toContain('ABA Rarities');
     expect(mockImapFlow.logout).toHaveBeenCalled();
   });
 

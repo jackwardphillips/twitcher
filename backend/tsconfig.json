@@ -51,6 +51,8 @@
     "src/test/**/*",
     "src/scripts/**/*",
     "prisma.config.ts",
-    "vitest.config.ts"
+    "test-tiers.ts",
+    "vitest.config.ts",
+    "vitest.*.config.ts"
   ]
 }

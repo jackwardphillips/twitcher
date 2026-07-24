@@ -48,16 +48,16 @@ describe('Incident Histogram Reproduction', () => {
     prismaMock.rarityCode.findMany.mockResolvedValue([]);
 
     const result = await getOpenIncidents(prismaMock as any);
-    const dailyCounts = result[0].dailyCounts;
+    const dailyCounts = result[0]!.dailyCounts;
 
     expect(dailyCounts).toHaveLength(21);
     
     // Last day should be April 22
-    expect(dailyCounts[20].date).toBe('2026-04-22');
-    expect(dailyCounts[20].count).toBe(1);
+    expect(dailyCounts[20]!.date).toBe('2026-04-22');
+    expect(dailyCounts[20]!.count).toBe(1);
 
     // First day should be April 2
-    expect(dailyCounts[0].date).toBe('2026-04-02');
-    expect(dailyCounts[0].count).toBe(1);
+    expect(dailyCounts[0]!.date).toBe('2026-04-02');
+    expect(dailyCounts[0]!.count).toBe(1);
   });
 });

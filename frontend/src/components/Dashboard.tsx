@@ -49,6 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [referenceTime] = useState(() => Date.now())
 
   // Near Me Filter state
   const [nearMe, setNearMe] = useState(false)
@@ -124,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
     if (Number.isNaN(lastSeenTime)) return false
 
     const sevenDays = 7 * 24 * 60 * 60 * 1000
-    return Date.now() - lastSeenTime <= sevenDays
+    return referenceTime - lastSeenTime <= sevenDays
   }
 
   const isHighRarity = (incident: Incident) => {

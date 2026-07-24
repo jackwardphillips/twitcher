@@ -188,6 +188,8 @@ const AboutTooltip = ({ children, className = '', tooltip }: AboutTooltipProps) 
 
   useLayoutEffect(() => {
     if (!isOpen) return
+    // DOM geometry is only available after the tooltip has rendered.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updatePosition()
   }, [isOpen])
 

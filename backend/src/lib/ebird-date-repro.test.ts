@@ -19,7 +19,7 @@ Species Name (Scientific Name) (1)
     expect(sightings).toHaveLength(1);
     
     // It should be April 21, 2026
-    const sightingDate = sightings[0].date;
+    const sightingDate = sightings[0]!.date;
     expect(sightingDate.getFullYear()).toBe(2026);
     expect(sightingDate.getMonth()).toBe(3); // April
     expect(sightingDate.getDate()).toBe(21);
@@ -41,7 +41,7 @@ Species Name (Scientific Name) (1)
     const sightings = parseEBirdAlert(emailWithYesterday, basisDate);
     
     // Yesterday relative to April 21 is April 20
-    const sightingDate = sightings[0].date;
+    const sightingDate = sightings[0]!.date;
     expect(sightingDate.getDate()).toBe(20);
     expect(sightingDate.getHours()).toBe(20);
 
@@ -56,7 +56,7 @@ Species Name (Scientific Name) (1)
 `;
     // This depends on the local timezone of the machine running the test
     const sightings = parseEBirdAlert(emailWithDate);
-    const date = sightings[0].date;
+    const date = sightings[0]!.date;
     
     // If we want to be timezone-resilient, we should ensure the backend normalizes these.
     // eBird alerts are likely in the local time of the sighting, but doesn't say which.
