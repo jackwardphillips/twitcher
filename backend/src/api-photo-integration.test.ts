@@ -11,19 +11,32 @@ describe('API Photo Integration', () => {
     vi.stubGlobal('fetch', vi.fn());
   });
 
-  it('should trigger background photo fetch for incidents without cached photos', async () => {
-    // 1. Arrange: Create an incident
-    await prisma.incident.create({
+  async function createOpenIncident(scientificName: string, commonName: string) {
+    return prisma.incident.create({
       data: {
-        scientificName: 'Cyanocitta cristata',
-        commonName: 'Blue Jay',
+        scientificName,
+        commonName,
         status: 'OPEN',
         minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
         firstSeen: new Date(),
         lastSeen: new Date(),
-        statesCovered: '[]'
-      }
+        statesCovered: '[]',
+        sightings: {
+          create: {
+            species: commonName,
+            scientificName,
+            location: 'Test location',
+            date: new Date(),
+            observer: 'Test observer',
+          },
+        },
+      },
     });
+  }
+
+  it('should trigger background photo fetch for incidents without cached photos', async () => {
+    // 1. Arrange: Create an incident
+    await createOpenIncident('Cyanocitta cristata', 'Blue Jay');
 
     const mockResponse = {
       results: [
@@ -71,17 +84,7 @@ describe('API Photo Integration', () => {
       }
     });
 
-    await prisma.incident.create({
-      data: {
-        scientificName: 'Cyanocitta cristata',
-        commonName: 'Blue Jay',
-        status: 'OPEN',
-        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
-        firstSeen: new Date(),
-        lastSeen: new Date(),
-        statesCovered: '[]'
-      }
-    });
+    await createOpenIncident('Cyanocitta cristata', 'Blue Jay');
 
     // 2. Act: Call /api/incidents
     const response = await request(app).get('/api/incidents');
@@ -94,17 +97,7 @@ describe('API Photo Integration', () => {
 
   it('should not fail the request if photoService.needsFetch rejects', async () => {
     // 1. Arrange: Create an incident
-    await prisma.incident.create({
-      data: {
-        scientificName: 'Error species',
-        commonName: 'Error Bird',
-        status: 'OPEN',
-        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
-        firstSeen: new Date(),
-        lastSeen: new Date(),
-        statesCovered: '[]'
-      }
-    });
+    await createOpenIncident('Error species', 'Error Bird');
 
     // Mock PhotoService.needsFetch to reject
     const PhotoService = (await import('./lib/photo-service.js')).PhotoService;
@@ -124,17 +117,7 @@ describe('API Photo Integration', () => {
 
   it('should not fail the request if photoService.fetchSpeciesPhoto rejects', async () => {
     // 1. Arrange: Create an incident
-    await prisma.incident.create({
-      data: {
-        scientificName: 'Fetch error species',
-        commonName: 'Fetch Error Bird',
-        status: 'OPEN',
-        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
-        firstSeen: new Date(),
-        lastSeen: new Date(),
-        statesCovered: '[]'
-      }
-    });
+    await createOpenIncident('Fetch error species', 'Fetch Error Bird');
 
     // Mock PhotoService.needsFetch to succeed, but fetchSpeciesPhoto to reject
     const PhotoService = (await import('./lib/photo-service.js')).PhotoService;

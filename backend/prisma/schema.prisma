@@ -16,98 +16,98 @@ enum IncidentStatus {
 }
 
 model Sighting {
-  id             Int       @id @default(autoincrement())
-  species        String
-  scientificName String?
-  location       String
-  date           DateTime
-  observer       String
-  rarity         Int       @default(0) // ABA code (e.g., 4 or 5)
-  details        String?
-  mapUrl         String?
-  checklistUrl   String?
-  latitude       Float?
-  longitude      Float?
-  subId          String?
-  locId          String?
-  speciesCode    String?
-  howMany        Int?
-  displayCounty  String?
-  displayState   String?
-  displayCountry String?
+  id                       Int                 @id @default(autoincrement())
+  species                  String
+  scientificName           String?
+  location                 String
+  date                     DateTime
+  observer                 String
+  rarity                   Int                 @default(0) // ABA code (e.g., 4 or 5)
+  details                  String?
+  mapUrl                   String?
+  checklistUrl             String?
+  latitude                 Float?
+  longitude                Float?
+  subId                    String?
+  locId                    String?
+  speciesCode              String?
+  howMany                  Int?
+  displayCounty            String?
+  displayState             String?
+  displayCountry           String?
   locationResolutionSource String?
-  status         String    @default("present")
-  missingSince   DateTime?
-  missingPollCount Int     @default(0)
-  removedAt      DateTime?
-  incidentId     String?
-  incident       Incident? @relation(fields: [incidentId], references: [id])
-  enrichmentAttempts EnrichmentAttempt[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  status                   String              @default("present")
+  missingSince             DateTime?
+  missingPollCount         Int                 @default(0)
+  removedAt                DateTime?
+  incidentId               String?
+  incident                 Incident?           @relation(fields: [incidentId], references: [id])
+  enrichmentAttempts       EnrichmentAttempt[]
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
 
   @@index([status])
   @@index([removedAt])
 }
 
 model Incident {
-  id             String         @id @default(uuid())
-  scientificName String
-  commonName     String
-  status         IncidentStatus @default(OPEN)
-  minLat         Float
-  maxLat         Float
-  minLng         Float
-  maxLng         Float
-  firstSeen      DateTime
-  lastSeen       DateTime
-  closedAt       DateTime?
-  sightingCount  Int            @default(1)
-  primaryCounty  String?
-  primaryState   String?
-  primaryCountry String?
-  statesCovered  String // JSON array of unique state/province names
-  geminiSummary  String?
+  id                 String         @id @default(uuid())
+  scientificName     String
+  commonName         String
+  status             IncidentStatus @default(OPEN)
+  minLat             Float
+  maxLat             Float
+  minLng             Float
+  maxLng             Float
+  firstSeen          DateTime
+  lastSeen           DateTime
+  closedAt           DateTime?
+  sightingCount      Int            @default(1)
+  primaryCounty      String?
+  primaryState       String?
+  primaryCountry     String?
+  statesCovered      String // JSON array of unique state/province names
+  geminiSummary      String?
   summaryGeneratedAt DateTime?
-  sightings      Sighting[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  sightings          Sighting[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 }
 
 model RarityCode {
   id             Int     @id @default(autoincrement())
   commonName     String  @unique // ABA common name
   scientificName String? @unique // ABA scientific name
-  abaCode        Int     // ABA rarity code (1-6)
+  abaCode        Int // ABA rarity code (1-6)
 }
 
 model IncomingEmail {
-  id        Int      @id @default(autoincrement())
-  messageId String   @unique
-  subject   String?
-  from      String?
-  date      DateTime?
-  rawBody   String
-  status    String   @default("new") // new, processed, failed, processing
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  attempts  EmailIngestionAttempt[]
+  id           Int                     @id @default(autoincrement())
+  messageId    String                  @unique
+  subject      String?
+  from         String?
+  date         DateTime?
+  rawBody      String
+  status       String                  @default("new") // new, processed, failed, processing
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @default(now()) @updatedAt
+  attempts     EmailIngestionAttempt[]
   alertTargets AlertTarget[]
 }
 
 model IngestionRun {
-  id             String    @id @default(cuid())
-  startedAt      DateTime  @default(now())
-  finishedAt     DateTime?
-  status         String
-  emailsFound    Int       @default(0)
-  emailsIngested Int       @default(0)
-  sightingsAdded Int       @default(0)
-  errorMessage   String?
-  trigger        String?
-  emailAttempts  EmailIngestionAttempt[]
+  id                 String                  @id @default(cuid())
+  startedAt          DateTime                @default(now())
+  finishedAt         DateTime?
+  status             String
+  emailsFound        Int                     @default(0)
+  emailsIngested     Int                     @default(0)
+  sightingsAdded     Int                     @default(0)
+  errorMessage       String?
+  trigger            String?
+  emailAttempts      EmailIngestionAttempt[]
   enrichmentAttempts EnrichmentAttempt[]
-  ebirdApiCallLogs EbirdApiCallLog[]
+  ebirdApiCallLogs   EbirdApiCallLog[]
 
   @@index([startedAt])
 }
@@ -141,31 +141,31 @@ model EmailIngestionAttempt {
 
 model EnrichmentAttempt {
   id                   String    @id @default(cuid())
-  ingestionRunId        String?
-  emailAttemptId        String?
-  sightingId            Int?
-  species               String
-  location              String
-  sightingDate          DateTime
-  strategy              String?
-  regionCode            String?
-  status                String
-  rejectionReason       String?
-  apiCandidateCount     Int       @default(0)
-  speciesMatchCount     Int       @default(0)
-  timeWindowMatchCount  Int       @default(0)
-  selectedSubId         String?
-  selectedSpecies       String?
-  selectedLocation      String?
-  selectedObsDt         String?
-  errorMessage          String?
-  startedAt             DateTime  @default(now())
-  finishedAt            DateTime?
+  ingestionRunId       String?
+  emailAttemptId       String?
+  sightingId           Int?
+  species              String
+  location             String
+  sightingDate         DateTime
+  strategy             String?
+  regionCode           String?
+  status               String
+  rejectionReason      String?
+  apiCandidateCount    Int       @default(0)
+  speciesMatchCount    Int       @default(0)
+  timeWindowMatchCount Int       @default(0)
+  selectedSubId        String?
+  selectedSpecies      String?
+  selectedLocation     String?
+  selectedObsDt        String?
+  errorMessage         String?
+  startedAt            DateTime  @default(now())
+  finishedAt           DateTime?
 
-  ingestionRun  IngestionRun?          @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
-  emailAttempt  EmailIngestionAttempt? @relation(fields: [emailAttemptId], references: [id], onDelete: SetNull)
-  sighting      Sighting?              @relation(fields: [sightingId], references: [id], onDelete: SetNull)
-  apiCallLogs   EbirdApiCallLog[]
+  ingestionRun IngestionRun?          @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
+  emailAttempt EmailIngestionAttempt? @relation(fields: [emailAttemptId], references: [id], onDelete: SetNull)
+  sighting     Sighting?              @relation(fields: [sightingId], references: [id], onDelete: SetNull)
+  apiCallLogs  EbirdApiCallLog[]
 
   @@index([ingestionRunId])
   @@index([emailAttemptId])
@@ -178,24 +178,30 @@ model EnrichmentAttempt {
 }
 
 model EbirdApiCallLog {
-  id                  String    @id @default(cuid())
-  ingestionRunId       String?
-  enrichmentAttemptId  String?
-  endpoint             String
-  paramsJson           String
-  httpStatus           Int?
-  durationMs           Int
-  attemptNumber        Int
-  maxAttempts          Int
-  responseItemCount    Int?
-  errorMessage         String?
-  startedAt            DateTime @default(now())
+  id                       String   @id @default(cuid())
+  ingestionRunId           String?
+  enrichmentAttemptId      String?
+  alertPollRunId           String?
+  alertTargetPollAttemptId String?
+  endpoint                 String
+  paramsJson               String
+  httpStatus               Int?
+  durationMs               Int
+  attemptNumber            Int
+  maxAttempts              Int
+  responseItemCount        Int?
+  errorMessage             String?
+  startedAt                DateTime @default(now())
 
-  ingestionRun      IngestionRun?      @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
-  enrichmentAttempt EnrichmentAttempt? @relation(fields: [enrichmentAttemptId], references: [id], onDelete: SetNull)
+  ingestionRun           IngestionRun?           @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
+  enrichmentAttempt      EnrichmentAttempt?      @relation(fields: [enrichmentAttemptId], references: [id], onDelete: SetNull)
+  alertPollRun           AlertPollRun?           @relation(fields: [alertPollRunId], references: [id], onDelete: Cascade)
+  alertTargetPollAttempt AlertTargetPollAttempt? @relation(fields: [alertTargetPollAttemptId], references: [id], onDelete: Cascade)
 
   @@index([ingestionRunId])
   @@index([enrichmentAttemptId])
+  @@index([alertPollRunId])
+  @@index([alertTargetPollAttemptId])
   @@index([endpoint])
   @@index([httpStatus])
   @@index([startedAt])
@@ -216,7 +222,7 @@ model AlertTarget {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  sourceEmail IncomingEmail? @relation(fields: [sourceEmailId], references: [id], onDelete: SetNull)
+  sourceEmail  IncomingEmail?           @relation(fields: [sourceEmailId], references: [id], onDelete: SetNull)
   pollAttempts AlertTargetPollAttempt[]
   observations AlertTargetObservation[]
 
@@ -229,19 +235,20 @@ model AlertTarget {
 }
 
 model AlertPollRun {
-  id                       String    @id @default(cuid())
-  startedAt                DateTime  @default(now())
-  finishedAt               DateTime?
-  status                   String
-  mode                     String
-  backDays                 Int       @default(3)
-  targetsPolled            Int       @default(0)
-  totalExpectedReports     Int       @default(0)
-  totalObservationsFound   Int       @default(0)
-  zeroObservationTargets   Int       @default(0)
-  errorMessage             String?
+  id                     String    @id @default(cuid())
+  startedAt              DateTime  @default(now())
+  finishedAt             DateTime?
+  status                 String
+  mode                   String
+  backDays               Int       @default(3)
+  targetsPolled          Int       @default(0)
+  totalExpectedReports   Int       @default(0)
+  totalObservationsFound Int       @default(0)
+  zeroObservationTargets Int       @default(0)
+  errorMessage           String?
 
-  pollAttempts AlertTargetPollAttempt[]
+  pollAttempts         AlertTargetPollAttempt[]
+  apiCallLogs          EbirdApiCallLog[]
   lastSeenObservations AlertTargetObservation[]
 
   @@index([startedAt])
@@ -249,27 +256,28 @@ model AlertPollRun {
 }
 
 model AlertTargetPollAttempt {
-  id                 String    @id @default(cuid())
-  alertPollRunId     String?
-  alertTargetId      String
-  startedAt          DateTime  @default(now())
-  finishedAt         DateTime?
-  status             String
-  speciesName        String
-  speciesCode        String?
-  regionName         String
-  regionCode         String
-  expectedReports    Int       @default(0)
-  observationsFound  Int       @default(0)
-  sightingsCreated   Int       @default(0)
-  incidentsTouched   Int       @default(0)
-  observationsMissing Int      @default(0)
-  observationsRemoved Int      @default(0)
-  observationsRestored Int     @default(0)
-  errorMessage       String?
+  id                   String    @id @default(cuid())
+  alertPollRunId       String?
+  alertTargetId        String
+  startedAt            DateTime  @default(now())
+  finishedAt           DateTime?
+  status               String
+  speciesName          String
+  speciesCode          String?
+  regionName           String
+  regionCode           String
+  expectedReports      Int       @default(0)
+  observationsFound    Int       @default(0)
+  sightingsCreated     Int       @default(0)
+  incidentsTouched     Int       @default(0)
+  observationsMissing  Int       @default(0)
+  observationsRemoved  Int       @default(0)
+  observationsRestored Int       @default(0)
+  errorMessage         String?
 
-  alertPollRun AlertPollRun? @relation(fields: [alertPollRunId], references: [id], onDelete: Cascade)
-  alertTarget AlertTarget @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
+  alertPollRun AlertPollRun?     @relation(fields: [alertPollRunId], references: [id], onDelete: Cascade)
+  alertTarget  AlertTarget       @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
+  apiCallLogs  EbirdApiCallLog[]
 
   @@index([alertPollRunId])
   @@index([alertTargetId])
@@ -280,31 +288,31 @@ model AlertTargetPollAttempt {
 }
 
 model AlertTargetObservation {
-  id             String   @id @default(cuid())
-  alertTargetId  String
-  subId          String
-  locId          String?
-  speciesCode    String
-  commonName     String
-  scientificName String?
-  locationName   String
-  obsDt          String
-  howMany        Int?
-  latitude       Float?
-  longitude      Float?
-  displayCounty  String?
-  displayState   String?
-  displayCountry String?
+  id                       String    @id @default(cuid())
+  alertTargetId            String
+  subId                    String
+  locId                    String?
+  speciesCode              String
+  commonName               String
+  scientificName           String?
+  locationName             String
+  obsDt                    String
+  howMany                  Int?
+  latitude                 Float?
+  longitude                Float?
+  displayCounty            String?
+  displayState             String?
+  displayCountry           String?
   locationResolutionSource String?
-  status         String   @default("present")
-  missingSince   DateTime?
-  missingPollCount Int    @default(0)
-  removedAt      DateTime?
-  lastSeenInPollRunId String?
-  firstSeenAt    DateTime @default(now())
-  lastSeenAt     DateTime @default(now())
+  status                   String    @default("present")
+  missingSince             DateTime?
+  missingPollCount         Int       @default(0)
+  removedAt                DateTime?
+  lastSeenInPollRunId      String?
+  firstSeenAt              DateTime  @default(now())
+  lastSeenAt               DateTime  @default(now())
 
-  alertTarget AlertTarget @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
+  alertTarget       AlertTarget   @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
   lastSeenInPollRun AlertPollRun? @relation(fields: [lastSeenInPollRunId], references: [id], onDelete: SetNull)
 
   @@unique([alertTargetId, subId])
@@ -319,8 +327,8 @@ model AlertTargetObservation {
 }
 
 model SpeciesPhoto {
-  speciesName    String   @id
-  photoUrl       String?
-  attribution    String?
-  fetchedAt      DateTime @default(now())
+  speciesName String   @id
+  photoUrl    String?
+  attribution String?
+  fetchedAt   DateTime @default(now())
 }

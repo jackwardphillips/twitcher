@@ -73,9 +73,13 @@ describe('IncidentService', () => {
       const result = await getOpenIncidents(prismaMock as any);
 
       expect(prismaMock.incident.findMany).toHaveBeenCalledWith({
-        where: { status: 'OPEN' },
+        where: {
+          status: 'OPEN',
+          sightings: { some: { status: 'present' } },
+        },
         include: {
           sightings: {
+            where: { status: 'present' },
             orderBy: { date: 'desc' }
           }
         }
@@ -87,7 +91,7 @@ describe('IncidentService', () => {
       expect(enriched.abaCode).toBe(1);
       expect(enriched.centroidLat).toBe(40.1);
       expect(enriched.centroidLng).toBe(-74.9);
-      expect(enriched.locationName).toBe('PA, US');
+      expect(enriched.locationName).toBe('Montgomery, PA');
       expect(enriched.latestMapUrl).toBe('map5');
       expect(enriched.latestChecklistUrl).toBe('check5');
       expect(enriched.activeDays).toBe(6); // 10th to 15th inclusive is 6 days
@@ -358,6 +362,10 @@ describe('IncidentService', () => {
           closedAt: null
         }
       });
+      expect(prismaMock.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+        { isolationLevel: 'Serializable' },
+      );
       expect(prismaMock.sighting.update).toHaveBeenCalledWith({
         where: { id: 2 },
         data: { incidentId: 'inc-1' }

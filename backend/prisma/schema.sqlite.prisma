@@ -181,6 +181,8 @@ model EbirdApiCallLog {
   id                  String    @id @default(cuid())
   ingestionRunId       String?
   enrichmentAttemptId  String?
+  alertPollRunId       String?
+  alertTargetPollAttemptId String?
   endpoint             String
   paramsJson           String
   httpStatus           Int?
@@ -193,9 +195,13 @@ model EbirdApiCallLog {
 
   ingestionRun      IngestionRun?      @relation(fields: [ingestionRunId], references: [id], onDelete: Cascade)
   enrichmentAttempt EnrichmentAttempt? @relation(fields: [enrichmentAttemptId], references: [id], onDelete: SetNull)
+  alertPollRun AlertPollRun? @relation(fields: [alertPollRunId], references: [id], onDelete: Cascade)
+  alertTargetPollAttempt AlertTargetPollAttempt? @relation(fields: [alertTargetPollAttemptId], references: [id], onDelete: Cascade)
 
   @@index([ingestionRunId])
   @@index([enrichmentAttemptId])
+  @@index([alertPollRunId])
+  @@index([alertTargetPollAttemptId])
   @@index([endpoint])
   @@index([httpStatus])
   @@index([startedAt])
@@ -242,6 +248,7 @@ model AlertPollRun {
   errorMessage             String?
 
   pollAttempts AlertTargetPollAttempt[]
+  apiCallLogs EbirdApiCallLog[]
   lastSeenObservations AlertTargetObservation[]
 
   @@index([startedAt])
@@ -270,6 +277,7 @@ model AlertTargetPollAttempt {
 
   alertPollRun AlertPollRun? @relation(fields: [alertPollRunId], references: [id], onDelete: Cascade)
   alertTarget AlertTarget @relation(fields: [alertTargetId], references: [id], onDelete: Cascade)
+  apiCallLogs EbirdApiCallLog[]
 
   @@index([alertPollRunId])
   @@index([alertTargetId])

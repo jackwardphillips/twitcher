@@ -65,13 +65,16 @@ async function logApiCall(context: EnrichmentLoggingContext | undefined, data: {
   responseItemCount?: number;
   errorMessage?: string;
 }) {
-  if (!context?.ingestionRunId && !context?.enrichmentAttemptId) return;
+  if (!context?.ingestionRunId && !context?.enrichmentAttemptId &&
+      !context?.alertPollRunId && !context?.alertTargetPollAttemptId) return;
 
   try {
     await prisma.ebirdApiCallLog.create({
       data: {
         ingestionRunId: context.ingestionRunId ?? null,
         enrichmentAttemptId: context.enrichmentAttemptId ?? null,
+        alertPollRunId: context.alertPollRunId ?? null,
+        alertTargetPollAttemptId: context.alertTargetPollAttemptId ?? null,
         endpoint: data.endpoint,
         paramsJson: JSON.stringify(data.params),
         httpStatus: data.httpStatus ?? null,
@@ -83,7 +86,7 @@ async function logApiCall(context: EnrichmentLoggingContext | undefined, data: {
       },
     });
   } catch (error) {
-    console.error('Failed to log eBird API call:', sanitizeLogError(error));
+    throw new Error(`Failed to persist eBird API diagnostics: ${sanitizeLogError(error)}`);
   }
 }
 

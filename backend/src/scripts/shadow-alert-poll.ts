@@ -7,6 +7,8 @@ import { EbirdClient } from '../lib/ebird-client.js';
 import { AlertTargetService } from '../lib/alert-target-service.js';
 import { ImapClient } from '../lib/imap-client.js';
 import { IngestionService } from '../lib/ingestion-service.js';
+import { validateProductionPollerEnvironment } from '../lib/poller-runtime.js';
+import { runSummarizationCycle } from '../lib/summarization-service.js';
 
 interface PollTarget {
   id: string;
@@ -29,42 +31,6 @@ function getNumberArg(name: string, fallback: number): number {
 
 function hasFlag(name: string): boolean {
   return process.argv.includes(`--${name}`);
-}
-
-function getStringArg(name: string, fallback: string | undefined): string | undefined {
-  const prefix = `--${name}=`;
-  const arg = process.argv.find(value => value.startsWith(prefix));
-  return arg ? arg.slice(prefix.length) : fallback;
-}
-
-async function wakeBackend() {
-  if (hasFlag('no-wake')) return;
-
-  const backendUrl = getStringArg('wake-url', process.env.BACKEND_URL);
-  if (!backendUrl) return;
-
-  const healthUrl = `${backendUrl.replace(/\/$/, '')}/api/health`;
-  const attempts = getNumberArg('wake-attempts', 12);
-  const delayMs = getNumberArg('wake-delay-ms', 10000);
-
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    try {
-      const response = await fetch(healthUrl);
-      if (response.ok) {
-        console.log(`backend awake: ${healthUrl}`);
-        return;
-      }
-      console.log(`backend wake attempt ${attempt}/${attempts} returned HTTP ${response.status}`);
-    } catch (error) {
-      console.log(`backend wake attempt ${attempt}/${attempts} failed: ${error instanceof Error ? error.message : String(error)}`);
-    }
-
-    if (attempt < attempts) {
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-  }
-
-  throw new Error(`backend did not become healthy at ${healthUrl}`);
 }
 
 function getImapClient(): ImapClient {
@@ -113,8 +79,7 @@ async function main() {
   if (writeSightings && !writeShadow) {
     throw new Error('--write-sightings requires --write-shadow');
   }
-
-  await wakeBackend();
+  validateProductionPollerEnvironment(writeSightings);
 
   const service = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
   const ingestionResult = skipIngestion ? null : await ingestAlertEmails();
@@ -268,11 +233,27 @@ async function main() {
     failed: 0,
   });
 
+  const summarization = writeSightings
+    ? await runSummarizationCycle(prisma)
+    : { eligible: 0, updated: 0, skipped: 0, failed: 0 };
+  const apiCounts = pollRunId
+    ? {
+        attempts: await prisma.ebirdApiCallLog.count({ where: { alertPollRunId: pollRunId } }),
+        failures: await prisma.ebirdApiCallLog.count({
+          where: {
+            alertPollRunId: pollRunId,
+            OR: [{ httpStatus: { gte: 400 } }, { errorMessage: { not: null } }],
+          },
+        }),
+      }
+    : { attempts: 0, failures: 0 };
+  const partialFailure = totals.failed > 0 || summarization.failed > 0;
+
   if (pollRunId) {
     await prisma.alertPollRun.update({
       where: { id: pollRunId },
       data: {
-        status: totals.failed > 0 ? 'partial_failure' : 'success',
+        status: partialFailure ? 'partial_failure' : 'success',
         finishedAt: new Date(),
         targetsPolled: results.length,
         totalExpectedReports: totals.expectedReports,
@@ -284,6 +265,27 @@ async function main() {
 
   console.log('--- Summary ---');
   console.log(JSON.stringify(totals, null, 2));
+  console.log(`POLLER_RESULT_JSON=${JSON.stringify({
+    schemaVersion: 1,
+    status: partialFailure ? 'partial_failure' : 'success',
+    ingestion: ingestionResult ? {
+      status: ingestionResult.status,
+      emailsFound: ingestionResult.emailsFound,
+      ingested: ingestionResult.ingested,
+      skipped: ingestionResult.skipped,
+      failed: ingestionResult.failed,
+    } : null,
+    targets: { attempted: results.length, failed: totals.failed },
+    ebirdHttp: apiCounts,
+    summarization: {
+      status: summarization.failed > 0 ? 'partial_failure' : 'success',
+      ...summarization,
+    },
+    alertPollRunId: pollRunId ?? null,
+  })}`);
+  if (partialFailure) {
+    throw new Error('Production poller completed with partial failures');
+  }
 }
 
 main()

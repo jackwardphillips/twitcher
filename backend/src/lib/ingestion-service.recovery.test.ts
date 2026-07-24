@@ -72,7 +72,7 @@ describe('IngestionService Recovery', () => {
     const thirtyMinsAgo = new Date();
     thirtyMinsAgo.setMinutes(thirtyMinsAgo.getMinutes() - 30);
     
-    await db.$executeRaw`UPDATE IncomingEmail SET updatedAt = ${thirtyMinsAgo.toISOString()} WHERE id = ${email.id}`;
+    await db.$executeRaw`UPDATE "IncomingEmail" SET "updatedAt" = ${thirtyMinsAgo} WHERE "id" = ${email.id}`;
 
     // Run ingestion
     const results = await service.ingest();

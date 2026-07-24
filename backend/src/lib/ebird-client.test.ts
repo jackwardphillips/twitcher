@@ -82,4 +82,63 @@ describe('EbirdClient', () => {
     expect(log?.paramsJson).toContain('"back":30');
     expect(log?.paramsJson).not.toContain(apiKey);
   });
+
+  it('correlates every target-poll HTTP attempt with its run and target attempt', async () => {
+    const target = await prisma.alertTarget.create({
+      data: {
+        speciesName: 'Ruff',
+        speciesCode: 'ruff',
+        regionName: 'Nebraska',
+        regionCode: 'US-NE',
+      },
+    });
+    const run = await prisma.alertPollRun.create({
+      data: { status: 'running', mode: 'test' },
+    });
+    const attempt = await prisma.alertTargetPollAttempt.create({
+      data: {
+        alertPollRunId: run.id,
+        alertTargetId: target.id,
+        status: 'running',
+        speciesName: target.speciesName,
+        speciesCode: target.speciesCode,
+        regionName: target.regionName,
+        regionCode: target.regionCode,
+      },
+    });
+    (fetch as any)
+      .mockResolvedValueOnce({ ok: false, status: 500, text: async () => 'temporary' })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => [] });
+
+    await client.getSpeciesObservations('US-NE', 'ruff', 3, {
+      alertPollRunId: run.id,
+      alertTargetPollAttemptId: attempt.id,
+    });
+
+    const logs = await prisma.ebirdApiCallLog.findMany({
+      where: { alertTargetPollAttemptId: attempt.id },
+      orderBy: { attemptNumber: 'asc' },
+    });
+    expect(logs).toHaveLength(2);
+    expect(logs.map(log => log.attemptNumber)).toEqual([1, 2]);
+    expect(logs.every(log => log.alertPollRunId === run.id)).toBe(true);
+    expect(logs[0]?.errorMessage).toContain('eBird API error 500');
+    expect(logs[0]?.errorMessage).not.toContain(apiKey);
+  });
+
+  it('fails the request when required diagnostics cannot be persisted', async () => {
+    (fetch as any).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    });
+    const create = vi.spyOn(prisma.ebirdApiCallLog, 'create')
+      .mockRejectedValueOnce(new Error('database unavailable'));
+
+    await expect(client.getSpeciesObservations('US-NE', 'ruff', 3, {
+      alertPollRunId: 'poll-run',
+      alertTargetPollAttemptId: 'target-attempt',
+    })).rejects.toThrow('Failed to persist eBird API diagnostics');
+    create.mockRestore();
+  });
 });

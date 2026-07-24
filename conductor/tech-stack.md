@@ -28,3 +28,6 @@
 ## Deployment
 - **Frontend:** Vercel or Netlify for rapid, scalable frontend hosting.
 - **Backend:** Render or Railway for simple and reliable backend deployment.
+- **Poller image delivery:** GitHub Actions builds the poller with Docker
+  Buildx for `linux/arm64` and publishes commit-addressed images plus the
+  gated `production` tag to GitHub Container Registry (GHCR).
