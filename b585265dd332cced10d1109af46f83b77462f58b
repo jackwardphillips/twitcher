@@ -1,0 +1,7 @@
+Track: Poller Image Delivery
+
+Implemented gated Linux ARM64 GHCR publishing, Compose image adoption, production Groq preflight and awaited summarization, poll-correlated eBird diagnostics with additive PostgreSQL migration, PostgreSQL CI test support, and baseline reliability fixes.
+
+Validation: five migrations applied to a disposable PostgreSQL 17 database; 45 test files and 155 tests passed; TypeScript build and Prisma validation passed; coverage completed; server-owned runner tests are maintained in the home-server repository.
+
+Why: remove Git/build/Render wake work from scheduled ingestion while preserving observable failures, traceability, cached-image fallback, and safe rollback.
