@@ -37,6 +37,8 @@
 - Added repository-wide backend and frontend validation for pushes and pull
   requests. Database-backed tests remain isolated in the ephemeral-PostgreSQL
   poller workflow.
+- Generate the Prisma client explicitly in fresh backend CI checkouts before
+  running tests or builds.
 
 ### Audit and documentation
 
