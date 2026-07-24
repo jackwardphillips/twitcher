@@ -43,10 +43,7 @@ describe('IngestionService DB Failure Simulation', () => {
     
     // msg1 fails on create (DB error)
     const createSpy = vi.spyOn(db.incomingEmail, 'create')
-      .mockRejectedValueOnce(new Error('DB Error for msg1'))
-      .mockResolvedValueOnce({ id: 2 } as any); // msg2 succeeds
-
-    const updateSpy = vi.spyOn(db.incomingEmail, 'update').mockResolvedValue({ id: 2 } as any);
+      .mockRejectedValueOnce(new Error('DB Error for msg1'));
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const result = await service.ingest(undefined, false);
@@ -56,7 +53,6 @@ describe('IngestionService DB Failure Simulation', () => {
     expect(result.status).toBe('success');
 
     createSpy.mockRestore();
-    updateSpy.mockRestore();
     consoleSpy.mockRestore();
   });
 });

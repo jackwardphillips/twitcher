@@ -1,8 +1,6 @@
 services:
   twitcher-poller:
-    build:
-      context: .
-      dockerfile: Dockerfile.poller
+    image: ${TWITCHER_POLLER_IMAGE:-ghcr.io/jackwardphillips/twitcher-poller:production}
     env_file:
       - .env.poller
     restart: "no"

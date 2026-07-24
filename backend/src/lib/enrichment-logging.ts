@@ -5,6 +5,8 @@ export interface EnrichmentLoggingContext {
   ingestionRunId?: string;
   emailAttemptId?: string;
   enrichmentAttemptId?: string;
+  alertPollRunId?: string;
+  alertTargetPollAttemptId?: string;
 }
 
 export interface MatchDiagnostics {

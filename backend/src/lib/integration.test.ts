@@ -8,11 +8,42 @@ vi.mock('./imap-client.js');
 vi.mock('./sighting-service.js');
 vi.mock('./db.js', () => ({
   db: {
+    ingestionRun: {
+      create: vi.fn().mockResolvedValue({ id: 'run-1' }),
+      update: vi.fn(),
+    },
+    sighting: {
+      count: vi.fn().mockResolvedValue(0),
+    },
+    ebirdApiCallLog: {
+      deleteMany: vi.fn(),
+    },
+    enrichmentAttempt: {
+      deleteMany: vi.fn(),
+    },
+    emailIngestionAttempt: {
+      deleteMany: vi.fn(),
+      create: vi.fn().mockResolvedValue({ id: 'email-attempt-1' }),
+      update: vi.fn(),
+    },
     incomingEmail: {
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       findMany: vi.fn().mockResolvedValue([]),
+    },
+  },
+  prisma: {
+    ebirdApiCallLog: {
+      deleteMany: vi.fn(),
+    },
+    enrichmentAttempt: {
+      deleteMany: vi.fn(),
+    },
+    emailIngestionAttempt: {
+      deleteMany: vi.fn(),
+      create: vi.fn().mockResolvedValue({ id: 'email-attempt-1' }),
+      update: vi.fn(),
     },
   },
 }));
@@ -60,7 +91,11 @@ describe('Ingestion Integration', () => {
           observer: 'John Doe',
         })
       ]),
-      true
+      true,
+      {
+        ingestionRunId: 'run-1',
+        emailAttemptId: 'email-attempt-1',
+      },
     );
     expect(db.incomingEmail.update).toHaveBeenCalledWith({
       where: { id: 1 },

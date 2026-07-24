@@ -51,7 +51,7 @@ describe('IngestionService Integration', () => {
     const dateStr = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false });
     return `Common Crane (Grus grus) (1)
 - Reported ${dateStr} by John Doe
-- Test Location
+- Test Location 42.45, -76.48
 - Map: http://maps.google.com/?q=42.45,-76.48
 - Checklist: http://ebird.org/checklist/S123
 - Comments: "Rare crane sighting"`;
@@ -113,10 +113,11 @@ describe('IngestionService Integration', () => {
     };
     mockImapClient.fetchRecentAlerts.mockResolvedValue([mockEmail]);
 
-    // Mock eBird API failure (429 Rate Limit)
+    // Mock a non-retryable eBird API failure so this integration test does
+    // not wait through the production backoff schedule.
     server.use(
       http.get('*/data/obs/geo/recent/notable', () => {
-        return new HttpResponse(null, { status: 429 });
+        return new HttpResponse(null, { status: 403 });
       })
     );
 
@@ -132,14 +133,18 @@ describe('IngestionService Integration', () => {
     expect(savedEmail?.status).toBe('processed');
 
     const enrichmentAttempt = await db.enrichmentAttempt.findFirst({
-      where: { species: 'Common Crane', status: 'error' }
+      where: {
+        species: 'Common Crane',
+        status: 'error',
+        rejectionReason: 'api_error',
+      }
     });
     expect(enrichmentAttempt?.rejectionReason).toBe('api_error');
 
     const apiCall = await db.ebirdApiCallLog.findFirst({
       where: { endpoint: '/data/obs/geo/recent/notable' }
     });
-    expect(apiCall?.httpStatus).toBe(429);
+    expect(apiCall?.httpStatus).toBe(403);
   });
 
   it('should retry failed ingestions from previous runs', async () => {

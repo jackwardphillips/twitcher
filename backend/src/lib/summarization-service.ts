@@ -47,13 +47,22 @@ function extractSummaryFromResponse(data: any): string | undefined {
 /**
  * Generates a concise chase intel summary using Groq or Gemini API.
  */
-export async function summarizeIncident(prisma: PrismaClient, incidentId: string): Promise<void> {
+export type IncidentSummaryStatus = 'updated' | 'skipped';
+
+export interface SummarizationCycleResult {
+  eligible: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+}
+
+export async function summarizeIncident(prisma: PrismaClient, incidentId: string): Promise<IncidentSummaryStatus> {
   const groqKey = process.env.GROQ_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
 
   if (!groqKey && !geminiKey) {
     console.warn('Neither GROQ_API_KEY nor GEMINI_API_KEY is configured. Skipping summarization.');
-    return;
+    return 'skipped';
   }
 
   const incident = await prisma.incident.findUnique({
@@ -61,11 +70,11 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
     select: { id: true, geminiSummary: true, summaryGeneratedAt: true, lastSeen: true }
   });
 
-  if (!incident) return;
+  if (!incident) return 'skipped';
 
   // Skip if already summarized and no new sightings since then
   if (incident.summaryGeneratedAt && incident.lastSeen <= incident.summaryGeneratedAt) {
-    return;
+    return 'skipped';
   }
 
   const now = new Date();
@@ -73,7 +82,7 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
 
   // Skip if no comments and no prior summary
   if (!comments && !incident.geminiSummary) {
-    return;
+    return 'skipped';
   }
 
   const prompt = `
@@ -117,11 +126,10 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
           success = true;
         }
       } else {
-        const errorData = await response.json() as any;
-        console.warn(`Groq API error: ${response.status} - ${JSON.stringify(errorData)}`);
+        console.warn(`Groq API error: HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error('Groq summarization failed:', error);
+      console.error('Groq summarization failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -150,11 +158,10 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
           success = true;
         }
       } else {
-        const errorData = await response.json() as any;
-        console.warn(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
+        console.warn(`Gemini API error: HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error('Gemini summarization failed:', error);
+      console.error('Gemini summarization failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -166,7 +173,10 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
         summaryGeneratedAt: now
       }
     });
+    return 'updated';
   }
+
+  throw new Error('All configured incident summarization providers failed');
 }
 
 let isSummarizing = false;
@@ -174,10 +184,10 @@ let isSummarizing = false;
 /**
  * Runs a summarization cycle for all active incidents (sightings in the last 7 days).
  */
-export async function runSummarizationCycle(prisma: PrismaClient): Promise<void> {
+export async function runSummarizationCycle(prisma: PrismaClient): Promise<SummarizationCycleResult> {
   if (isSummarizing) {
     console.log('Summarization cycle already in progress. Skipping...');
-    return;
+    return { eligible: 0, updated: 0, skipped: 0, failed: 0 };
   }
 
   isSummarizing = true;
@@ -207,9 +217,23 @@ export async function runSummarizationCycle(prisma: PrismaClient): Promise<void>
 
     console.log(`Starting summarization cycle for ${activeIncidents.length} incidents...`);
 
+    const result: SummarizationCycleResult = {
+      eligible: activeIncidents.length,
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+    };
+
     for (const incident of activeIncidents) {
       console.log(`Processing summary for: ${incident.commonName}...`);
-      await summarizeIncident(prisma, incident.id);
+      try {
+        const status = await summarizeIncident(prisma, incident.id);
+        result[status]++;
+      } catch (error) {
+        result.failed++;
+        console.error(`Summary failed for incident ${incident.id}:`,
+          error instanceof Error ? error.message : String(error));
+      }
       // 2 second delay for Groq (safe 30 RPM)
       // Only delay if there are more incidents to process
       if (activeIncidents.indexOf(incident) < activeIncidents.length - 1) {
@@ -218,6 +242,7 @@ export async function runSummarizationCycle(prisma: PrismaClient): Promise<void>
     }
 
     console.log('Summarization cycle complete.');
+    return result;
   } finally {
     isSummarizing = false;
   }

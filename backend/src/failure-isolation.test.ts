@@ -64,7 +64,16 @@ describe('Failure Isolation', () => {
         firstSeen: new Date(),
         lastSeen: new Date(),
         sightingCount: 1,
-        statesCovered: '["ME"]'
+        statesCovered: '["ME"]',
+        sightings: {
+          create: {
+            species: 'Common Loon',
+            scientificName: 'Gavia immer',
+            location: 'Test location',
+            date: new Date(),
+            observer: 'Test observer',
+          },
+        },
       }
     });
 

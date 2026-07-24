@@ -6,6 +6,7 @@ import { parseEBirdAlertSummary } from './alert-summary-parser.js';
 import { EnrichmentService } from './enrichment-service.js';
 import { addSightingToIncident, createIncident, findMatchingIncident, normalizeScientificName } from './incident-service.js';
 import { sanitizeLogError } from './enrichment-logging.js';
+import type { EnrichmentLoggingContext } from './enrichment-logging.js';
 import { LocationResolver } from './location-resolver.js';
 import type { ResolvedObservationLocation } from './location-resolver.js';
 
@@ -105,9 +106,9 @@ export class AlertTargetService {
     return saved;
   }
 
-  async resolveSpeciesCode(speciesName: string): Promise<string | null> {
+  async resolveSpeciesCode(speciesName: string, context?: EnrichmentLoggingContext): Promise<string | null> {
     if (!this.taxonomyCache) {
-      this.taxonomyCache = await this.ebirdClient.getTaxonomy();
+      this.taxonomyCache = await this.ebirdClient.getTaxonomy(context);
     }
 
     const normalized = normalizeSpeciesName(speciesName);
@@ -125,23 +126,33 @@ export class AlertTargetService {
     let pollAttemptId: string | null = null;
 
     try {
-      const speciesCode = target.speciesCode ?? await this.resolveSpeciesCode(target.speciesName);
+      if (!dryRun) {
+        const attempt = await prisma.alertTargetPollAttempt.create({
+          data: {
+            alertPollRunId: options.alertPollRunId ?? null,
+            alertTargetId: target.id,
+            status: 'running',
+            speciesName: target.speciesName,
+            speciesCode: target.speciesCode,
+            regionName: target.regionName,
+            regionCode: target.regionCode,
+            expectedReports: target.expectedReports,
+          },
+        });
+        pollAttemptId = attempt.id;
+      }
+
+      const loggingContext: EnrichmentLoggingContext = {};
+      if (options.alertPollRunId) loggingContext.alertPollRunId = options.alertPollRunId;
+      if (pollAttemptId) loggingContext.alertTargetPollAttemptId = pollAttemptId;
+      const speciesCode = target.speciesCode ??
+        await this.resolveSpeciesCode(target.speciesName, loggingContext);
       if (!speciesCode) {
         if (!dryRun) {
-          const attempt = await prisma.alertTargetPollAttempt.create({
-            data: {
-              alertPollRunId: options.alertPollRunId ?? null,
-              alertTargetId: target.id,
-              status: 'missing_species_code',
-              speciesName: target.speciesName,
-              speciesCode: null,
-              regionName: target.regionName,
-              regionCode: target.regionCode,
-              expectedReports: target.expectedReports,
-              finishedAt: new Date(),
-            },
+          await prisma.alertTargetPollAttempt.update({
+            where: { id: pollAttemptId! },
+            data: { status: 'missing_species_code', finishedAt: new Date() },
           });
-          pollAttemptId = attempt.id;
         }
 
         return {
@@ -165,22 +176,10 @@ export class AlertTargetService {
           where: { id: target.id },
           data: { speciesCode },
         });
-        const attempt = await prisma.alertTargetPollAttempt.create({
-          data: {
-            alertPollRunId: options.alertPollRunId ?? null,
-            alertTargetId: target.id,
-            status: 'running',
-            speciesName: target.speciesName,
-            speciesCode,
-            regionName: target.regionName,
-            regionCode: target.regionCode,
-            expectedReports: target.expectedReports,
-          },
-        });
-        pollAttemptId = attempt.id;
       }
 
-      const observations = await this.ebirdClient.getSpeciesObservations(target.regionCode, speciesCode, options.back ?? 3);
+      const observations = await this.ebirdClient.getSpeciesObservations(
+        target.regionCode, speciesCode, options.back ?? 3, loggingContext);
       let shadowObservationsWritten = 0;
       let sightingsCreated = 0;
       let incidentsTouched = 0;

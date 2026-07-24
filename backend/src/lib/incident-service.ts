@@ -95,6 +95,9 @@ function formatIncidentLocation(incident: Incident): string {
   if (incident.primaryCounty && incident.primaryState) {
     return `${formatCountyName(incident.primaryCounty)}, ${incident.primaryState}`;
   }
+  if (incident.primaryState && incident.primaryCountry) {
+    return `${incident.primaryState}, ${incident.primaryCountry}`;
+  }
   return incident.primaryState ?? incident.primaryCountry ?? 'Unknown location';
 }
 
@@ -333,8 +336,7 @@ export async function addSightingToIncident(
     incidentId = incidentOrIncidents.id;
   }
 
-  // Use a transaction to ensure both updates succeed
-  return await prisma.$transaction(async (tx) => {
+  const updateIncident = () => prisma.$transaction(async (tx) => {
     // Fetch the latest incident state to avoid race conditions with stale data
     const latestIncident = await tx.incident.findUnique({
       where: { id: incidentId }
@@ -376,7 +378,19 @@ export async function addSightingToIncident(
         closedAt: null
       }
     });
-  });
+  }, { isolationLevel: 'Serializable' });
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await updateIncident();
+    } catch (error) {
+      const isSerializationConflict = error instanceof Error &&
+        'code' in error && error.code === 'P2034';
+      if (!isSerializationConflict || attempt === 3) throw error;
+    }
+  }
+
+  throw new Error(`Incident ${incidentId} could not be updated after serialization retries`);
 }
 
 /**

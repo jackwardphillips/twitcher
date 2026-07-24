@@ -8,12 +8,13 @@ try {
     process.exit(1);
   }
 
+  const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
   console.log('Generating Prisma client...');
-  execSync('npx.cmd prisma generate', { stdio: 'inherit', env: { ...process.env, DATABASE_URL: databaseUrl } });
+  execSync(`${npx} prisma generate`, { stdio: 'inherit', env: { ...process.env, DATABASE_URL: databaseUrl } });
   
   console.log('Running tests...');
   const args = process.argv.slice(2).join(' ');
-  execSync(`npx.cmd vitest run ${args}`, { 
+  execSync(`${npx} vitest run ${args}`, {
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: databaseUrl }
   });
