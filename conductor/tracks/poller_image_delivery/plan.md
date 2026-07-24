@@ -23,14 +23,20 @@ gap.
 
 ## Phase 2: Server activation and supervised verification
 
-- [ ] Confirm `GROQ_API_KEY` is present without reading its value.
-- [ ] Confirm a public production image exists in GHCR.
-- [ ] Install the approved cron entry with the overnight quiet window.
-- [ ] Run the poller once under supervision against production services.
-- [ ] Verify the selected digest/revision, poll-run correlation, summaries,
+- [x] Confirm `GROQ_API_KEY` is present without reading its value.
+- [x] Confirm a public production image exists in GHCR.
+- [x] Install the approved cron entry with the overnight quiet window.
+- [x] Run the poller once under supervision against production services.
+- [x] Verify the selected digest/revision, poll-run correlation, summaries,
   diagnostics, local history, and container cleanup.
-- [ ] Record the verified operational change in the home-server changelog.
+- [x] Record the verified operational change in the home-server changelog.
 
 Phase 2 intentionally remains separate because it changes host scheduling and
 runs production ingestion. It begins only after Phase 1 review and explicit
 operator confirmation.
+
+Phase 2 completed on 2026-07-24 with production image digest
+`sha256:21544bf246f37220444510d65589470264e80270c9f207d91c8b2af9afe904c6`
+and `AlertPollRun` `cmrz7brec004t0up5oygmscrh`. The supervised run completed
+59 targets and 59 correlated eBird calls with zero failures; Groq updated 7
+eligible summaries and skipped 9.
