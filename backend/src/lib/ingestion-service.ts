@@ -22,6 +22,10 @@ export interface IngestionResult {
   error?: string;
 }
 
+export interface IngestionOptions {
+  writeParsedSightings?: boolean;
+}
+
 function sanitizeIngestionError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (/DATABASE_URL|postgresql:\/\/|password|secret|Prisma| at /i.test(message)) {
@@ -54,7 +58,8 @@ export class IngestionService {
    * @param {boolean} [enrich=true] - Whether to perform eBird API enrichment for discovered sightings.
    * @returns {Promise<IngestionResult>} Summary of the ingestion process.
    */
-  async ingest(since?: Date, enrich = true, trigger = 'manual'): Promise<IngestionResult> {
+  async ingest(since?: Date, enrich = true, trigger = 'manual', options: IngestionOptions = {}): Promise<IngestionResult> {
+    const writeParsedSightings = options.writeParsedSightings ?? true;
     const run = await db.ingestionRun.create({
       data: {
         status: 'running',
@@ -257,9 +262,9 @@ export class IngestionService {
 
           // Auto-parse immediately
           try {
-            const sightings = parseEBirdAlert(email.rawBody, email.date);
             await this.alertTargetService.upsertTargetsFromEmail(email.rawBody, savedId, email.date ?? new Date());
-            if (sightings.length > 0) {
+            const sightings = writeParsedSightings ? parseEBirdAlert(email.rawBody, email.date) : [];
+            if (writeParsedSightings && sightings.length > 0) {
               const enrichment = await saveSightings(sightings, enrich, { ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
               if (enrichment) {
                 enrichmentAttempted += enrichment.attempted;
