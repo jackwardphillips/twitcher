@@ -5,6 +5,17 @@ import { fileURLToPath } from 'url';
 import { prisma } from '../lib/db.js';
 import { EbirdClient } from '../lib/ebird-client.js';
 import { AlertTargetService } from '../lib/alert-target-service.js';
+import { ImapClient } from '../lib/imap-client.js';
+import { IngestionService } from '../lib/ingestion-service.js';
+
+interface PollTarget {
+  id: string;
+  speciesName: string;
+  speciesCode: string | null;
+  regionName: string;
+  regionCode: string;
+  expectedReports: number;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -56,6 +67,40 @@ async function wakeBackend() {
   throw new Error(`backend did not become healthy at ${healthUrl}`);
 }
 
+function getImapClient(): ImapClient {
+  return new ImapClient({
+    host: process.env.IMAP_HOST || '',
+    port: parseInt(process.env.IMAP_PORT || '993', 10),
+    user: process.env.IMAP_USER || '',
+    pass: process.env.IMAP_PASS || '',
+    secure: process.env.IMAP_SECURE !== 'false',
+  });
+}
+
+async function ingestAlertEmails() {
+  const ingestionService = new IngestionService(getImapClient());
+  return ingestionService.ingest(undefined, false, 'poller', { writeParsedSightings: false });
+}
+
+async function getActiveTargets(limit: number): Promise<PollTarget[]> {
+  return prisma.alertTarget.findMany({
+    where: { status: 'active' },
+    select: {
+      id: true,
+      speciesName: true,
+      speciesCode: true,
+      regionName: true,
+      regionCode: true,
+      expectedReports: true,
+    },
+    orderBy: [
+      { lastPolledAt: 'asc' },
+      { lastSeenInEmailAt: 'desc' },
+    ],
+    take: limit,
+  });
+}
+
 async function main() {
   const emailLimit = getNumberArg('emails', 3);
   const targetLimit = getNumberArg('targets', 25);
@@ -63,6 +108,7 @@ async function main() {
   const writeShadow = hasFlag('write-shadow');
   const writeSightings = hasFlag('write-sightings');
   const seedReferences = hasFlag('seed-references');
+  const skipIngestion = hasFlag('skip-ingestion');
 
   if (writeSightings && !writeShadow) {
     throw new Error('--write-sightings requires --write-shadow');
@@ -71,6 +117,14 @@ async function main() {
   await wakeBackend();
 
   const service = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
+  const ingestionResult = skipIngestion ? null : await ingestAlertEmails();
+  if (ingestionResult) {
+    console.log(`ingestion status=${ingestionResult.status} emailsFound=${ingestionResult.emailsFound} ingested=${ingestionResult.ingested} skipped=${ingestionResult.skipped} failed=${ingestionResult.failed}`);
+    if (ingestionResult.status === 'imap_error' || ingestionResult.status === 'error') {
+      throw new Error(`email ingestion failed: ${ingestionResult.error ?? ingestionResult.status}`);
+    }
+  }
+
   if (seedReferences) {
     const referencesDir = path.resolve(__dirname, '../../../references');
     const files = fs.readdirSync(referencesDir).filter(file => file.endsWith('.eml'));
@@ -99,53 +153,53 @@ async function main() {
     console.log(`seeded ${files.length} reference emails`);
   }
 
-  const emails = await prisma.incomingEmail.findMany({
-    where: { status: 'processed' },
-    orderBy: { date: 'desc' },
-    take: emailLimit,
-  });
+  let targets: PollTarget[];
+  if (ingestionResult?.status === 'no_new_emails') {
+    targets = await getActiveTargets(targetLimit);
+    console.log(`no new emails; polling ${targets.length} active targets`);
+  } else {
+    const emails = await prisma.incomingEmail.findMany({
+      where: { status: 'processed' },
+      orderBy: { date: 'desc' },
+      take: emailLimit,
+    });
 
-  const targetMap = new Map<string, {
-    id: string;
-    speciesName: string;
-    speciesCode: string | null;
-    regionName: string;
-    regionCode: string;
-    expectedReports: number;
-  }>();
+    const targetMap = new Map<string, PollTarget>();
 
-  for (const email of emails) {
-    const parsed = service.parseTargetsFromEmail(email.rawBody);
-    console.log(`email ${email.id}: ${parsed.length} summary targets`);
+    for (const email of emails) {
+      const parsed = service.parseTargetsFromEmail(email.rawBody);
+      console.log(`email ${email.id}: ${parsed.length} summary targets`);
 
-    if (writeShadow) {
-      const saved = await service.upsertTargetsFromEmail(email.rawBody, email.id, email.date ?? new Date());
-      for (const target of saved) {
-        targetMap.set(target.id, {
-          id: target.id,
-          speciesName: target.speciesName,
-          speciesCode: target.speciesCode,
-          regionName: target.regionName,
-          regionCode: target.regionCode,
-          expectedReports: target.expectedReports,
-        });
-      }
-    } else {
-      for (const target of parsed) {
-        const id = `${target.speciesName}|${target.regionCode}`;
-        targetMap.set(id, {
-          id,
-          speciesName: target.speciesName,
-          speciesCode: null,
-          regionName: target.regionName,
-          regionCode: target.regionCode,
-          expectedReports: target.expectedReports,
-        });
+      if (writeShadow) {
+        const saved = await service.upsertTargetsFromEmail(email.rawBody, email.id, email.date ?? new Date());
+        for (const target of saved) {
+          targetMap.set(target.id, {
+            id: target.id,
+            speciesName: target.speciesName,
+            speciesCode: target.speciesCode,
+            regionName: target.regionName,
+            regionCode: target.regionCode,
+            expectedReports: target.expectedReports,
+          });
+        }
+      } else {
+        for (const target of parsed) {
+          const id = `${target.speciesName}|${target.regionCode}`;
+          targetMap.set(id, {
+            id,
+            speciesName: target.speciesName,
+            speciesCode: null,
+            regionName: target.regionName,
+            regionCode: target.regionCode,
+            expectedReports: target.expectedReports,
+          });
+        }
       }
     }
-  }
 
-  const targets = Array.from(targetMap.values()).slice(0, targetLimit);
+    targets = Array.from(targetMap.values()).slice(0, targetLimit);
+    console.log(`new/pending emails found; polling ${targets.length} targets from latest ${emails.length} processed emails`);
+  }
   const mode = writeSightings ? 'write-sightings' : writeShadow ? 'write-shadow' : 'dry-run';
   let pollRunId: string | undefined;
 
