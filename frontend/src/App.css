@@ -191,7 +191,7 @@ body {
   font-size: 0.7rem;
 }
 
-.custom-dropdown:hover .dropdown-menu {
+.custom-dropdown.open .dropdown-menu {
   display: block;
 }
 
@@ -1391,4 +1391,346 @@ body {
   font-size: 1rem;
   font-weight: 600;
   font-family: var(--font-body);
+}
+
+.activity-stat {
+  margin-left: auto;
+  width: 240px;
+}
+
+/*
+ * Mobile rules live after the desktop card layout so they remain authoritative.
+ */
+@media (max-width: 768px) {
+  .dashboard-header {
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .dashboard .dashboard-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .dashboard .controls {
+    display: contents;
+  }
+
+  .dashboard .rarity-filter {
+    align-self: center;
+    gap: 0.25rem;
+    grid-column: 2;
+    justify-content: flex-end;
+    justify-self: stretch;
+    width: auto;
+  }
+
+  .dashboard .rarity-btn {
+    height: 34px;
+    width: 34px;
+  }
+
+  .dashboard .filter-btn,
+  .dashboard .geo-error {
+    grid-column: 1 / -1;
+  }
+
+  .statistics-page .controls {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  .about-page {
+    padding: 6px 0 2rem;
+  }
+
+  .header-main {
+    align-items: flex-start;
+  }
+
+  .header-subtitle {
+    display: none;
+  }
+
+  .controls {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .controls > *,
+  .statistics-header-filters {
+    min-width: 0;
+  }
+
+  .filter-btn {
+    min-height: 44px;
+  }
+
+  .rarity-filter {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .rarity-btn {
+    height: 44px;
+    width: 44px;
+  }
+
+  .notebook-tabs {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+    padding-inline: 1rem;
+    width: 100%;
+  }
+
+  .notebook-tab {
+    min-width: 0;
+    padding-inline: 0.35rem;
+  }
+
+  .sighting-card-horizontal {
+    flex-direction: column;
+  }
+
+  .photo-slot {
+    aspect-ratio: 16 / 9;
+    align-self: auto;
+    border-bottom: 1px solid var(--rarity-color, var(--border));
+    border-right: 0;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .card-content {
+    padding: 1rem;
+  }
+
+  .card-top-row {
+    gap: 0.65rem;
+  }
+
+  .sighting-card h3 {
+    font-size: clamp(1.35rem, 6vw, 1.65rem);
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .location-container {
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .location-icon {
+    margin-top: 0.18rem;
+  }
+
+  .location-info {
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .gemini-summary {
+    box-sizing: border-box;
+    max-width: none;
+    padding: 0.7rem 0.85rem;
+    width: 100%;
+  }
+
+  .card-middle-row {
+    display: grid;
+    gap: 0.75rem 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .activity-stat {
+    grid-column: 1 / -1;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .activity-stat .sighting-histogram {
+    align-items: stretch !important;
+  }
+
+  .about-demo-card.sighting-card {
+    height: auto;
+  }
+
+  .about-demo-photo {
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+
+  .about-demo-photo .photo-slot {
+    min-height: 0;
+  }
+
+  .about-demo-histogram {
+    grid-column: 1 / -1;
+    margin-left: 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .about-demo-histogram .sighting-histogram {
+    align-items: stretch !important;
+  }
+
+  .dashboard,
+  .map-wrapper,
+  .sighting-map {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard {
+    overflow-x: clip;
+  }
+
+  .statistics-filters {
+    display: grid;
+    gap: 1rem 0.65rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .statistics-filters label,
+  .statistics-filters select {
+    width: 100%;
+  }
+
+  .state-rarity-birds {
+    grid-column: 1;
+  }
+
+  .state-rarity-bird-header {
+    display: none;
+  }
+
+  .state-rarity-bird {
+    border-top: 1px solid rgba(212, 196, 168, 0.45);
+    grid-template-columns: 2rem minmax(0, 1fr);
+    padding-top: 0.65rem;
+  }
+
+  .state-rarity-bird:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .state-rarity-bird-code {
+    grid-row: 1 / 3;
+  }
+
+  .state-rarity-bird-name {
+    overflow-wrap: anywhere;
+  }
+
+  .state-rarity-bird-meta,
+  .state-rarity-active-pill {
+    align-items: baseline;
+    display: flex;
+    gap: 0.35rem;
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .state-rarity-bird-meta::before,
+  .state-rarity-active-pill::before {
+    color: var(--text-muted);
+    content: attr(data-label) ':';
+    font-family: var(--font-data);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-page,
+  .statistics-page {
+    padding-inline: 0;
+  }
+
+  .about-stack,
+  .sightings-list,
+  .statistics-shell {
+    padding-inline: 0.75rem;
+  }
+
+  .about-card,
+  .statistics-card {
+    padding: 1rem;
+  }
+
+  .about-card-title {
+    font-size: clamp(2.5rem, 14vw, 3.5rem);
+  }
+
+  .header-main h1 {
+    font-size: 1.75rem;
+  }
+
+  .notebook-tabs {
+    padding-inline: 0.5rem;
+  }
+
+  .notebook-tab {
+    border-radius: 10px 10px 0 0;
+    padding: 0.6rem 0.2rem;
+  }
+
+  .ui-control-label {
+    font-size: 0.82rem;
+  }
+
+  .card-top-row {
+    flex-direction: column;
+  }
+
+  .card-actions {
+    align-items: flex-start;
+  }
+
+  .statistics-card-header {
+    align-items: stretch;
+  }
+
+  .statistics-toggle {
+    align-self: flex-start;
+  }
+
+  .statistics-toggle button {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard .dashboard-header {
+    column-gap: 0.5rem;
+  }
+
+  .dashboard .header-main h1 {
+    font-size: 1.5rem;
+  }
+
+  .dashboard .rarity-btn {
+    height: 29px;
+    width: 29px;
+  }
+}
+
+@media (hover: none) {
+  .attribution-overlay {
+    opacity: 1;
+  }
 }

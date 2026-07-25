@@ -209,14 +209,14 @@ const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
                             {bird.rarity}
                           </span>
                           <span className="state-rarity-bird-name">{bird.commonName}</span>
-                          <span className="state-rarity-bird-meta">{bird.sightingCount ?? 0}</span>
-                          <span className="state-rarity-bird-meta">{bird.firstSeen || 'Unknown'}</span>
+                          <span className="state-rarity-bird-meta" data-label="Sightings">{bird.sightingCount ?? 0}</span>
+                          <span className="state-rarity-bird-meta" data-label="First">{bird.firstSeen || 'Unknown'}</span>
                           {bird.status === 'OPEN' ? (
-                            <span className="streak-badge state-rarity-active-pill">
+                            <span className="streak-badge state-rarity-active-pill" data-label="Last">
                               Active
                             </span>
                           ) : (
-                            <span className="state-rarity-bird-meta">{bird.lastSeen || 'Unknown'}</span>
+                            <span className="state-rarity-bird-meta" data-label="Last">{bird.lastSeen || 'Unknown'}</span>
                           )}
                         </div>
                       ))}

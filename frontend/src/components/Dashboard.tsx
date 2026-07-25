@@ -49,7 +49,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [referenceTime] = useState(() => Date.now())
 
   // Near Me Filter state
   const [nearMe, setNearMe] = useState(false)
@@ -118,19 +117,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
     // Fallback for missing abaCode to code 5
     const rarity = incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode
     return getRarityUtilityColor(rarity as RarityCode)
-  }
-
-  const isRecentIncident = (incident: Incident) => {
-    const lastSeenTime = new Date(incident.lastSeen).getTime()
-    if (Number.isNaN(lastSeenTime)) return false
-
-    const sevenDays = 7 * 24 * 60 * 60 * 1000
-    return referenceTime - lastSeenTime <= sevenDays
-  }
-
-  const isHighRarity = (incident: Incident) => {
-    const rarity = incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode
-    return rarity >= 5
   }
 
   const displayedIncidents = incidents
@@ -217,17 +203,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
                         <p className="location-info"><span className="sr-only">{rangerStationLabels.location}: </span>{incident.locationName}</p>
                       </div>
                     </div>
-                    <div className="card-actions">
-                      <span
-                        className="streak-badge"
-                        style={{
-                          '--rarity-color': getRarityColor(incident),
-                        } as React.CSSProperties}
-                        data-status={isRecentIncident(incident) ? 'recent' : isHighRarity(incident) ? 'high-rarity' : undefined}
-                      >
-                        Active {incident.activeDays} {incident.activeDays === 1 ? 'day' : 'days'}
-                      </span>
-                    </div>
                   </div>
 
                   {shouldShowSummary(incident.geminiSummary) && (
@@ -252,7 +227,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
                       <span className="stat-label">{rangerStationLabels.lastSeen}</span>
                       <span className="stat-value">{formatDayMonth(incident.lastSeen)}</span>
                     </div>
-                    <div className="stat-item" style={{ marginLeft: 'auto', width: '240px' }}>
+                    <div className="stat-item activity-stat">
                       <SightingHistogram
                         dailyCounts={incident.dailyCounts}
                         rarityColor={getRarityColor(incident)}

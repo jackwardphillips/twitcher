@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-07-25
+
+### Frontend
+
+- Reworked the Dashboard, Statistics, and About layouts for narrow screens,
+  including stacked sighting cards, fluid photos and histograms, compact
+  statistics details, wrapping controls, and phone-sized navigation tabs.
+- Kept rarity-code controls inline on mobile instead of using a dropdown.
+- Removed the Active Days badge from sighting and example cards, hid the
+  secondary header subtitle on phones, and constrained the mobile map width.
+- Matched the About-page example card to the Dashboard mobile card layout,
+  including a full-width activity histogram.
+- Aligned the mobile Dashboard rarity controls opposite its title, added
+  spacing before Statistics filters, and normalized the About header position.
+- Made photo attribution visible on devices without hover support.
+
 ## 2026-07-24
 
 ### Backend

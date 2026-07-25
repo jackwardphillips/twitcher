@@ -42,7 +42,7 @@ describe('Dashboard component flow', () => {
     await screen.findByRole('heading', { name: 'Smoke Bird' })
 
     expect(screen.getAllByText('Test Field')).not.toHaveLength(0)
-    expect(screen.getAllByText(/Active 6 days/i)).not.toHaveLength(0)
+    expect(screen.queryByText(/Active 6 days/i)).not.toBeInTheDocument()
 
     expect(screen.getByTestId('map-container')).toBeInTheDocument()
     expect(await screen.findByTestId('marker')).toBeInTheDocument()
