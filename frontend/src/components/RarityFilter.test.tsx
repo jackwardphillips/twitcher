@@ -58,31 +58,20 @@ describe('RarityFilter', () => {
   });
 
   describe('Responsive Layout', () => {
-    it('renders inline buttons by default (Desktop)', () => {
+    it('renders inline buttons', () => {
       render(<RarityFilter selectedRarities={selectedRarities} onToggleRarity={mockOnToggle} />);
       const filterContainer = screen.getByRole('group', { name: /filter by rarity/i });
       expect(filterContainer).toHaveClass('inline-layout');
     });
 
-    it('renders a dropdown on small viewports (Mobile)', () => {
-      // Mock window.innerWidth
+    it('keeps the inline buttons on small viewports', () => {
       global.innerWidth = 500;
       global.dispatchEvent(new Event('resize'));
-      
-      render(<RarityFilter selectedRarities={selectedRarities} onToggleRarity={mockOnToggle} />);
-      
-      // Look for dropdown element (e.g., a select or a custom dropdown trigger)
-      expect(screen.getByLabelText(/select rarities/i)).toBeInTheDocument();
-    });
 
-    it('calls onToggleRarity when a code is clicked in mobile layout', () => {
-      global.innerWidth = 500;
-      global.dispatchEvent(new Event('resize'));
-      
       render(<RarityFilter selectedRarities={selectedRarities} onToggleRarity={mockOnToggle} />);
-      
-      fireEvent.click(screen.getByLabelText('1'));
-      expect(mockOnToggle).toHaveBeenCalledWith(1);
+
+      expect(screen.getByRole('group', { name: /filter by rarity/i })).toHaveClass('inline-layout');
+      expect(screen.queryByLabelText(/select rarities/i)).not.toBeInTheDocument();
     });
   });
 });

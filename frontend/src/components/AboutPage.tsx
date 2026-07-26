@@ -352,13 +352,6 @@ const AboutPage = ({ onNavigate = () => {} }: AboutPageProps) => {
                       </AboutTooltip>
                     </div>
 
-                    <div className="card-actions">
-                      <AboutTooltip tooltip="How many days the bird has been seen for.">
-                        <span className="streak-badge" style={{ '--rarity-color': rarityColor } as CSSProperties}>
-                          Active {selectedExample.activeDays} {selectedExample.activeDays === 1 ? 'day' : 'days'}
-                        </span>
-                      </AboutTooltip>
-                    </div>
                   </div>
 
                   <AboutTooltip tooltip="An AI-generated summary of location and behavior from eBird comments.">
