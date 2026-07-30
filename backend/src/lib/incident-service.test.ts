@@ -100,6 +100,36 @@ describe('IncidentService', () => {
       // We'll define exactly what we expect in the Green phase, but for now, it should exist.
     });
 
+    it('uses the latest resolved sighting county and state instead of stale incident location fields', async () => {
+      prismaMock.incident.findMany.mockResolvedValue([{
+        id: 'inc-alaska',
+        scientificName: 'Calidris ruficollis',
+        commonName: 'Red-necked Stint',
+        status: 'OPEN',
+        minLat: 71.2,
+        maxLat: 71.2,
+        minLng: -156.7,
+        maxLng: -156.7,
+        firstSeen: new Date('2026-06-22T10:00:00Z'),
+        lastSeen: new Date('2026-06-22T10:00:00Z'),
+        primaryCounty: 'Utqiaġvik--Gas Well Rd. (Gas Plant to New Landfill Rd.)',
+        primaryState: 'North Slope Borough',
+        primaryCountry: 'Alaska',
+        sightings: [{
+          id: 1,
+          date: new Date('2026-06-22T10:00:00Z'),
+          mapUrl: null,
+          checklistUrl: null,
+          displayCounty: 'North Slope Borough',
+          displayState: 'Alaska',
+        }],
+      }]);
+
+      const result = await getOpenIncidents(prismaMock as any);
+
+      expect(result[0]!.locationName).toBe('North Slope Borough, Alaska');
+    });
+
     it('should use scientificName normalization for rarity lookup', async () => {
        const mockIncident = {
         id: 'inc-1',
@@ -398,16 +428,16 @@ describe('IncidentService', () => {
       vi.useRealTimers();
     });
 
-    it('should close incidents inactive for > 3 days', async () => {
+    it('closes incidents older than 3 days while leaving the 3-day boundary open', async () => {
       const activeIncident = {
         id: 'inc-active',
         status: 'OPEN',
-        lastSeen: new Date('2026-04-18T10:00:00Z') // 2 days ago
+        lastSeen: new Date('2026-04-17T10:00:00Z') // Exactly 3 days ago
       };
       const inactiveIncident = {
         id: 'inc-inactive',
         status: 'OPEN',
-        lastSeen: new Date('2026-04-16T10:00:00Z') // 4 days ago
+        lastSeen: new Date('2026-04-17T09:59:59Z') // More than 3 days ago
       };
 
       prismaMock.incident.findMany.mockResolvedValueOnce([activeIncident, inactiveIncident]);
@@ -419,6 +449,9 @@ describe('IncidentService', () => {
         where: { id: 'inc-inactive' },
         data: { status: 'CLOSED', closedAt: expect.any(Date) }
       });
+      expect(prismaMock.incident.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'inc-active' } }),
+      );
     });
   });
 
