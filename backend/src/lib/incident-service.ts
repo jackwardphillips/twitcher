@@ -91,7 +91,13 @@ function getSightingLocationComponents(sighting: Sighting): { county: string | n
   return extractLocationComponents(sighting.location);
 }
 
-function formatIncidentLocation(incident: Incident): string {
+function formatIncidentLocation(
+  incident: Incident,
+  latestSighting?: Pick<Sighting, 'displayCounty' | 'displayState'>,
+): string {
+  if (latestSighting?.displayCounty && latestSighting.displayState) {
+    return `${formatCountyName(latestSighting.displayCounty)}, ${latestSighting.displayState}`;
+  }
   if (incident.primaryCounty && incident.primaryState) {
     return `${formatCountyName(incident.primaryCounty)}, ${incident.primaryState}`;
   }
@@ -409,8 +415,12 @@ export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void
 
   for (const incident of openIncidents) {
     if (incident.lastSeen < threeDaysAgo) {
-      await prisma.incident.update({
-        where: { id: incident.id },
+      await prisma.incident.updateMany({
+        where: {
+          id: incident.id,
+          status: IncidentStatus.OPEN,
+          lastSeen: { lt: threeDaysAgo },
+        },
         data: {
           status: IncidentStatus.CLOSED,
           closedAt: now
@@ -535,7 +545,7 @@ export async function getOpenIncidents(prisma: PrismaClient) {
       photo,
       centroidLat: (incident.minLat + incident.maxLat) / 2,
       centroidLng: (incident.minLng + incident.maxLng) / 2,
-      locationName: formatIncidentLocation(incident),
+      locationName: formatIncidentLocation(incident, latestSighting),
       latestMapUrl: latestSighting?.mapUrl || null,
       latestChecklistUrl: latestSighting?.checklistUrl || null,
       activeDays,

@@ -116,4 +116,53 @@ describe('General API Tests', () => {
     expect(incident.sightings.length).toBe(1);
     expect(incident.sightings[0].species).toBe('Common Loon');
   });
+
+  it('closes and omits an incident whose last sighting was more than 3 days ago', async () => {
+    const lastSeen = new Date();
+    lastSeen.setDate(lastSeen.getDate() - 4);
+
+    const sighting = await prisma.sighting.create({
+      data: {
+        species: 'Red-necked Stint',
+        scientificName: 'Calidris ruficollis',
+        location: 'North Slope Borough, Alaska',
+        date: lastSeen,
+        observer: 'Observer',
+        latitude: 71.2,
+        longitude: -156.7,
+        rarity: 3,
+      },
+    });
+
+    const staleIncident = await prisma.incident.create({
+      data: {
+        scientificName: 'Calidris ruficollis',
+        commonName: 'Red-necked Stint',
+        status: 'OPEN',
+        minLat: 71.2,
+        maxLat: 71.2,
+        minLng: -156.7,
+        maxLng: -156.7,
+        firstSeen: lastSeen,
+        lastSeen,
+        sightingCount: 1,
+        primaryCounty: 'North Slope Borough',
+        primaryState: 'Alaska',
+        statesCovered: '["Alaska"]',
+        sightings: {
+          connect: { id: sighting.id },
+        },
+      },
+    });
+
+    const response = await request(app).get('/api/incidents');
+    const persisted = await prisma.incident.findUnique({
+      where: { id: staleIncident.id },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+    expect(persisted?.status).toBe('CLOSED');
+    expect(persisted?.closedAt).not.toBeNull();
+  });
 });

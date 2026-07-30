@@ -9,6 +9,7 @@ import { ImapClient } from '../lib/imap-client.js';
 import { IngestionService } from '../lib/ingestion-service.js';
 import { validateProductionPollerEnvironment } from '../lib/poller-runtime.js';
 import { runSummarizationCycle } from '../lib/summarization-service.js';
+import { closeInactiveIncidents } from '../lib/incident-service.js';
 
 interface PollTarget {
   id: string;
@@ -232,6 +233,10 @@ async function main() {
     zeroObservationTargets: 0,
     failed: 0,
   });
+
+  if (writeSightings) {
+    await closeInactiveIncidents(prisma);
+  }
 
   const summarization = writeSightings
     ? await runSummarizationCycle(prisma)
