@@ -234,7 +234,9 @@ async function main() {
     failed: 0,
   });
 
-  await closeInactiveIncidents(prisma);
+  if (writeSightings) {
+    await closeInactiveIncidents(prisma);
+  }
 
   const summarization = writeSightings
     ? await runSummarizationCycle(prisma)

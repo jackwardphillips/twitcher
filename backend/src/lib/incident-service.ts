@@ -415,8 +415,12 @@ export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void
 
   for (const incident of openIncidents) {
     if (incident.lastSeen < threeDaysAgo) {
-      await prisma.incident.update({
-        where: { id: incident.id },
+      await prisma.incident.updateMany({
+        where: {
+          id: incident.id,
+          status: IncidentStatus.OPEN,
+          lastSeen: { lt: threeDaysAgo },
+        },
         data: {
           status: IncidentStatus.CLOSED,
           closedAt: now

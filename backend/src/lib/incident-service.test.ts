@@ -17,6 +17,7 @@ const prismaMock = {
     findUnique: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     deleteMany: vi.fn(),
   },
   sighting: {
@@ -445,11 +446,15 @@ describe('IncidentService', () => {
 
       await closeInactiveIncidents(prismaMock as any);
 
-      expect(prismaMock.incident.update).toHaveBeenCalledWith({
-        where: { id: 'inc-inactive' },
+      expect(prismaMock.incident.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: 'inc-inactive',
+          status: 'OPEN',
+          lastSeen: { lt: new Date('2026-04-17T10:00:00Z') },
+        },
         data: { status: 'CLOSED', closedAt: expect.any(Date) }
       });
-      expect(prismaMock.incident.update).not.toHaveBeenCalledWith(
+      expect(prismaMock.incident.updateMany).not.toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'inc-active' } }),
       );
     });
