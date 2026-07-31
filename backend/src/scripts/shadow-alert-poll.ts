@@ -15,6 +15,7 @@ import {
   getOpenIncidentTargetDrafts,
 } from '../lib/poller-target-selection.js';
 import { runSummarizationCycle } from '../lib/summarization-service.js';
+import { closeInactiveIncidents } from '../lib/incident-service.js';
 
 interface PollTarget {
   id: string;
@@ -228,6 +229,10 @@ async function main() {
     zeroObservationTargets: 0,
     failed: 0,
   });
+
+  if (writeSightings) {
+    await closeInactiveIncidents(prisma);
+  }
 
   const summarization = writeSightings
     ? await runSummarizationCycle(prisma)

@@ -165,7 +165,7 @@ describe('General API Tests', () => {
         longitude: -77,
       },
     });
-    await prisma.incident.create({
+    const staleIncident = await prisma.incident.create({
       data: {
         scientificName: 'Avis vetus',
         commonName: 'Stale Bird',
@@ -182,8 +182,13 @@ describe('General API Tests', () => {
     });
 
     const response = await request(app).get('/api/incidents');
+    const persisted = await prisma.incident.findUnique({
+      where: { id: staleIncident.id },
+    });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
+    expect(persisted?.status).toBe('OPEN');
+    expect(persisted?.closedAt).toBeNull();
   });
 });
