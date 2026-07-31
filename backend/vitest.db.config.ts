@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import { unitTestFiles } from './test-tiers';
+import { smokeTestFiles, unitTestFiles } from './test-tiers';
 
 export default defineConfig({
   test: {
@@ -8,6 +8,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     exclude: [
       ...unitTestFiles,
+      ...smokeTestFiles,
       '**/node_modules/**',
       '**/dist/**',
     ],

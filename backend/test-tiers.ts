@@ -21,3 +21,5 @@ export const unitTestFiles = [
   'src/test-msw.test.ts',
   'src/test/test-db-guard.test.ts',
 ];
+
+export const smokeTestFiles = ['src/production-data.smoke.test.ts'];

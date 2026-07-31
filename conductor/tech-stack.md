@@ -12,7 +12,7 @@
 - **tsx:** For running TypeScript directly in development.
 
 ## Data Storage
-- **SQLite:** A lightweight, serverless database ideal for storing sighting metadata and user preferences.
+- **Neon Postgres:** Branchable PostgreSQL storage for production, development, and database tests.
 - **Prisma (ORM):** Provides type-safe database access and streamlined migrations.
 
 ## Integration & Automation

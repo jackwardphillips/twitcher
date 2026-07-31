@@ -94,7 +94,7 @@ These are classes of problem that have appeared before. Check for them on every 
 
 - **Gemini spec drift**: Implementation satisfies the task description but misses a constraint buried in the spec body. Always read the full spec, not just the task title.
 - **Clustering logic fragility**: The velocity-aware clustering formula (`min(25 + (timeDiffHours * 50), 200)`) is easy to accidentally bypass or duplicate. Verify it's invoked from one place.
-- **Test DB contamination**: Tests running `deleteMany` against `dev.db` instead of `test.db`. Verify `DATABASE_URL` is overridden in `vitest.config.ts` for any test touching the database.
+- **Test DB contamination**: Destructive tests must use an ephemeral Neon branch whose endpoint differs from production and persistent developer branches.
 - **iNaturalist taxa vs. observations**: The taxa endpoint is correct; observation photos near coordinates are not. Flag any new iNat API call that doesn't use `/taxa`.
 - **`import.meta.env.VITE_API_URL` missing**: Any hardcoded API URL in the frontend is a deployment blocker. Search for it.
 - **Gemini model version**: Should be `gemini-2.0-flash`, not `gemini-1.5-flash`. Flag if wrong.
