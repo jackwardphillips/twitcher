@@ -10,9 +10,15 @@ on:
       - backend/prisma.config.ts
       - backend/tsconfig.json
       - backend/prisma/**
+      - backend/scripts/**
       - backend/src/**
+      - backend/test-db-guard.js
+      - backend/test-setup.js
+      - backend/test-tiers.ts
+      - backend/vitest*.ts
       - .github/workflows/poller-image.yml
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     paths:
       - backend/Dockerfile.poller
       - backend/package.json
@@ -20,7 +26,12 @@ on:
       - backend/prisma.config.ts
       - backend/tsconfig.json
       - backend/prisma/**
+      - backend/scripts/**
       - backend/src/**
+      - backend/test-db-guard.js
+      - backend/test-setup.js
+      - backend/test-tiers.ts
+      - backend/vitest*.ts
       - .github/workflows/poller-image.yml
   workflow_dispatch:
 
@@ -34,25 +45,16 @@ concurrency:
 
 jobs:
   validate:
+    if: github.event.action != 'closed' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-24.04
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: twitcher_test
-          POSTGRES_PASSWORD: twitcher_test
-          POSTGRES_DB: twitcher_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U twitcher_test -d twitcher_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     env:
-      TEST_DATABASE_URL: postgresql://twitcher_test:twitcher_test@localhost:5432/twitcher_test
-      DATABASE_URL: postgresql://twitcher_test:twitcher_test@localhost:5432/twitcher_test
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+      NEON_PRODUCTION_BRANCH: ${{ vars.NEON_PRODUCTION_BRANCH || 'production' }}
+      PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
       ALLOW_TEST_DATABASE_RESET: "1"
+      ALLOW_NEON_BRANCH_RESET: "1"
+      RUN_STARTUP_INGESTION: "false"
     defaults:
       run:
         working-directory: backend
@@ -64,13 +66,48 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - run: npx prisma generate
-      - run: npx prisma migrate deploy
-      - run: npm test
+      - name: Create production-derived Neon branch
+        id: neon
+        env:
+          NEON_BRANCH_NAME: test-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || 'push' }}-${{ github.run_id }}-${{ github.run_attempt }}
+        run: node scripts/neon-branch.js ci-create
+      - name: Run backend tests
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.database_url }}
+          TEST_DATABASE_URL: ${{ steps.neon.outputs.database_url }}
+        run: npm exec -- prisma generate && npm exec -- prisma migrate deploy && npm run test:unit && npm run test:db:direct
+      - name: Run production-data smoke tests on a fresh clone
+        run: npm run test:smoke
       - run: npm run build
+      - name: Delete Neon branch
+        if: always() && steps.neon.outputs.branch_name
+        env:
+          NEON_BRANCH_NAME: ${{ steps.neon.outputs.branch_name }}
+        run: node scripts/neon-branch.js delete
+
+  cleanup-closed-pr:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+      NEON_BRANCH_PREFIX: test-pr-${{ github.event.pull_request.number }}-
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: node scripts/neon-branch.js delete-prefix
 
   image:
     needs: validate
+    if: github.event.action != 'closed'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

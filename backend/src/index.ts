@@ -15,7 +15,7 @@ import 'dotenv/config';
 
 const app = express();
 const port = process.env.PORT || 3001;
-const localOfflineMode = process.env.LOCAL_OFFLINE === 'true';
+const externalSideEffectsDisabled = process.env.DISABLE_EXTERNAL_SIDE_EFFECTS === 'true';
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -126,7 +126,7 @@ app.get('/api/health', async (req: Request, res: Response) => {
     environment: {
       nodeEnv: process.env.NODE_ENV ?? 'development',
       databaseProvider,
-      localOfflineMode,
+      externalSideEffectsDisabled,
     },
   });
 });
@@ -141,9 +141,9 @@ function sanitizeErrorMessage(message: string | undefined): string {
 }
 
 app.post('/api/ingest', async (req: Request, res: Response) => {
-  if (localOfflineMode) {
+  if (externalSideEffectsDisabled) {
     return res.status(403).json({
-      error: 'Ingestion is disabled in local offline mode',
+      error: 'Ingestion is disabled',
     });
   }
 
@@ -176,9 +176,9 @@ app.post('/api/ingest', async (req: Request, res: Response) => {
 });
 
 app.get('/api/ingest', (req: Request, res: Response) => {
-  if (localOfflineMode) {
+  if (externalSideEffectsDisabled) {
     return res.status(403).json({
-      error: 'Ingestion is disabled in local offline mode',
+      error: 'Ingestion is disabled',
     });
   }
 
@@ -225,7 +225,7 @@ app.get('/api/ingestion-status', async (req: Request, res: Response) => {
       lastIngestedEmailDate: lastEmail?.date || null,
       inProgress: ingestionInProgress,
       startupIngestionEnabled: process.env.RUN_STARTUP_INGESTION === 'true',
-      localOfflineMode,
+      externalSideEffectsDisabled,
       latestRun,
     });
   } catch (error) {
@@ -470,7 +470,7 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
     const incidents = await getOpenIncidents(prisma);
 
     // Lazy fetch missing/stale photos in the background
-    if (!localOfflineMode) {
+    if (!externalSideEffectsDisabled) {
       incidents.forEach(incident => {
         photoService.needsFetch(incident.scientificName)
           .then(needed => {
@@ -525,7 +525,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   app.listen(port, async () => {
     console.log(`Server is running on port ${port}`);
 
-    if (process.env.RUN_STARTUP_INGESTION === 'true' && !localOfflineMode) {
+    if (process.env.RUN_STARTUP_INGESTION === 'true' && !externalSideEffectsDisabled) {
       console.log('Running startup email ingestion...');
       try {
         const results = await triggerIngestion(true, 'startup');
@@ -535,7 +535,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         console.error('Startup ingestion failed:', message);
       }
     } else {
-      console.log(localOfflineMode ? 'Startup ingestion disabled by local offline mode.' : 'Startup ingestion disabled.');
+      console.log('Startup ingestion disabled.');
     }
   });
 }

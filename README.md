@@ -36,13 +36,16 @@ npm run install:all
 Create `backend/.env` from `backend/.env.example` and set what you need:
 
 - `DATABASE_URL` for the application database
-- `TEST_DATABASE_URL` for tests; use a disposable PostgreSQL database
+- `PRODUCTION_DATABASE_URL` for branch safety checks
+- `NEON_API_KEY`, `NEON_PROJECT_ID`, and `NEON_PRODUCTION_BRANCH`
+- `NEON_DEVELOPER` if your system username is not suitable for a branch name
 - `IMAP_HOST`
 - `IMAP_PORT`
 - `IMAP_USER`
 - `IMAP_PASS`
 - `IMAP_SECURE`
 - `RUN_STARTUP_INGESTION=false`
+- `DISABLE_EXTERNAL_SIDE_EFFECTS=false`
 - `BACKEND_URL` for ops scripts
 - `FRONTEND_URL` for ops scripts
 - `EBIRD_API_KEY` for enrichment
@@ -62,14 +65,14 @@ Run Prisma migrations from `backend\` as needed:
 npx.cmd prisma migrate dev
 ```
 
-The old SQLite database files are intentionally left in `backend\` as backups. The preserved SQLite schema is `backend\prisma\schema.sqlite.prisma`, and the old SQLite migrations remain under `backend\prisma\migrations`. The active Postgres migrations are under `backend\prisma\postgres-migrations`.
+The active migrations are under `backend\prisma\postgres-migrations`.
 
 ## Run
 
 From the repo root:
 
 ```powershell
-npm start
+npm.cmd run dev
 ```
 
 That starts:
@@ -79,23 +82,9 @@ That starts:
 
 The frontend proxies `/api` requests to the backend during local development.
 
-### Run Offline Against Local SQLite
+`npm.cmd run dev` creates or reuses `dev-<developer>` from production, injects its pooled connection string into the backend, disables startup ingestion and external side effects, and starts both applications. The connection string is never printed. Set `NEON_DEVELOPER` to give the persistent branch a stable explicit suffix.
 
-Use this mode when you want to test the dashboard against the populated local SQLite backup without hitting IMAP, eBird, iNaturalist, Groq, or Gemini.
-
-Start the app from the repo root:
-
-```powershell
-npm.cmd run dev
-```
-
-That generates the SQLite Prisma client, uses `backend\dev.db`, sets `LOCAL_OFFLINE=true`, disables startup ingestion, blocks `POST /api/ingest`, and skips background photo refreshes from `/api/incidents`.
-
-`npm.cmd start` remains the normal environment-backed dev command and will use the `DATABASE_URL` from `backend\.env`. To switch back to PostgreSQL development after running local SQLite mode, regenerate the default client from `backend\`:
-
-```powershell
-npx.cmd prisma generate
-```
+`npm.cmd start` remains the environment-backed command for intentionally using the `DATABASE_URL` already configured in `backend\.env`.
 
 ## Tests
 
@@ -106,19 +95,30 @@ npm.cmd run test:unit --prefix backend
 npm.cmd test --prefix frontend
 ```
 
-Database-backed backend tests delete application data between tests. They refuse
-to start unless the PostgreSQL database name and role both end in `_test`, the
-connected identity matches the URL, and destructive cleanup is explicitly
-acknowledged:
+Database-backed backend tests delete application data between tests. The command
+creates a production-derived Neon branch, verifies its endpoint differs from
+production, runs the destructive tier, and deletes the branch even when tests fail:
 
 ```powershell
-$env:TEST_DATABASE_URL="postgresql://twitcher_test:password@localhost:5432/twitcher_test"
-$env:ALLOW_TEST_DATABASE_RESET="1"
 npm.cmd run test:db --prefix backend
 ```
 
-Use only a disposable database created for this test run. `npm.cmd test --prefix
-backend` runs the unit tier first and then the guarded database tier.
+The read-only production-data smoke tier uses a separate fresh clone and verifies
+representative API reads do not change core table counts:
+
+```powershell
+npm.cmd run test:smoke --prefix backend
+```
+
+`npm.cmd test --prefix backend` runs the unit tier first and then the guarded
+database tier.
+
+GitHub database validation requires repository secrets `NEON_API_KEY`,
+`NEON_PROJECT_ID`, and `PRODUCTION_DATABASE_URL`, plus the repository variable
+`NEON_PRODUCTION_BRANCH`. Fork pull requests keep the database-free validation
+but skip the secret-backed database/image workflow. CI branches expire after six
+hours as a cancellation fallback; normal completion and PR closure also delete
+them.
 
 ## PostgreSQL Rebuild
 
@@ -140,7 +140,7 @@ Step notes:
 - `seed:emails` is optional local fixture loading from `references\*.eml`; it is not idempotent for sightings and should not be run in the same production rebuild as `backfill:emails`.
 - `check:counts` verifies table counts after population.
 
-The current local SQLite backup contains populated data, but the Postgres rebuild is intended to use source systems instead of direct SQLite migration. At the time of migration analysis, `backend\dev.db` contained 1161 rarity codes, 24887 sightings, 683 incidents, and 122 incoming emails. The references folder contains the ABA checklist CSV and 3 local `.eml` files; full historical email reconstruction depends on IMAP access.
+The references folder contains the ABA checklist CSV and 3 local `.eml` files; full historical email reconstruction depends on IMAP access.
 
 ## Deployment
 
@@ -176,6 +176,7 @@ Set these Render environment variables:
 - `IMAP_PASS`
 - `IMAP_SECURE`
 - `RUN_STARTUP_INGESTION=false`
+- `DISABLE_EXTERNAL_SIDE_EFFECTS=false`
 - `EBIRD_API_KEY` if enrichment is enabled
 - `GROQ_API_KEY` and/or `GEMINI_API_KEY` if summaries are enabled
 
@@ -201,10 +202,9 @@ Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider t
 
 ## Migration Notes
 
-- Prisma datasource provider changed from SQLite to PostgreSQL.
+- Prisma uses PostgreSQL through `@prisma/adapter-pg`.
 - Prisma 7 no longer allows `url` in `schema.prisma`; `DATABASE_URL` is read from `prisma.config.ts`, and runtime connections use `@prisma/adapter-pg`.
 - A new Postgres initial migration lives in `backend\prisma\postgres-migrations`.
-- Existing SQLite files and SQLite migration history were not deleted.
 - `statesCovered` remains a `String` containing JSON text to preserve current application behavior with minimal schema change.
 
 ## Risks
@@ -213,7 +213,7 @@ Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider t
 - Running both `seed:emails` and `backfill:emails` can duplicate sightings if the same alerts exist in both local `.eml` files and IMAP.
 - `backfill:emails` needs valid IMAP credentials; without them, full historical production data cannot be rebuilt from source.
 - `backfill:summaries` needs `GROQ_API_KEY` or `GEMINI_API_KEY`; without either key it exits without populating summaries.
-- Tests now require a disposable PostgreSQL `TEST_DATABASE_URL` because the old SQLite test copy flow is incompatible with the active Postgres Prisma client.
+- Database tests run against disposable production-derived Neon branches.
 
 ## Notes
 
