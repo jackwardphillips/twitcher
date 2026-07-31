@@ -1,4 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('./enrichment-service.js', () => ({
+  EnrichmentService: {
+    getRegionCode: (name: string) => ({
+      Maryland: 'US-MD',
+      'New York': 'US-NY',
+    })[name as 'Maryland' | 'New York'] ?? null,
+  },
+}));
+
 import {
   commitCatchupEmailBatch,
   dedupePollTargetDrafts,
