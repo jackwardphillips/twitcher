@@ -495,7 +495,7 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     const normSciName = normalizeScientificName(incident.scientificName, incident.commonName);
     const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
     const photoData = photoMap.get(normSciName);
-    const photo = photoData?.url
+    const photo = photoData?.url && photoData.sourceUrl
       ? { url: photoData.url, attribution: photoData.attribution, sourceUrl: photoData.sourceUrl }
       : null;
 

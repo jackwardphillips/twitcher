@@ -33,8 +33,9 @@ export class PhotoService {
           const isStale =
             new Date().getTime() - new Date(cached.fetchedAt).getTime() >
             this.CACHE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
+          const isMissingProvenance = Boolean(cached.photoUrl && !cached.sourceUrl);
           
-          if (!isStale) {
+          if (!isStale && !isMissingProvenance) {
             if (!cached.photoUrl) return null;
             return {
               photoUrl: cached.photoUrl,
@@ -61,6 +62,7 @@ export class PhotoService {
     });
 
     if (!cached) return true;
+    if (cached.photoUrl && !cached.sourceUrl) return true;
 
     const isStale =
       new Date().getTime() - new Date(cached.fetchedAt).getTime() >
@@ -146,7 +148,7 @@ export class PhotoService {
     } catch (error) {
       console.error(`Failed to fetch photo for ${speciesName}:`, error);
       if (cached) {
-        if (!cached.photoUrl) return null;
+        if (!cached.photoUrl || !cached.sourceUrl) return null;
         return {
           photoUrl: cached.photoUrl,
           attribution: cached.attribution,

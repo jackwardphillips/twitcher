@@ -53,6 +53,7 @@ describe('PhotoService', () => {
         speciesName: 'Cyanocitta cristata',
         photoUrl: 'https://cached.com/photo.jpg',
         attribution: '(c) Cached',
+        sourceUrl: 'https://www.inaturalist.org/observations/456',
         fetchedAt: new Date(),
       },
     });
@@ -61,6 +62,32 @@ describe('PhotoService', () => {
 
     expect(result?.photoUrl).toBe('https://cached.com/photo.jpg');
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('refreshes a fresh legacy photo that has no source URL', async () => {
+    await prisma.speciesPhoto.create({
+      data: {
+        speciesName: 'Cyanocitta cristata',
+        photoUrl: 'https://static.inaturalist.org/photos/123/medium.jpg',
+        attribution: '(c) Legacy',
+        sourceUrl: null,
+        fetchedAt: new Date(),
+      },
+    });
+
+    (fetch as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [{ id: 123 }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [] }),
+      });
+
+    expect(await photoService.needsFetch('Cyanocitta cristata')).toBe(true);
+    expect(await photoService.fetchSpeciesPhoto('Cyanocitta cristata')).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   it('should handle no results with negative caching', async () => {
