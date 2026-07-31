@@ -5,7 +5,8 @@ import {
   createIncident, 
   addSightingToIncident,
   closeInactiveIncidents,
-  getOpenIncidents
+  getOpenIncidents,
+  reopenClosedIncident,
 } from './incident-service';
 import { IncidentStatus } from '@prisma/client';
 
@@ -37,8 +38,14 @@ describe('IncidentService', () => {
   describe('getOpenIncidents', () => {
     beforeEach(() => {
       vi.resetAllMocks();
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-20T10:00:00Z'));
       prismaMock.rarityCode.findMany.mockResolvedValue([]);
       prismaMock.speciesPhoto.findMany.mockResolvedValue([]);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
     it('should fetch only OPEN incidents and enrich them with rarity and summary data', async () => {
@@ -76,6 +83,7 @@ describe('IncidentService', () => {
       expect(prismaMock.incident.findMany).toHaveBeenCalledWith({
         where: {
           status: 'OPEN',
+          lastSeen: { gte: new Date('2026-04-17T10:00:00Z') },
           sightings: { some: { status: 'present' } },
         },
         include: {
@@ -99,6 +107,20 @@ describe('IncidentService', () => {
       expect(enriched.dailyCounts).toBeDefined();
       expect(Array.isArray(enriched.dailyCounts)).toBe(true);
       // We'll define exactly what we expect in the Green phase, but for now, it should exist.
+    });
+
+    it('does not return an OPEN incident that is already past the closure threshold', async () => {
+      prismaMock.incident.findMany.mockResolvedValue([]);
+
+      const result = await getOpenIncidents(prismaMock as any);
+
+      expect(result).toEqual([]);
+      expect(prismaMock.incident.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: expect.objectContaining({
+          status: 'OPEN',
+          lastSeen: { gte: new Date('2026-04-17T10:00:00Z') },
+        }),
+      }));
     });
 
     it('uses the latest resolved sighting county and state instead of stale incident location fields', async () => {
@@ -364,12 +386,38 @@ describe('IncidentService', () => {
           primaryCounty: 'Montgomery',
           primaryState: 'PA',
           primaryCountry: 'US',
+          pollRegionName: null,
+          pollRegionCode: null,
           statesCovered: JSON.stringify(['PA'])
         }
       });
       expect(prismaMock.sighting.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: { incidentId: 'inc-1' }
+      });
+    });
+
+    it('stores the exact eBird polling region that produced an incident', async () => {
+      const sighting = {
+        id: 2,
+        scientificName: 'Calidris pugnax',
+        species: 'Ruff',
+        latitude: 39,
+        longitude: -77,
+        date: new Date('2026-07-30T12:00:00Z'),
+        location: 'Maryland',
+      };
+      prismaMock.incident.create.mockResolvedValue({ id: 'ruff-incident' });
+
+      await createIncident(
+        prismaMock as any,
+        sighting as any,
+        { name: 'Maryland', code: 'US-MD' },
+      );
+
+      expect(prismaMock.incident.create.mock.calls[0]![0].data).toMatchObject({
+        pollRegionName: 'Maryland',
+        pollRegionCode: 'US-MD',
       });
     });
   });
@@ -480,11 +528,56 @@ describe('IncidentService', () => {
           status: 'OPEN',
           lastSeen: { lt: new Date('2026-04-17T10:00:00Z') },
         },
-        data: { status: 'CLOSED', closedAt: expect.any(Date) }
+        data: { status: 'CLOSED', closedAt: expect.any(Date) },
       });
       expect(prismaMock.incident.updateMany).not.toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'inc-active' } }),
       );
+    });
+
+    it('does not close an incident until after the full three-day window', async () => {
+      prismaMock.incident.findMany
+        .mockResolvedValueOnce([{
+          id: 'boundary',
+          status: 'OPEN',
+          lastSeen: new Date('2026-04-17T10:00:00Z'),
+        }])
+        .mockResolvedValueOnce([]);
+
+      await closeInactiveIncidents(prismaMock as any);
+
+      expect(prismaMock.incident.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reopenClosedIncident', () => {
+    it('reopens a closed incident returned by an email-driven poll', async () => {
+      prismaMock.incident.updateMany.mockResolvedValue({ count: 1 });
+
+      await expect(reopenClosedIncident(
+        prismaMock as any,
+        'closed-incident',
+        { name: 'Maryland', code: 'US-MD' },
+      )).resolves.toBe(true);
+
+      expect(prismaMock.incident.updateMany).toHaveBeenCalledWith({
+        where: { id: 'closed-incident', status: 'CLOSED' },
+        data: {
+          status: 'OPEN',
+          closedAt: null,
+          pollRegionName: 'Maryland',
+          pollRegionCode: 'US-MD',
+        },
+      });
+    });
+
+    it('does not reopen an open or permanently closed incident', async () => {
+      prismaMock.incident.updateMany.mockResolvedValue({ count: 0 });
+      await expect(reopenClosedIncident(
+        prismaMock as any,
+        'not-closed',
+        { name: 'Maryland', code: 'US-MD' },
+      )).resolves.toBe(false);
     });
   });
 

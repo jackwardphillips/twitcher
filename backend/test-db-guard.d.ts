@@ -1,6 +1,8 @@
 export interface TestDatabaseEnvironment {
   TEST_DATABASE_URL?: string;
+  PRODUCTION_DATABASE_URL?: string;
   ALLOW_TEST_DATABASE_RESET?: string;
+  ALLOW_NEON_BRANCH_RESET?: string;
 }
 
 export interface TestDatabaseIdentity {

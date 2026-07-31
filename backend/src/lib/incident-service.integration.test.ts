@@ -98,9 +98,12 @@ describe('Sighting -> Incident Integration Flow', () => {
     const sInactive = createSightingData('Inactive Bird', 'Bird inactive', 41.0001, -76.0001, dateInactive);
     await saveSightings([sInactive], false);
 
-    // Verify both are open
+    // Both rows are still OPEN before reconciliation, but stale incidents are
+    // already excluded from dashboard-facing results.
+    expect(await db.incident.count({ where: { status: 'OPEN' } })).toBe(2);
     const openBefore = await getOpenIncidents(db);
-    expect(openBefore).toHaveLength(2);
+    expect(openBefore).toHaveLength(1);
+    expect(openBefore[0]!.scientificName).toBe('Bird active');
 
     // 3. Close inactive
     await closeInactiveIncidents(db);

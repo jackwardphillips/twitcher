@@ -8,6 +8,12 @@ import { AlertTargetService } from '../lib/alert-target-service.js';
 import { ImapClient } from '../lib/imap-client.js';
 import { IngestionService } from '../lib/ingestion-service.js';
 import { validateProductionPollerEnvironment } from '../lib/poller-runtime.js';
+import {
+  commitCatchupEmailBatch,
+  dedupePollTargetDrafts,
+  getCatchupEmailBatch,
+  getOpenIncidentTargetDrafts,
+} from '../lib/poller-target-selection.js';
 import { runSummarizationCycle } from '../lib/summarization-service.js';
 import { closeInactiveIncidents } from '../lib/incident-service.js';
 
@@ -44,33 +50,46 @@ function getImapClient(): ImapClient {
   });
 }
 
-async function ingestAlertEmails() {
+async function ingestAlertEmails(now: Date) {
   const ingestionService = new IngestionService(getImapClient());
-  return ingestionService.ingest(undefined, false, 'poller', { writeParsedSightings: false });
+  const fiveDaysAgo = new Date(now.getTime() - 5 * 86400000);
+  return ingestionService.ingest(fiveDaysAgo, false, 'poller', { writeParsedSightings: false });
 }
 
-async function getActiveTargets(limit: number): Promise<PollTarget[]> {
-  return prisma.alertTarget.findMany({
-    where: { status: 'active' },
-    select: {
-      id: true,
-      speciesName: true,
-      speciesCode: true,
-      regionName: true,
-      regionCode: true,
-      expectedReports: true,
-    },
-    orderBy: [
-      { lastPolledAt: 'asc' },
-      { lastSeenInEmailAt: 'desc' },
-    ],
-    take: limit,
-  });
+async function materializeTargets(
+  drafts: Array<Omit<PollTarget, 'id' | 'speciesCode'>>,
+): Promise<PollTarget[]> {
+  const targets: PollTarget[] = [];
+  for (const draft of drafts) {
+    const target = await prisma.alertTarget.upsert({
+      where: {
+        speciesName_regionCode: {
+          speciesName: draft.speciesName,
+          regionCode: draft.regionCode,
+        },
+      },
+      create: {
+        ...draft,
+        status: 'active',
+      },
+      update: {
+        regionName: draft.regionName,
+        ...(draft.expectedReports > 0 ? { expectedReports: draft.expectedReports } : {}),
+      },
+    });
+    targets.push({
+      id: target.id,
+      speciesName: target.speciesName,
+      speciesCode: target.speciesCode,
+      regionName: target.regionName,
+      regionCode: target.regionCode,
+      expectedReports: target.expectedReports,
+    });
+  }
+  return targets;
 }
 
 async function main() {
-  const emailLimit = getNumberArg('emails', 3);
-  const targetLimit = getNumberArg('targets', 25);
   const back = getNumberArg('back', 3);
   const writeShadow = hasFlag('write-shadow');
   const writeSightings = hasFlag('write-sightings');
@@ -83,7 +102,8 @@ async function main() {
   validateProductionPollerEnvironment(writeSightings);
 
   const service = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
-  const ingestionResult = skipIngestion ? null : await ingestAlertEmails();
+  const selectionTime = new Date();
+  const ingestionResult = skipIngestion ? null : await ingestAlertEmails(selectionTime);
   if (ingestionResult) {
     console.log(`ingestion status=${ingestionResult.status} emailsFound=${ingestionResult.emailsFound} ingested=${ingestionResult.ingested} skipped=${ingestionResult.skipped} failed=${ingestionResult.failed}`);
     if (ingestionResult.status === 'imap_error' || ingestionResult.status === 'error') {
@@ -119,53 +139,29 @@ async function main() {
     console.log(`seeded ${files.length} reference emails`);
   }
 
-  let targets: PollTarget[];
-  if (ingestionResult?.status === 'no_new_emails') {
-    targets = await getActiveTargets(targetLimit);
-    console.log(`no new emails; polling ${targets.length} active targets`);
-  } else {
-    const emails = await prisma.incomingEmail.findMany({
-      where: { status: 'processed' },
-      orderBy: { date: 'desc' },
-      take: emailLimit,
-    });
-
-    const targetMap = new Map<string, PollTarget>();
-
-    for (const email of emails) {
-      const parsed = service.parseTargetsFromEmail(email.rawBody);
-      console.log(`email ${email.id}: ${parsed.length} summary targets`);
-
-      if (writeShadow) {
-        const saved = await service.upsertTargetsFromEmail(email.rawBody, email.id, email.date ?? new Date());
-        for (const target of saved) {
-          targetMap.set(target.id, {
-            id: target.id,
-            speciesName: target.speciesName,
-            speciesCode: target.speciesCode,
-            regionName: target.regionName,
-            regionCode: target.regionCode,
-            expectedReports: target.expectedReports,
-          });
-        }
-      } else {
-        for (const target of parsed) {
-          const id = `${target.speciesName}|${target.regionCode}`;
-          targetMap.set(id, {
-            id,
-            speciesName: target.speciesName,
-            speciesCode: null,
-            regionName: target.regionName,
-            regionCode: target.regionCode,
-            expectedReports: target.expectedReports,
-          });
-        }
-      }
-    }
-
-    targets = Array.from(targetMap.values()).slice(0, targetLimit);
-    console.log(`new/pending emails found; polling ${targets.length} targets from latest ${emails.length} processed emails`);
+  const emailBatch = await getCatchupEmailBatch(prisma, selectionTime);
+  const emailDrafts = emailBatch.selected.flatMap(email => {
+    const parsed = service.parseTargetsFromEmail(email.rawBody);
+    console.log(`catch-up email ${email.id}: ${parsed.length} summary targets`);
+    return parsed;
+  });
+  const incidentSelection = await getOpenIncidentTargetDrafts(prisma);
+  if (incidentSelection.unresolvedIncidentIds.length > 0) {
+    throw new Error(
+      `${incidentSelection.unresolvedIncidentIds.length} open incidents lack a pollable eBird region`,
+    );
   }
+  const drafts = dedupePollTargetDrafts([
+    ...incidentSelection.targets,
+    ...emailDrafts,
+  ]);
+  const targets = writeShadow
+    ? await materializeTargets(drafts)
+    : drafts.map(target => ({ id: `${target.speciesName}|${target.regionCode}`, speciesCode: null, ...target }));
+  console.log(
+    `polling plan openIncidentTargets=${incidentSelection.targets.length} ` +
+    `catchupEmails=${emailBatch.selected.length} targets=${targets.length}`,
+  );
   const mode = writeSightings ? 'write-sightings' : writeShadow ? 'write-shadow' : 'dry-run';
   let pollRunId: string | undefined;
 
@@ -255,6 +251,7 @@ async function main() {
   const partialFailure = totals.failed > 0 || summarization.failed > 0;
 
   if (pollRunId) {
+    await commitCatchupEmailBatch(prisma, emailBatch.observedIds, !partialFailure);
     await prisma.alertPollRun.update({
       where: { id: pollRunId },
       data: {

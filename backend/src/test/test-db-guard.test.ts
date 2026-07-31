@@ -21,6 +21,40 @@ describe('disposable test database guard', () => {
     });
   });
 
+  it('accepts an explicitly acknowledged Neon branch with a different endpoint', () => {
+    expect(validateTestDatabaseEnvironment({
+      TEST_DATABASE_URL: 'postgresql://owner:secret@ep-test-branch-pooler.us-east-1.aws.neon.tech/neondb',
+      PRODUCTION_DATABASE_URL: 'postgresql://owner:secret@ep-production-pooler.us-east-1.aws.neon.tech/neondb',
+      ALLOW_TEST_DATABASE_RESET: '1',
+      ALLOW_NEON_BRANCH_RESET: '1',
+    })).toMatchObject({
+      database: 'neondb',
+      role: 'owner',
+    });
+  });
+
+  it.each([
+    [{
+      TEST_DATABASE_URL: 'postgresql://owner:x@ep-test.us-east-1.aws.neon.tech/neondb',
+      ALLOW_TEST_DATABASE_RESET: '1',
+      ALLOW_NEON_BRANCH_RESET: '1',
+    }, 'PRODUCTION_DATABASE_URL is required'],
+    [{
+      TEST_DATABASE_URL: 'postgresql://owner:x@ep-production-pooler.us-east-1.aws.neon.tech/neondb',
+      PRODUCTION_DATABASE_URL: 'postgresql://owner:x@ep-production.us-east-1.aws.neon.tech/neondb',
+      ALLOW_TEST_DATABASE_RESET: '1',
+      ALLOW_NEON_BRANCH_RESET: '1',
+    }, 'must differ from production'],
+    [{
+      TEST_DATABASE_URL: 'postgresql://owner:x@localhost/neondb',
+      PRODUCTION_DATABASE_URL: 'postgresql://owner:x@ep-production.us-east-1.aws.neon.tech/neondb',
+      ALLOW_TEST_DATABASE_RESET: '1',
+      ALLOW_NEON_BRANCH_RESET: '1',
+    }, 'require a neon.tech'],
+  ])('rejects unsafe Neon branch reset configuration', (environment, message) => {
+    expect(() => validateTestDatabaseEnvironment(environment)).toThrow(message);
+  });
+
   it.each([
     [{ ALLOW_TEST_DATABASE_RESET: '1' }, 'TEST_DATABASE_URL is required'],
     [{ ...safeEnvironment, ALLOW_TEST_DATABASE_RESET: 'yes' }, 'must be exactly "1"'],

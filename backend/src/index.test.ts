@@ -117,41 +117,67 @@ describe('General API Tests', () => {
     expect(incident.sightings[0].species).toBe('Common Loon');
   });
 
-  it('closes and omits an incident whose last sighting was more than 3 days ago', async () => {
-    const lastSeen = new Date();
-    lastSeen.setDate(lastSeen.getDate() - 4);
-
+  it('does not show CLOSED incidents on the dashboard', async () => {
     const sighting = await prisma.sighting.create({
       data: {
-        species: 'Red-necked Stint',
-        scientificName: 'Calidris ruficollis',
-        location: 'North Slope Borough, Alaska',
-        date: lastSeen,
+        species: 'Closed Bird',
+        scientificName: 'Avis clausa',
+        location: 'Maryland',
+        date: new Date(),
         observer: 'Observer',
-        latitude: 71.2,
-        longitude: -156.7,
-        rarity: 3,
+        latitude: 39,
+        longitude: -77,
+      },
+    });
+    await prisma.incident.create({
+      data: {
+        scientificName: 'Avis clausa',
+        commonName: 'Closed Bird',
+        status: 'CLOSED',
+        minLat: 39,
+        maxLat: 39,
+        minLng: -77,
+        maxLng: -77,
+        firstSeen: sighting.date,
+        lastSeen: sighting.date,
+        closedAt: new Date(),
+        statesCovered: '["Maryland"]',
+        sightings: { connect: { id: sighting.id } },
       },
     });
 
+    const response = await request(app).get('/api/incidents');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+  });
+
+  it('does not show an OPEN incident that is already due to close', async () => {
+    const staleDate = new Date(Date.now() - 4 * 86400000);
+    const sighting = await prisma.sighting.create({
+      data: {
+        species: 'Stale Bird',
+        scientificName: 'Avis vetus',
+        location: 'Maryland',
+        date: staleDate,
+        observer: 'Observer',
+        latitude: 39,
+        longitude: -77,
+      },
+    });
     const staleIncident = await prisma.incident.create({
       data: {
-        scientificName: 'Calidris ruficollis',
-        commonName: 'Red-necked Stint',
+        scientificName: 'Avis vetus',
+        commonName: 'Stale Bird',
         status: 'OPEN',
-        minLat: 71.2,
-        maxLat: 71.2,
-        minLng: -156.7,
-        maxLng: -156.7,
-        firstSeen: lastSeen,
-        lastSeen,
-        sightingCount: 1,
-        primaryCounty: 'North Slope Borough',
-        primaryState: 'Alaska',
-        statesCovered: '["Alaska"]',
-        sightings: {
-          connect: { id: sighting.id },
-        },
+        minLat: 39,
+        maxLat: 39,
+        minLng: -77,
+        maxLng: -77,
+        firstSeen: staleDate,
+        lastSeen: staleDate,
+        statesCovered: '["Maryland"]',
+        sightings: { connect: { id: sighting.id } },
       },
     });
 
@@ -162,7 +188,7 @@ describe('General API Tests', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
-    expect(persisted?.status).toBe('CLOSED');
-    expect(persisted?.closedAt).not.toBeNull();
+    expect(persisted?.status).toBe('OPEN');
+    expect(persisted?.closedAt).toBeNull();
   });
 });
