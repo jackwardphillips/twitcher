@@ -4,7 +4,13 @@ import { EbirdClient } from './ebird-client.js';
 import type { EbirdLocationInfo, EbirdObservation, EbirdTaxonomyEntry } from './ebird-client.js';
 import { parseEBirdAlertSummary } from './alert-summary-parser.js';
 import { EnrichmentService } from './enrichment-service.js';
-import { addSightingToIncident, createIncident, findMatchingIncident, normalizeScientificName } from './incident-service.js';
+import {
+  addSightingToIncident,
+  createIncident,
+  findMatchingIncident,
+  normalizeScientificName,
+  reopenClosedIncident,
+} from './incident-service.js';
 import { sanitizeLogError } from './enrichment-logging.js';
 import type { EnrichmentLoggingContext } from './enrichment-logging.js';
 import { LocationResolver } from './location-resolver.js';
@@ -209,7 +215,11 @@ export class AlertTargetService {
       }
 
       if (writeSightings) {
-        const writeResult = await this.writeObservationsAsSightings(observations, target.regionName);
+        const writeResult = await this.writeObservationsAsSightings(
+          observations,
+          target.regionName,
+          target.regionCode,
+        );
         sightingsCreated = writeResult.sightingsCreated;
         incidentsTouched = writeResult.incidentsTouched;
       }
@@ -467,13 +477,17 @@ export class AlertTargetService {
     });
   }
 
-  private async writeObservationsAsSightings(observations: EbirdObservation[], fallbackRegionName?: string): Promise<{ sightingsCreated: number; incidentsTouched: number }> {
+  private async writeObservationsAsSightings(
+    observations: EbirdObservation[],
+    fallbackRegionName: string,
+    regionCode: string,
+  ): Promise<{ sightingsCreated: number; incidentsTouched: number }> {
     const subIds = observations.map(observation => observation.subId).filter(Boolean);
     const existing = await prisma.sighting.findMany({
       where: { subId: { in: subIds } },
-      select: { subId: true },
+      select: { subId: true, incidentId: true },
     });
-    const existingSubIds = new Set(existing.map(sighting => sighting.subId));
+    const existingBySubId = new Map(existing.map(sighting => [sighting.subId, sighting]));
     const scientificNames = [...new Set(observations.map(observation => observation.sciName).filter(Boolean))];
     const commonNames = [...new Set(observations.map(observation => observation.comName).filter(Boolean))];
     const rarityRecords = await prisma.rarityCode.findMany({
@@ -490,7 +504,19 @@ export class AlertTargetService {
     let incidentsTouched = 0;
 
     for (const observation of observations) {
-      if (!observation.subId || existingSubIds.has(observation.subId)) continue;
+      if (!observation.subId) continue;
+      const existingSighting = existingBySubId.get(observation.subId);
+      if (existingSighting) {
+        if (existingSighting.incidentId) {
+          const reopened = await reopenClosedIncident(
+            prisma,
+            existingSighting.incidentId,
+            { name: fallbackRegionName, code: regionCode },
+          );
+          if (reopened) incidentsTouched++;
+        }
+        continue;
+      }
 
       const location = await this.locationResolver.resolve(observation, fallbackRegionName);
       const sighting = await prisma.sighting.create({
@@ -515,25 +541,31 @@ export class AlertTargetService {
       });
       sightingsCreated++;
 
-      const touched = await this.attachSightingToIncident(sighting);
+      const touched = await this.attachSightingToIncident(sighting, {
+        name: fallbackRegionName,
+        code: regionCode,
+      });
       if (touched) incidentsTouched++;
     }
 
     return { sightingsCreated, incidentsTouched };
   }
 
-  private async attachSightingToIncident(sighting: Sighting): Promise<boolean> {
+  private async attachSightingToIncident(
+    sighting: Sighting,
+    pollRegion: { name: string; code: string },
+  ): Promise<boolean> {
     if (sighting.latitude === null || sighting.longitude === null) return false;
 
     const scientificName = normalizeScientificName(sighting.scientificName || '', sighting.species);
     const matchingIncidents = await findMatchingIncident(prisma, scientificName, sighting.latitude, sighting.longitude, sighting.date);
     if (matchingIncidents.length > 0) {
-      await addSightingToIncident(prisma, matchingIncidents, sighting);
+      await addSightingToIncident(prisma, matchingIncidents, sighting, pollRegion);
     } else {
       await createIncident(prisma, {
         ...sighting,
         scientificName,
-      });
+      }, pollRegion);
     }
 
     return true;

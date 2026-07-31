@@ -66,6 +66,8 @@ model Incident {
   primaryCounty      String?
   primaryState       String?
   primaryCountry     String?
+  pollRegionName     String?
+  pollRegionCode     String?
   statesCovered      String // JSON array of unique state/province names
   geminiSummary      String?
   summaryGeneratedAt DateTime?
@@ -89,10 +91,13 @@ model IncomingEmail {
   date         DateTime?
   rawBody      String
   status       String                  @default("new") // new, processed, failed, processing
+  pollTargetsHandledAt DateTime?
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @default(now()) @updatedAt
   attempts     EmailIngestionAttempt[]
   alertTargets AlertTarget[]
+
+  @@index([pollTargetsHandledAt])
 }
 
 model IngestionRun {

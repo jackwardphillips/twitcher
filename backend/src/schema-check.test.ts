@@ -24,6 +24,17 @@ describe('Prisma Schema Updates', () => {
     expect(emailFields).toContain('status');
   });
 
+  it('tracks whether an email has been consumed by a successful poll plan', () => {
+    const emailFields = Object.values(Prisma.IncomingEmailScalarFieldEnum);
+    expect(emailFields).toContain('pollTargetsHandledAt');
+  });
+
+  it('stores the eBird polling region on incidents', () => {
+    const incidentFields = Object.values(Prisma.IncidentScalarFieldEnum);
+    expect(incidentFields).toContain('pollRegionName');
+    expect(incidentFields).toContain('pollRegionCode');
+  });
+
   it('should have the SpeciesPhoto model in the Prisma client', () => {
     const photoFields = Object.values(Prisma.SpeciesPhotoScalarFieldEnum);
 

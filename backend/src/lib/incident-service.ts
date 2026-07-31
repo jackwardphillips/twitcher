@@ -199,7 +199,8 @@ export async function findMatchingIncident(
  */
 export async function createIncident(
   prisma: PrismaClient,
-  sighting: Sighting
+  sighting: Sighting,
+  pollRegion?: { name: string; code: string },
 ): Promise<Incident> {
   const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
   
@@ -224,6 +225,8 @@ export async function createIncident(
       primaryCounty: primaryCounty ?? null,
       primaryState: primaryState ?? null,
       primaryCountry: primaryCountry ?? null,
+      pollRegionName: pollRegion?.name ?? null,
+      pollRegionCode: pollRegion?.code ?? null,
       statesCovered: JSON.stringify(statesCovered)
     }
   });
@@ -318,7 +321,8 @@ export async function mergeIncidents(
 export async function addSightingToIncident(
   prisma: PrismaClient,
   incidentOrIncidents: Incident | Incident[],
-  sighting: Sighting
+  sighting: Sighting,
+  pollRegion?: { name: string; code: string },
 ): Promise<Incident> {
   let incidentId: string;
   
@@ -375,7 +379,11 @@ export async function addSightingToIncident(
         sightingCount: { increment: 1 },
         statesCovered: JSON.stringify(currentStates),
         status: IncidentStatus.OPEN,
-        closedAt: null
+        closedAt: null,
+        ...(pollRegion ? {
+          pollRegionName: pollRegion.name,
+          pollRegionCode: pollRegion.code,
+        } : {}),
       }
     });
   }, { isolationLevel: 'Serializable' });
@@ -391,6 +399,26 @@ export async function addSightingToIncident(
   }
 
   throw new Error(`Incident ${incidentId} could not be updated after serialization retries`);
+}
+
+export async function reopenClosedIncident(
+  prisma: PrismaClient,
+  incidentId: string,
+  pollRegion: { name: string; code: string },
+): Promise<boolean> {
+  const result = await prisma.incident.updateMany({
+    where: {
+      id: incidentId,
+      status: IncidentStatus.CLOSED,
+    },
+    data: {
+      status: IncidentStatus.OPEN,
+      closedAt: null,
+      pollRegionName: pollRegion.name,
+      pollRegionCode: pollRegion.code,
+    },
+  });
+  return result.count === 1;
 }
 
 /**
@@ -409,12 +437,16 @@ export async function closeInactiveIncidents(prisma: PrismaClient): Promise<void
 
   for (const incident of openIncidents) {
     if (incident.lastSeen < threeDaysAgo) {
-      await prisma.incident.update({
-        where: { id: incident.id },
+      await prisma.incident.updateMany({
+        where: {
+          id: incident.id,
+          status: IncidentStatus.OPEN,
+          lastSeen: { lt: threeDaysAgo },
+        },
         data: {
           status: IncidentStatus.CLOSED,
-          closedAt: now
-        }
+          closedAt: now,
+        },
       });
     }
   }
@@ -451,9 +483,11 @@ export function formatDate(date: Date): string {
  * Fetches all OPEN incidents enriched with rarity data and summary fields.
  */
 export async function getOpenIncidents(prisma: PrismaClient) {
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const incidents = await prisma.incident.findMany({
     where: {
       status: IncidentStatus.OPEN,
+      lastSeen: { gte: threeDaysAgo },
       sightings: {
         some: { status: 'present' },
       },
