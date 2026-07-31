@@ -1,8 +1,13 @@
 import { prisma } from './db.js';
+import {
+  INAT_PHOTO_LICENSE_FILTER,
+  isAllowedINaturalistPhoto,
+} from './photo-policy.js';
 
 export interface SpeciesPhoto {
   photoUrl: string | null;
   attribution: string | null;
+  sourceUrl: string | null;
 }
 
 export class PhotoService {
@@ -34,6 +39,7 @@ export class PhotoService {
             return {
               photoUrl: cached.photoUrl,
               attribution: cached.attribution,
+              sourceUrl: cached.sourceUrl,
             };
           }
         }
@@ -79,9 +85,43 @@ export class PhotoService {
       }
 
       const data = await response.json();
-      const photoData = data.results?.[0]?.default_photo;
+      const taxonId = data.results?.[0]?.id;
+      let photoData = null;
+      let sourceUrl = null;
 
-      const photoUrl = photoData?.medium_url || null;
+      if (taxonId) {
+        const observationsUrl = new URL(`${this.INAT_API_BASE}/observations`);
+        observationsUrl.searchParams.append('taxon_id', String(taxonId));
+        observationsUrl.searchParams.append('photos', 'true');
+        observationsUrl.searchParams.append('photo_license', INAT_PHOTO_LICENSE_FILTER);
+        observationsUrl.searchParams.append('quality_grade', 'research');
+        observationsUrl.searchParams.append('per_page', '10');
+        observationsUrl.searchParams.append('order_by', 'votes');
+        observationsUrl.searchParams.append('order', 'desc');
+
+        const observationsResponse = await fetch(observationsUrl.toString());
+        if (!observationsResponse.ok) {
+          throw new Error(`iNaturalist API error: ${observationsResponse.status}`);
+        }
+
+        const observationsData = await observationsResponse.json();
+        for (const observation of observationsData.results ?? []) {
+          photoData = observation.photos?.find(
+            (photo: { license_code?: string | null; url?: string | null }) =>
+              isAllowedINaturalistPhoto({
+                licenseCode: photo.license_code,
+                photoUrl: photo.url,
+                sourceUrl: observation.uri,
+              }),
+          );
+          if (photoData) {
+            sourceUrl = observation.uri;
+            break;
+          }
+        }
+      }
+
+      const photoUrl = photoData?.url?.replace('/square.', '/medium.') || null;
       const attribution = photoData?.attribution || null;
 
       await prisma.speciesPhoto.upsert({
@@ -89,18 +129,20 @@ export class PhotoService {
         update: {
           photoUrl,
           attribution,
+          sourceUrl,
           fetchedAt: new Date(),
         },
         create: {
           speciesName,
           photoUrl,
           attribution,
+          sourceUrl,
           fetchedAt: new Date(),
         },
       });
 
       if (!photoUrl) return null;
-      return { photoUrl, attribution };
+      return { photoUrl, attribution, sourceUrl };
     } catch (error) {
       console.error(`Failed to fetch photo for ${speciesName}:`, error);
       if (cached) {
@@ -108,6 +150,7 @@ export class PhotoService {
         return {
           photoUrl: cached.photoUrl,
           attribution: cached.attribution,
+          sourceUrl: cached.sourceUrl,
         };
       }
       return null;

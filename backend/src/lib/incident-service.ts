@@ -481,9 +481,9 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     }
   });
 
-  const photoMap = new Map<string, { url: string | null; attribution: string | null }>();
+  const photoMap = new Map<string, { url: string | null; attribution: string | null; sourceUrl: string | null }>();
   speciesPhotos.forEach(p => {
-    photoMap.set(p.speciesName, { url: p.photoUrl, attribution: p.attribution });
+    photoMap.set(p.speciesName, { url: p.photoUrl, attribution: p.attribution, sourceUrl: p.sourceUrl });
   });
 
   const now = new Date();
@@ -495,7 +495,9 @@ export async function getOpenIncidents(prisma: PrismaClient) {
     const normSciName = normalizeScientificName(incident.scientificName, incident.commonName);
     const abaCode = rarityMap.get(normalizeScientificName(incident.scientificName)) || null;
     const photoData = photoMap.get(normSciName);
-    const photo = photoData?.url ? { url: photoData.url, attribution: photoData.attribution } : null;
+    const photo = photoData?.url
+      ? { url: photoData.url, attribution: photoData.attribution, sourceUrl: photoData.sourceUrl }
+      : null;
 
     // Fix: Derive bounds directly from sightings to fix legacy corrupted data
     const sightingDates = incident.sightings.map(s => s.date.getTime());

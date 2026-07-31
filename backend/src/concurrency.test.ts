@@ -35,12 +35,20 @@ describe('Ingestion Concurrency', () => {
       http.get('https://api.inaturalist.org/v1/taxa', async () => {
         mockProviderRequest();
         return HttpResponse.json({
+          results: [{ id: 123 }]
+        });
+      }),
+      http.get('https://api.inaturalist.org/v1/observations', async () => {
+        mockProviderRequest();
+        return HttpResponse.json({
           results: [{
-            default_photo: {
-              medium_url: 'http://inat.com/photo.jpg',
-              attribution: '(c) John Doe'
-            }
-          }]
+            uri: 'https://www.inaturalist.org/observations/456',
+            photos: [{
+              url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/123/square.jpg',
+              attribution: '(c) John Doe',
+              license_code: 'cc-by',
+            }],
+          }],
         });
       }),
       http.post('https://api.groq.com/openai/v1/chat/completions', () => {
@@ -64,12 +72,7 @@ describe('Ingestion Concurrency', () => {
         mockProviderRequest();
         await new Promise(resolve => setTimeout(resolve, 200));
         return HttpResponse.json({
-          results: [{
-            default_photo: {
-              medium_url: 'http://inat.com/photo.jpg',
-              attribution: '(c) John Doe'
-            }
-          }]
+          results: [{ id: 123 }]
         });
       }),
     );
@@ -80,8 +83,8 @@ describe('Ingestion Concurrency', () => {
       photoService.fetchSpeciesPhoto(species)
     ]);
 
-    // Assert: Fetch should have been called only once
-    expect(mockProviderRequest).toHaveBeenCalledTimes(1);
+    // Assert: One taxon lookup and one observation lookup should serve both callers.
+    expect(mockProviderRequest).toHaveBeenCalledTimes(2);
   });
 
   it('should not create duplicate sightings when multiple ingestions run concurrently', async () => {

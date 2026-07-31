@@ -32,7 +32,7 @@ const aboutCardExamples: Record<RarityCode, {
   sightingCount: number
   activeDays: number
   dailyCounts: { date: string; count: number }[]
-  photo: { url: string; attribution: string } | null
+  photo: { url: string; attribution: string; sourceUrl: string } | null
   photoStyle?: CSSProperties
 }> = {
   1: {
@@ -46,8 +46,9 @@ const aboutCardExamples: Record<RarityCode, {
     activeDays: 25,
     dailyCounts: buildDailyCounts('2026-05-01', [8, 10, 11, 9, 12, 14, 13, 15, 12, 11, 14, 13, 12, 10, 15, 16, 14, 12, 10, 13, 11, 12, 13, 14, 14]),
     photo: {
-      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/34859026/medium.jpg',
-      attribution: '(c) John D Reynolds, some rights reserved (CC BY-NC), uploaded by John D Reynolds',
+      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/190120595/medium.jpeg',
+      attribution: '(c) Kathy Richardson, some rights reserved (CC BY)',
+      sourceUrl: 'https://www.inaturalist.org/observations/112558925',
     },
   },
   2: {
@@ -62,7 +63,8 @@ const aboutCardExamples: Record<RarityCode, {
     dailyCounts: buildDailyCounts('2026-05-01', [0, 0, 2, 1, 3, 2, 4, 0, 3, 1, 2, 4, 3, 0, 2, 1, 4, 2, 3, 1, 0, 2, 3, 2, 1]),
     photo: {
       url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/196225341/medium.jpeg',
-      attribution: '(c) Matt Schenck, some rights reserved (CC BY), uploaded by Matt Schenck',
+      attribution: '(c) Matt Schenck, some rights reserved (CC BY)',
+      sourceUrl: 'https://www.inaturalist.org/observations/116255464',
     },
     photoStyle: {
       objectPosition: '32% center',
@@ -79,11 +81,12 @@ const aboutCardExamples: Record<RarityCode, {
     activeDays: 23,
     dailyCounts: buildDailyCounts('2026-05-01', [1, 2, 0, 3, 2, 4, 1, 0, 2, 3, 4, 2, 1, 5, 4, 6, 3, 2, 5, 4, 2, 1, 3, 2, 1]),
     photo: {
-      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/447383422/medium.jpg',
-      attribution: '(c) Samuel Amaris, some rights reserved (CC BY-NC), uploaded by Samuel Amaris',
+      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/606537389/medium.jpg',
+      attribution: '(c) Damien Wallace, some rights reserved (CC BY)',
+      sourceUrl: 'https://www.inaturalist.org/observations/334043883',
     },
     photoStyle: {
-      objectPosition: '15% center',
+      objectPosition: 'center',
     },
   },
   4: {
@@ -97,11 +100,14 @@ const aboutCardExamples: Record<RarityCode, {
     activeDays: 14,
     dailyCounts: buildDailyCounts('2026-05-01', [0, 0, 0, 1, 0, 2, 1, 0, 1, 2, 0, 1, 1, 2, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0]),
     photo: {
-      url: 'https://static.inaturalist.org/photos/207544720/medium.jpg',
-      attribution: '(c) Mason Maron, all rights reserved, uploaded by Mason Maron',
+      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/241568929/medium.jpeg',
+      attribution: '(c) Gabriel Martínez, some rights reserved (CC BY)',
+      sourceUrl: 'https://www.inaturalist.org/observations/141061664',
     },
     photoStyle: {
-      objectPosition: '70% center',
+      objectPosition: 'right center',
+      transform: 'translate(8%, -8%) scale(1.25)',
+      transformOrigin: 'right center',
     },
   },
   5: {
@@ -115,11 +121,14 @@ const aboutCardExamples: Record<RarityCode, {
     activeDays: 9,
     dailyCounts: buildDailyCounts('2026-05-01', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1]),
     photo: {
-      url: 'https://static.inaturalist.org/photos/79568634/medium.jpeg',
-      attribution: '(c) Larry Zheng, all rights reserved, uploaded by Larry Zheng',
+      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/593263749/medium.jpg',
+      attribution: '(c) Matt Felperin, some rights reserved (CC BY)',
+      sourceUrl: 'https://www.inaturalist.org/observations/327462577',
     },
     photoStyle: {
-      objectPosition: '41% center',
+      objectPosition: 'center',
+      transform: 'scale(1.1)',
+      transformOrigin: 'center',
     },
   },
   6: {
@@ -133,13 +142,12 @@ const aboutCardExamples: Record<RarityCode, {
     activeDays: 1,
     dailyCounts: buildDailyCounts('1944-03-27', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]),
     photo: {
-      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/430795661/medium.jpeg',
-      attribution: '(c) Jeff Steele, some rights reserved (CC BY-NC), uploaded by Jeff Steele',
+      url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/463200402/medium.jpg',
+      attribution: 'No rights reserved (CC0)',
+      sourceUrl: 'https://www.inaturalist.org/observations/258189887',
     },
     photoStyle: {
       objectPosition: 'center top',
-      transform: 'translateY(-14%) scale(1.22)',
-      transformOrigin: 'center top',
     },
   },
 }

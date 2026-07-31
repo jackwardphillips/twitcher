@@ -30,6 +30,7 @@ describe('Prisma Schema Updates', () => {
     expect(photoFields).toContain('speciesName');
     expect(photoFields).toContain('photoUrl');
     expect(photoFields).toContain('attribution');
+    expect(photoFields).toContain('sourceUrl');
     expect(photoFields).toContain('fetchedAt');
   });
 });

@@ -9,6 +9,7 @@ export const unitTestFiles = [
   'src/lib/imap-client.test.ts',
   'src/lib/ingestion-orchestration.unit.test.ts',
   'src/lib/poller-runtime.test.ts',
+  'src/lib/photo-policy.test.ts',
   'src/lib/rarity-seeder.test.ts',
   'src/lib/rarity-service.test.ts',
   'src/lib/sighting-service.test.ts',
