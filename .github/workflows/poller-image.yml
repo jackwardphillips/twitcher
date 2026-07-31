@@ -10,7 +10,12 @@ on:
       - backend/prisma.config.ts
       - backend/tsconfig.json
       - backend/prisma/**
+      - backend/scripts/**
       - backend/src/**
+      - backend/test-db-guard.js
+      - backend/test-setup.js
+      - backend/test-tiers.ts
+      - backend/vitest*.ts
       - .github/workflows/poller-image.yml
   pull_request:
     types: [opened, synchronize, reopened, closed]
@@ -21,7 +26,12 @@ on:
       - backend/prisma.config.ts
       - backend/tsconfig.json
       - backend/prisma/**
+      - backend/scripts/**
       - backend/src/**
+      - backend/test-db-guard.js
+      - backend/test-setup.js
+      - backend/test-tiers.ts
+      - backend/vitest*.ts
       - .github/workflows/poller-image.yml
   workflow_dispatch:
 
@@ -65,7 +75,7 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.neon.outputs.database_url }}
           TEST_DATABASE_URL: ${{ steps.neon.outputs.database_url }}
-        run: npm exec -- prisma generate && npm run test:unit && npm run test:db:direct
+        run: npm exec -- prisma generate && npm exec -- prisma migrate deploy && npm run test:unit && npm run test:db:direct
       - name: Run production-data smoke tests on a fresh clone
         run: npm run test:smoke
       - run: npm run build

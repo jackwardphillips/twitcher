@@ -202,15 +202,21 @@ async function main() {
       const url = connectionString(branch.id);
       const script = command === 'test' ? 'test:db:direct' : 'test:smoke:direct';
       const commandArgs = ['run', script, ...(args.length > 0 ? ['--', ...args] : [])];
-      process.exitCode = runCommand('npm', commandArgs, {
+      const environment = {
         DATABASE_URL: url,
         TEST_DATABASE_URL: url,
         PRODUCTION_DATABASE_URL: required('PRODUCTION_DATABASE_URL'),
-      ALLOW_TEST_DATABASE_RESET: '1',
-      ALLOW_NEON_BRANCH_RESET: '1',
-      RUN_STARTUP_INGESTION: 'false',
-      ...(command === 'smoke' ? { DISABLE_EXTERNAL_SIDE_EFFECTS: 'true' } : {}),
-      });
+        ALLOW_TEST_DATABASE_RESET: '1',
+        ALLOW_NEON_BRANCH_RESET: '1',
+        RUN_STARTUP_INGESTION: 'false',
+        ...(command === 'smoke' ? { DISABLE_EXTERNAL_SIDE_EFFECTS: 'true' } : {}),
+      };
+      const migrateStatus = runCommand('npm', ['exec', '--', 'prisma', 'migrate', 'deploy'], environment);
+      if (migrateStatus !== 0) {
+        process.exitCode = migrateStatus;
+        return;
+      }
+      process.exitCode = runCommand('npm', commandArgs, environment);
     } finally {
       deleteBranch(name, true);
       console.log(`Deleted ephemeral Neon branch ${name}.`);
