@@ -15,6 +15,7 @@ import { sanitizeLogError } from './enrichment-logging.js';
 import type { EnrichmentLoggingContext } from './enrichment-logging.js';
 import { LocationResolver } from './location-resolver.js';
 import type { ResolvedObservationLocation } from './location-resolver.js';
+import { findExistingSightingForObservation } from './sighting-observation-match.js';
 
 export interface AlertTargetDraft {
   speciesName: string;
@@ -485,9 +486,13 @@ export class AlertTargetService {
     const subIds = observations.map(observation => observation.subId).filter(Boolean);
     const existing = await prisma.sighting.findMany({
       where: { subId: { in: subIds } },
-      select: { subId: true, incidentId: true },
+      select: {
+        subId: true,
+        speciesCode: true,
+        scientificName: true,
+        incidentId: true,
+      },
     });
-    const existingBySubId = new Map(existing.map(sighting => [sighting.subId, sighting]));
     const scientificNames = [...new Set(observations.map(observation => observation.sciName).filter(Boolean))];
     const commonNames = [...new Set(observations.map(observation => observation.comName).filter(Boolean))];
     const rarityRecords = await prisma.rarityCode.findMany({
@@ -505,7 +510,7 @@ export class AlertTargetService {
 
     for (const observation of observations) {
       if (!observation.subId) continue;
-      const existingSighting = existingBySubId.get(observation.subId);
+      const existingSighting = findExistingSightingForObservation(existing, observation);
       if (existingSighting) {
         if (existingSighting.incidentId) {
           const reopened = await reopenClosedIncident(

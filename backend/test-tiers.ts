@@ -15,6 +15,7 @@ export const unitTestFiles = [
   'src/lib/rarity-seeder.test.ts',
   'src/lib/rarity-service.test.ts',
   'src/lib/sighting-service.test.ts',
+  'src/lib/sighting-observation-match.test.ts',
   'src/lib/streak-service.test.ts',
   'src/schema-check.test.ts',
   'src/test-msw.test.ts',
