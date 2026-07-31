@@ -1,7 +1,7 @@
 import React, { type CSSProperties } from 'react';
 
 interface PhotoSlotProps {
-  photo: { url: string; attribution: string } | null;
+  photo: { url: string; attribution: string; sourceUrl?: string | null } | null;
   imgStyle?: CSSProperties;
 }
 
@@ -11,7 +11,18 @@ const PhotoSlot: React.FC<PhotoSlotProps> = ({ photo, imgStyle }) => {
       {photo ? (
         <>
           <img src={photo.url} alt="Sighting photo" style={imgStyle} />
-          <div className="attribution-overlay">{photo.attribution}</div>
+          {photo.sourceUrl ? (
+            <a
+              className="attribution-overlay"
+              href={photo.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {photo.attribution}
+            </a>
+          ) : (
+            <div className="attribution-overlay">{photo.attribution}</div>
+          )}
         </>
       ) : (
         <div className="photo-placeholder" />

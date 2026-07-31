@@ -10,10 +10,17 @@ describe('PhotoSlot', () => {
   });
 
   it('renders the image when provided', () => {
-    const photo = { url: 'test.jpg', attribution: 'Photo by Test' };
+    const photo = {
+      url: 'test.jpg',
+      attribution: 'Photo by Test',
+      sourceUrl: 'https://www.inaturalist.org/observations/123',
+    };
     render(<PhotoSlot photo={photo} />);
     const img = screen.getByRole('img');
     expect(img).toHaveAttribute('src', 'test.jpg');
-    expect(screen.getByText('Photo by Test')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Photo by Test' })).toHaveAttribute(
+      'href',
+      'https://www.inaturalist.org/observations/123',
+    );
   });
 });

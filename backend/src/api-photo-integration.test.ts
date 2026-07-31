@@ -38,21 +38,24 @@ describe('API Photo Integration', () => {
     // 1. Arrange: Create an incident
     await createOpenIncident('Cyanocitta cristata', 'Blue Jay');
 
-    const mockResponse = {
-      results: [
-        {
-          default_photo: {
-            medium_url: 'https://inat.com/bluejay.jpg',
-            attribution: '(c) Photographer',
-          },
-        },
-      ],
-    };
-
-    (fetch as any).mockResolvedValue({
-      ok: true,
-      json: async () => mockResponse,
-    });
+    (fetch as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [{ id: 123 }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [{
+            uri: 'https://www.inaturalist.org/observations/456',
+            photos: [{
+              url: 'https://inaturalist-open-data.s3.amazonaws.com/photos/123/square.jpg',
+              attribution: '(c) Photographer',
+              license_code: 'cc-by',
+            }],
+          }],
+        }),
+      });
 
     // 2. Act: Call /api/incidents
     const response = await request(app).get('/api/incidents');
@@ -70,7 +73,8 @@ describe('API Photo Integration', () => {
     const cached = await prisma.speciesPhoto.findUnique({
       where: { speciesName: 'Cyanocitta cristata' }
     });
-    expect(cached?.photoUrl).toBe('https://inat.com/bluejay.jpg');
+    expect(cached?.photoUrl).toBe('https://inaturalist-open-data.s3.amazonaws.com/photos/123/medium.jpg');
+    expect(cached?.sourceUrl).toBe('https://www.inaturalist.org/observations/456');
   });
 
   it('should return cached photo immediately and NOT fetch again', async () => {
@@ -80,6 +84,7 @@ describe('API Photo Integration', () => {
         speciesName: 'Cyanocitta cristata',
         photoUrl: 'https://cached.com/photo.jpg',
         attribution: '(c) Cached',
+        sourceUrl: 'https://www.inaturalist.org/observations/789',
         fetchedAt: new Date()
       }
     });
@@ -92,6 +97,7 @@ describe('API Photo Integration', () => {
     // 3. Assert: Immediate response should have the photo
     expect(response.status).toBe(200);
     expect(response.body[0].photo.url).toBe('https://cached.com/photo.jpg');
+    expect(response.body[0].photo.sourceUrl).toBe('https://www.inaturalist.org/observations/789');
     expect(fetch).not.toHaveBeenCalled();
   });
 

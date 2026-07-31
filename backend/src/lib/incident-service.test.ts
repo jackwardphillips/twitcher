@@ -185,7 +185,8 @@ describe('IncidentService', () => {
       const mockPhoto = {
         speciesName: 'Cyanocitta cristata',
         photoUrl: 'https://inat.com/bluejay.jpg',
-        attribution: '(c) Photographer'
+        attribution: '(c) Photographer',
+        sourceUrl: 'https://www.inaturalist.org/observations/456'
       };
 
       prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
@@ -199,8 +200,35 @@ describe('IncidentService', () => {
       const result = await getOpenIncidents(prismaMock as any);
       expect(result[0]!.photo).toEqual({
         url: 'https://inat.com/bluejay.jpg',
-        attribution: '(c) Photographer'
+        attribution: '(c) Photographer',
+        sourceUrl: 'https://www.inaturalist.org/observations/456'
       });
+    });
+
+    it('does not return a legacy cached photo without a source URL', async () => {
+      const mockIncident = {
+        id: 'inc-legacy-photo',
+        scientificName: 'Cyanocitta cristata',
+        commonName: 'Blue Jay',
+        status: 'OPEN',
+        minLat: 0, maxLat: 0, minLng: 0, maxLng: 0,
+        firstSeen: new Date(), lastSeen: new Date(),
+        sightings: []
+      };
+
+      prismaMock.incident.findMany.mockResolvedValue([mockIncident]);
+      prismaMock.rarityCode.findMany.mockResolvedValue([]);
+      (prismaMock as any).speciesPhoto = {
+        findMany: vi.fn().mockResolvedValue([{
+          speciesName: 'Cyanocitta cristata',
+          photoUrl: 'https://static.inaturalist.org/photos/123/medium.jpg',
+          attribution: '(c) Legacy',
+          sourceUrl: null
+        }])
+      };
+
+      const result = await getOpenIncidents(prismaMock as any);
+      expect(result[0]!.photo).toBeNull();
     });
   });
 

@@ -1293,11 +1293,13 @@ body {
   font-size: 0.5rem;
   line-height: 1.5;
   padding: 0.1rem 0.3rem;
+  text-decoration: underline;
   opacity: 0;
   transition: opacity 0.2s;
 }
 
-.photo-slot:hover .attribution-overlay {
+.photo-slot:hover .attribution-overlay,
+.photo-slot:focus-within .attribution-overlay {
   opacity: 1;
 }
 

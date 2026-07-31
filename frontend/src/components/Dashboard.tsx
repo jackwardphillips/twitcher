@@ -38,7 +38,7 @@ export interface Incident {
   latestChecklistUrl: string | null
   geminiSummary?: string | null
   dailyCounts: { date: string; count: number }[]
-  photo: { url: string; attribution: string } | null
+  photo: { url: string; attribution: string; sourceUrl?: string | null } | null
 }
 
 interface DashboardProps {
