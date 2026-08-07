@@ -7,7 +7,7 @@ import { EbirdClient } from '../lib/ebird-client.js';
 import { AlertTargetService } from '../lib/alert-target-service.js';
 import { ImapClient } from '../lib/imap-client.js';
 import { IngestionService } from '../lib/ingestion-service.js';
-import { validateProductionPollerEnvironment } from '../lib/poller-runtime.js';
+import { hydrateSpeciesPhotos, validateProductionPollerEnvironment } from '../lib/poller-runtime.js';
 import {
   commitCatchupEmailBatch,
   dedupePollTargetDrafts,
@@ -16,6 +16,7 @@ import {
 } from '../lib/poller-target-selection.js';
 import { runSummarizationCycle } from '../lib/summarization-service.js';
 import { closeInactiveIncidents } from '../lib/incident-service.js';
+import { PhotoService } from '../lib/photo-service.js';
 
 interface PollTarget {
   id: string;
@@ -234,6 +235,20 @@ async function main() {
     await closeInactiveIncidents(prisma);
   }
 
+  const photoHydration = writeSightings
+    ? await hydrateSpeciesPhotos(
+        (await prisma.incident.findMany({
+          where: {
+            status: 'OPEN',
+            lastSeen: { gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
+            sightings: { some: { status: 'present' } },
+          },
+          select: { scientificName: true },
+        })).map(incident => incident.scientificName),
+        new PhotoService(),
+      )
+    : { checked: 0, refreshed: 0, failed: 0 };
+
   const summarization = writeSightings
     ? await runSummarizationCycle(prisma)
     : { eligible: 0, updated: 0, skipped: 0, failed: 0 };
@@ -283,6 +298,7 @@ async function main() {
       status: summarization.failed > 0 ? 'partial_failure' : 'success',
       ...summarization,
     },
+    photoHydration,
     alertPollRunId: pollRunId ?? null,
   })}`);
   if (partialFailure) {
