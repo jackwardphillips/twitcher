@@ -1,0 +1,19 @@
+{
+  "extends": "./backend/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": [
+    "api/**/*.ts",
+    "backend/src/lib/db.ts",
+    "backend/src/lib/incident-service.ts",
+    "backend/src/lib/statistics-service.ts",
+    "backend/src/lib/geo-utils.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "backend/dist",
+    "backend/src/**/*.test.ts"
+  ]
+}

@@ -2,8 +2,10 @@
   "name": "rare-bird-dashboard-root",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Root project for Rare Bird Dashboard",
   "scripts": {
+    "build": "npm run prisma:generate --prefix backend && npm run build --prefix frontend",
     "dev": "node backend/scripts/neon-branch.js dev",
     "start": "node backend/scripts/start-dev.js",
     "install:all": "npm install --prefix backend && npm install --prefix frontend",
@@ -17,7 +19,8 @@
     "ops:db-counts": "npm run ops:db-counts --prefix backend",
     "ops:ingestion": "npm run ops:ingestion --prefix backend",
     "ops:enrichment-summary": "npm run ops:enrichment-summary --prefix backend",
-    "ops:env": "npm run ops:env --prefix backend"
+    "ops:env": "npm run ops:env --prefix backend",
+    "typecheck:vercel": "npm run prisma:generate --prefix backend && npm run typecheck:vercel --prefix backend"
   },
   "keywords": [],
   "author": "",
