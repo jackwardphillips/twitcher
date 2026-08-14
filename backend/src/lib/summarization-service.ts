@@ -169,7 +169,7 @@ export async function summarizeIncident(prisma: PrismaClient, incidentId: string
     await prisma.incident.update({
       where: { id: incidentId },
       data: {
-        geminiSummary: summary || incident.geminiSummary,
+        geminiSummary: summary || null,
         summaryGeneratedAt: now
       }
     });

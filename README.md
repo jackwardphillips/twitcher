@@ -220,3 +220,11 @@ Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider t
 - Startup ingestion runs only when `RUN_STARTUP_INGESTION=true`; keep it `false` in production unless explicitly supervised.
 - The dashboard currently renders incident cards and map pins, but it does not yet have a drill-down detail view.
 - The "Discuss" link on cards is still a static Discord link, not incident-specific routing.
+
+## Project Documentation
+
+- `AUDIT.md` is the current engineering backlog and risk register.
+- `docs/CHANGELOG.md` records shipped changes.
+- `docs/ops/` contains operational runbooks and provider-safety notes.
+- `conductor/archive/` preserves completed historical implementation plans;
+  it is not a current backlog.

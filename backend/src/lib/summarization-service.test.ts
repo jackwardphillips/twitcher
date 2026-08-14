@@ -123,6 +123,34 @@ describe('SummarizationService', () => {
       });
     });
 
+    it('should clear a stale summary when the provider finds no useful signal', async () => {
+      prismaMock.incident.findUnique.mockResolvedValue({
+        id: 'inc-1',
+        geminiSummary: 'Old summary',
+        summaryGeneratedAt: new Date('2026-04-19T10:00:00Z'),
+        lastSeen: new Date('2026-04-20T09:00:00Z'),
+      });
+      prismaMock.sighting.findMany.mockResolvedValue([
+        { details: 'Still present.' },
+      ]);
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: '   ' } }],
+        }),
+      });
+
+      await summarizeIncident(prismaMock as any, 'inc-1');
+
+      expect(prismaMock.incident.update).toHaveBeenCalledWith({
+        where: { id: 'inc-1' },
+        data: {
+          geminiSummary: null,
+          summaryGeneratedAt: new Date('2026-04-20T10:00:00Z'),
+        },
+      });
+    });
+
     it('should fallback to Gemini if Groq fails', async () => {
       const mockIncident = { 
         id: 'inc-1', 

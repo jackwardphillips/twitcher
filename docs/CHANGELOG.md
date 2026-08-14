@@ -4,12 +4,24 @@
 
 ### Backend
 
+- Removed the unused streak-service implementation and its isolated tests; the
+  production sighting streak calculation remains covered at the API boundary.
+- Clear stale incident summary text when a provider successfully reports no
+  useful signal, while retaining the generation timestamp to distinguish that
+  result from a provider failure.
 - Reconciled incident dates, sighting counts, and open or closed status whenever
   a sighting is marked missing or removed, preventing deleted reports from
   leaving incidents open with stale aggregate data.
 - Made sighting lifecycle updates and incident reconciliation atomic, preserved
   the original closure time for incidents that remain closed, and added
   regression coverage for both behaviors.
+
+### Documentation
+
+- Replaced the 81-finding cleanup audit and overlapping status, review, TODO,
+  and active-track documents with one prioritized engineering backlog.
+- Retained shipped history in this changelog, operational guidance in
+  `docs/ops/`, and completed historical plans in `conductor/archive/`.
 
 ## 2026-07-30
 
