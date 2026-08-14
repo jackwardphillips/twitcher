@@ -9,7 +9,9 @@ This is the single source of truth for engineering cleanup and risk work.
 - Product setup and current behavior belong in `README.md`.
 - Shipped changes belong in `docs/CHANGELOG.md`.
 - Operational runbooks belong in `docs/ops/`.
-- Completed historical plans remain in `conductor/archive/`.
+- Useful implementation and operational history belongs in the changelog.
+  Legacy plans remain in `conductor/archive/` only until their durable details
+  are migrated and the archive can be removed.
 
 Only actionable work belongs here. Add evidence and a verifiable completion
 condition to new entries. Remove completed entries after recording the change in

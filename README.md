@@ -226,5 +226,5 @@ Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider t
 - `AUDIT.md` is the current engineering backlog and risk register.
 - `docs/CHANGELOG.md` records shipped changes.
 - `docs/ops/` contains operational runbooks and provider-safety notes.
-- `conductor/archive/` preserves completed historical implementation plans;
-  it is not a current backlog.
+- `conductor/archive/` is legacy history, not a current backlog. Useful details
+  will move to the changelog before the archive is removed.

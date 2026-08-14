@@ -20,8 +20,9 @@
 
 - Replaced the 81-finding cleanup audit and overlapping status, review, TODO,
   and active-track documents with one prioritized engineering backlog.
-- Retained shipped history in this changelog, operational guidance in
-  `docs/ops/`, and completed historical plans in `conductor/archive/`.
+- Retained shipped history in this changelog and operational guidance in
+  `docs/ops/`. The remaining `conductor/archive/` is temporary legacy history;
+  useful details will move here before it is removed.
 
 ## 2026-07-30
 
@@ -88,6 +89,18 @@
 
 ### CI and operations
 
+- Delivered the poller as a gated Linux ARM64 image through GitHub Actions and
+  GHCR, with immutable revision tags, a moving production tag, cached-image
+  fallback, overlap locking, and a server-local digest override for rollback.
+- Activated the home-server schedule at midnight, 2:00 AM, and every two hours
+  from 6:00 AM through 10:00 PM, intentionally retaining the 2:00–6:00 AM quiet
+  window. Human logs retain 14 compressed daily files; sanitized JSONL run
+  summaries retain 90 days; detailed eBird diagnostics retain 30 days.
+- Verified production image digest
+  `sha256:21544bf246f37220444510d65589470264e80270c9f207d91c8b2af9afe904c6`
+  in supervised poll run `cmrz7brec004t0up5oygmscrh`: 59 targets and 59
+  correlated eBird calls completed with zero failures, while Groq updated 7
+  eligible summaries and skipped 9.
 - Updated poller CI and local test documentation for the explicit database-reset
   acknowledgement and `_test` database/role conventions.
 - Added repository-wide backend and frontend validation for pushes and pull
