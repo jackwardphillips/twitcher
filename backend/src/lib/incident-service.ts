@@ -427,6 +427,52 @@ export async function reopenClosedIncident(
   return result.count === 1;
 }
 
+export async function reconcileIncidentFromPresentSightings(
+  prisma: PrismaClient,
+  incidentId: string,
+): Promise<void> {
+  const incident = await prisma.incident.findUnique({
+    where: { id: incidentId },
+    select: { status: true },
+  });
+  if (!incident || incident.status === IncidentStatus.PERMANENTLY_CLOSED) return;
+
+  const sightings = await prisma.sighting.findMany({
+    where: { incidentId, status: 'present' },
+    select: { date: true },
+    orderBy: { date: 'asc' },
+  });
+  const now = new Date();
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+  if (sightings.length === 0) {
+    await prisma.incident.update({
+      where: { id: incidentId },
+      data: {
+        status: IncidentStatus.CLOSED,
+        closedAt: now,
+        sightingCount: 0,
+      },
+    });
+    return;
+  }
+
+  const firstSeen = sightings[0]!.date;
+  const lastSeen = sightings[sightings.length - 1]!.date;
+  const status = lastSeen < threeDaysAgo ? IncidentStatus.CLOSED : IncidentStatus.OPEN;
+
+  await prisma.incident.update({
+    where: { id: incidentId },
+    data: {
+      firstSeen,
+      lastSeen,
+      sightingCount: sightings.length,
+      status,
+      closedAt: status === IncidentStatus.CLOSED ? now : null,
+    },
+  });
+}
+
 /**
  * Checks all OPEN and CLOSED incidents and updates their status based on inactivity.
  * - OPEN -> CLOSED: No new sightings for 3 days.

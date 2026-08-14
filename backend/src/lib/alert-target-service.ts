@@ -9,6 +9,7 @@ import {
   createIncident,
   findMatchingIncident,
   normalizeScientificName,
+  reconcileIncidentFromPresentSightings,
   reopenClosedIncident,
 } from './incident-service.js';
 import { sanitizeLogError } from './enrichment-logging.js';
@@ -409,10 +410,22 @@ export class AlertTargetService {
   }
 
   private async updateSightingLifecycle(subId: string, data: Prisma.SightingUpdateManyMutationInput): Promise<void> {
+    const linkedSightings = await prisma.sighting.findMany({
+      where: { subId, incidentId: { not: null } },
+      select: { incidentId: true, status: true },
+    });
+    const incidentIds = linkedSightings
+      .filter(sighting => data.status !== undefined && sighting.status !== data.status)
+      .map(sighting => sighting.incidentId!);
+
     await prisma.sighting.updateMany({
       where: { subId },
       data,
     });
+
+    for (const incidentId of new Set(incidentIds)) {
+      await reconcileIncidentFromPresentSightings(prisma, incidentId);
+    }
   }
 
   private async writeShadowObservation(alertTargetId: string, observation: EbirdObservation, location: ResolvedObservationLocation, alertPollRunId: string | null, now: Date): Promise<void> {
