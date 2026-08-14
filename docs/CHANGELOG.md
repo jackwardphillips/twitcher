@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-08-13
+
+### Backend
+
+- Reconciled incident dates, sighting counts, and open or closed status whenever
+  a sighting is marked missing or removed, preventing deleted reports from
+  leaving incidents open with stale aggregate data.
+- Made sighting lifecycle updates and incident reconciliation atomic, preserved
+  the original closure time for incidents that remain closed, and added
+  regression coverage for both behaviors.
+
+## 2026-07-30
+
+### Backend
+
+- Changed the poller to derive work from open incidents plus the newest three
+  previously unhandled alert emails from a five-day overlapping mailbox
+  window, replacing the rolling seven-email target union.
+- Added race-safe per-email poll handling, exact eBird region metadata on new
+  incidents, email-driven reopening of closed incidents, post-poll incident
+  closure, and immediate dashboard exclusion for incidents past the
+  three-day activity window.
+- Added lifecycle tests covering email arrival races and failed-run retries,
+  catch-up limits, target deduplication, legacy region fallback, final-chance
+  polling, closure boundaries, reopening, and closed/stale dashboard results.
+
 ## 2026-07-25
 
 ### Frontend
