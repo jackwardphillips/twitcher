@@ -615,6 +615,27 @@ describe('IncidentService', () => {
         },
       });
     });
+
+    it('preserves closedAt when reconciliation leaves an incident closed', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-08-13T12:00:00Z'));
+      prismaMock.incident.findUnique.mockResolvedValue({ status: IncidentStatus.CLOSED });
+      prismaMock.sighting.findMany.mockResolvedValue([
+        { date: new Date('2026-05-23T16:57:00Z') },
+      ]);
+
+      await reconcileIncidentFromPresentSightings(prismaMock as any, 'closed-incident');
+
+      expect(prismaMock.incident.update).toHaveBeenCalledWith({
+        where: { id: 'closed-incident' },
+        data: {
+          firstSeen: new Date('2026-05-23T16:57:00Z'),
+          lastSeen: new Date('2026-05-23T16:57:00Z'),
+          sightingCount: 1,
+          status: IncidentStatus.CLOSED,
+        },
+      });
+    });
   });
 
   describe('Fragmentation Reproduction (Cook\'s Petrel April 22, 2026)', () => {

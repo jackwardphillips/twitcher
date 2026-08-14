@@ -410,22 +410,24 @@ export class AlertTargetService {
   }
 
   private async updateSightingLifecycle(subId: string, data: Prisma.SightingUpdateManyMutationInput): Promise<void> {
-    const linkedSightings = await prisma.sighting.findMany({
-      where: { subId, incidentId: { not: null } },
-      select: { incidentId: true, status: true },
-    });
-    const incidentIds = linkedSightings
-      .filter(sighting => data.status !== undefined && sighting.status !== data.status)
-      .map(sighting => sighting.incidentId!);
+    await prisma.$transaction(async tx => {
+      const linkedSightings = await tx.sighting.findMany({
+        where: { subId, incidentId: { not: null } },
+        select: { incidentId: true, status: true },
+      });
+      const incidentIds = linkedSightings
+        .filter(sighting => data.status !== undefined && sighting.status !== data.status)
+        .map(sighting => sighting.incidentId!);
 
-    await prisma.sighting.updateMany({
-      where: { subId },
-      data,
-    });
+      await tx.sighting.updateMany({
+        where: { subId },
+        data,
+      });
 
-    for (const incidentId of new Set(incidentIds)) {
-      await reconcileIncidentFromPresentSightings(prisma, incidentId);
-    }
+      for (const incidentId of new Set(incidentIds)) {
+        await reconcileIncidentFromPresentSightings(tx, incidentId);
+      }
+    });
   }
 
   private async writeShadowObservation(alertTargetId: string, observation: EbirdObservation, location: ResolvedObservationLocation, alertPollRunId: string | null, now: Date): Promise<void> {

@@ -1,5 +1,5 @@
 import { PrismaClient, IncidentStatus } from '@prisma/client';
-import type { Incident, Sighting } from '@prisma/client';
+import type { Incident, Prisma, Sighting } from '@prisma/client';
 import { calculateDistance } from './geo-utils.js';
 
 const REGION_NAMES = new Set([
@@ -428,7 +428,7 @@ export async function reopenClosedIncident(
 }
 
 export async function reconcileIncidentFromPresentSightings(
-  prisma: PrismaClient,
+  prisma: Pick<Prisma.TransactionClient, 'incident' | 'sighting'>,
   incidentId: string,
 ): Promise<void> {
   const incident = await prisma.incident.findUnique({
@@ -450,8 +450,8 @@ export async function reconcileIncidentFromPresentSightings(
       where: { id: incidentId },
       data: {
         status: IncidentStatus.CLOSED,
-        closedAt: now,
         sightingCount: 0,
+        ...(incident.status === IncidentStatus.OPEN ? { closedAt: now } : {}),
       },
     });
     return;
@@ -468,7 +468,11 @@ export async function reconcileIncidentFromPresentSightings(
       lastSeen,
       sightingCount: sightings.length,
       status,
-      closedAt: status === IncidentStatus.CLOSED ? now : null,
+      ...(status === IncidentStatus.OPEN
+        ? { closedAt: null }
+        : incident.status === IncidentStatus.OPEN
+          ? { closedAt: now }
+          : {}),
     },
   });
 }
