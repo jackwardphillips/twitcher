@@ -1,1 +1,0 @@
-This track should cover loading bars for startup so it looks cleaner, with an option to pass verbose=True for debugging.

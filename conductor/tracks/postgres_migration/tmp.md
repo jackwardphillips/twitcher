@@ -1,1 +1,0 @@
-This track will cover the migration from prisma to postgres, which is necessary for deployment.
