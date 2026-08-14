@@ -6,6 +6,7 @@ import {
   addSightingToIncident,
   closeInactiveIncidents,
   getOpenIncidents,
+  reconcileIncidentFromPresentSightings,
   reopenClosedIncident,
 } from './incident-service';
 import { IncidentStatus } from '@prisma/client';
@@ -22,6 +23,7 @@ const prismaMock = {
     deleteMany: vi.fn(),
   },
   sighting: {
+    findMany: vi.fn(),
     update: vi.fn(),
     updateMany: vi.fn(),
   },
@@ -578,6 +580,61 @@ describe('IncidentService', () => {
         'not-closed',
         { name: 'Maryland', code: 'US-MD' },
       )).resolves.toBe(false);
+    });
+  });
+
+  describe('reconcileIncidentFromPresentSightings', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('removes a deleted latest report from the incident aggregates and closes the stale incident', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-08-13T12:00:00Z'));
+      prismaMock.incident.findUnique.mockResolvedValue({ status: IncidentStatus.OPEN });
+      prismaMock.sighting.findMany.mockResolvedValue([
+        { date: new Date('2026-05-09T17:27:00Z') },
+        { date: new Date('2026-05-23T16:57:00Z') },
+      ]);
+
+      await reconcileIncidentFromPresentSightings(prismaMock as any, 'moorhen-incident');
+
+      expect(prismaMock.sighting.findMany).toHaveBeenCalledWith({
+        where: { incidentId: 'moorhen-incident', status: 'present' },
+        select: { date: true },
+        orderBy: { date: 'asc' },
+      });
+      expect(prismaMock.incident.update).toHaveBeenCalledWith({
+        where: { id: 'moorhen-incident' },
+        data: {
+          firstSeen: new Date('2026-05-09T17:27:00Z'),
+          lastSeen: new Date('2026-05-23T16:57:00Z'),
+          sightingCount: 2,
+          status: IncidentStatus.CLOSED,
+          closedAt: new Date('2026-08-13T12:00:00Z'),
+        },
+      });
+    });
+
+    it('preserves closedAt when reconciliation leaves an incident closed', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-08-13T12:00:00Z'));
+      prismaMock.incident.findUnique.mockResolvedValue({ status: IncidentStatus.CLOSED });
+      prismaMock.sighting.findMany.mockResolvedValue([
+        { date: new Date('2026-05-23T16:57:00Z') },
+      ]);
+
+      await reconcileIncidentFromPresentSightings(prismaMock as any, 'closed-incident');
+
+      expect(prismaMock.incident.update).toHaveBeenCalledWith({
+        where: { id: 'closed-incident' },
+        data: {
+          firstSeen: new Date('2026-05-23T16:57:00Z'),
+          lastSeen: new Date('2026-05-23T16:57:00Z'),
+          sightingCount: 1,
+          status: IncidentStatus.CLOSED,
+        },
+      });
     });
   });
 

@@ -1,5 +1,5 @@
 import { PrismaClient, IncidentStatus } from '@prisma/client';
-import type { Incident, Sighting } from '@prisma/client';
+import type { Incident, Prisma, Sighting } from '@prisma/client';
 import { calculateDistance } from './geo-utils.js';
 
 const REGION_NAMES = new Set([
@@ -425,6 +425,56 @@ export async function reopenClosedIncident(
     },
   });
   return result.count === 1;
+}
+
+export async function reconcileIncidentFromPresentSightings(
+  prisma: Pick<Prisma.TransactionClient, 'incident' | 'sighting'>,
+  incidentId: string,
+): Promise<void> {
+  const incident = await prisma.incident.findUnique({
+    where: { id: incidentId },
+    select: { status: true },
+  });
+  if (!incident || incident.status === IncidentStatus.PERMANENTLY_CLOSED) return;
+
+  const sightings = await prisma.sighting.findMany({
+    where: { incidentId, status: 'present' },
+    select: { date: true },
+    orderBy: { date: 'asc' },
+  });
+  const now = new Date();
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+  if (sightings.length === 0) {
+    await prisma.incident.update({
+      where: { id: incidentId },
+      data: {
+        status: IncidentStatus.CLOSED,
+        sightingCount: 0,
+        ...(incident.status === IncidentStatus.OPEN ? { closedAt: now } : {}),
+      },
+    });
+    return;
+  }
+
+  const firstSeen = sightings[0]!.date;
+  const lastSeen = sightings[sightings.length - 1]!.date;
+  const status = lastSeen < threeDaysAgo ? IncidentStatus.CLOSED : IncidentStatus.OPEN;
+
+  await prisma.incident.update({
+    where: { id: incidentId },
+    data: {
+      firstSeen,
+      lastSeen,
+      sightingCount: sightings.length,
+      status,
+      ...(status === IncidentStatus.OPEN
+        ? { closedAt: null }
+        : incident.status === IncidentStatus.OPEN
+          ? { closedAt: now }
+          : {}),
+    },
+  });
 }
 
 /**
