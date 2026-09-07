@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ImapClient } from './imap-client.js';
+import { getEmailIdentity, ImapClient } from './imap-client.js';
 import { ImapFlow } from 'imapflow';
 
 vi.mock('imapflow');
@@ -75,6 +75,14 @@ describe('ImapClient', () => {
     expect(emails[0]!.messageId).toBe('msg1');
     expect(emails[0]!.subject).toContain('ABA Rarities');
     expect(mockImapFlow.logout).toHaveBeenCalled();
+  });
+
+  it('should derive a stable, content-specific identity when Message-ID is missing', () => {
+    const first = getEmailIdentity(undefined, Buffer.from('first email'));
+
+    expect(first).toBe(getEmailIdentity(undefined, Buffer.from('first email')));
+    expect(first).not.toBe(getEmailIdentity(undefined, Buffer.from('second email')));
+    expect(first).not.toBe('unknown');
   });
 
   it('should use the provided "since" date when specified', async () => {

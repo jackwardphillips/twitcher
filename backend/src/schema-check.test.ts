@@ -12,6 +12,8 @@ describe('Prisma Schema Updates', () => {
     expect(sightingFields).toContain('locId');
     expect(sightingFields).toContain('speciesCode');
     expect(sightingFields).toContain('howMany');
+    expect(sightingFields).toContain('incomingEmailId');
+    expect(sightingFields).toContain('sourceIndex');
   });
 
   it('should have the IncomingEmail model in the Prisma client', () => {

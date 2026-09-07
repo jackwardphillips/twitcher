@@ -108,5 +108,8 @@ describe('IngestionService Concurrency', () => {
     
     // saveSightings should only be called once
     expect(vi.mocked(saveSightings)).toHaveBeenCalledTimes(1);
+    expect(await db.sighting.count({
+      where: { incomingEmail: { messageId: 'concurrent-msg-1' } },
+    })).toBe(1);
   });
 });

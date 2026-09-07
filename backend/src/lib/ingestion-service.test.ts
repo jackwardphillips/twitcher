@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IngestionService } from './ingestion-service.js';
 import { ImapClient } from './imap-client.js';
 import { saveSightings } from './sighting-service.js';
+import { AlertTargetService } from './alert-target-service.js';
 import { db } from './db.js';
 import { http, HttpResponse } from 'msw';
 import { server } from '../test/mocks/server';
@@ -241,5 +242,85 @@ describe('IngestionService Integration', () => {
       where: { messageId: 'msg-fail-save' }
     });
     expect(savedEmail?.status).toBe('failed');
+  });
+
+  it('should roll back all core writes when persistence fails partway through', async () => {
+    const date = getRecentDate();
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'msg-atomic-rollback',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody: getRawBody(date),
+    }]);
+
+    vi.spyOn(AlertTargetService.prototype, 'upsertTargetsFromEmail')
+      .mockImplementationOnce(async (_content, sourceEmailId, emailDate, client) => {
+        if (!client || sourceEmailId == null) throw new Error('Missing transaction context');
+        await client.alertTarget.create({
+          data: {
+            speciesName: 'Atomic Rollback Bird',
+            regionName: 'New York',
+            regionCode: 'US-NY',
+            sourceEmailId,
+            firstSeenInEmailAt: emailDate ?? date,
+            lastSeenInEmailAt: emailDate ?? date,
+          },
+        });
+        throw new Error('Injected failure after first core write');
+      });
+
+    const result = await service.ingest(undefined, false);
+
+    expect(result.failed).toBe(1);
+    expect(await db.alertTarget.count({ where: { speciesName: 'Atomic Rollback Bird' } })).toBe(0);
+    expect(await db.sighting.count({ where: { incomingEmail: { messageId: 'msg-atomic-rollback' } } })).toBe(0);
+    expect(await db.incomingEmail.findUnique({ where: { messageId: 'msg-atomic-rollback' } }))
+      .toMatchObject({ status: 'failed' });
+  });
+
+  it('should retry without duplicating parsed sightings', async () => {
+    const date = getRecentDate();
+    const mockEmail = {
+      messageId: 'msg-idempotent-retry',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody: getRawBody(date),
+    };
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([mockEmail]);
+
+    const first = await service.ingest(undefined, false);
+    const second = await service.ingest(undefined, false);
+
+    expect(first.ingested).toBe(1);
+    expect(second.ingested).toBe(0);
+    expect(await db.sighting.count({
+      where: { incomingEmail: { messageId: 'msg-idempotent-retry' } },
+    })).toBe(1);
+  });
+
+  it('should not retry committed core writes when attempt logging fails afterward', async () => {
+    const date = getRecentDate();
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'msg-post-commit-log-failure',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody: getRawBody(date),
+    }]);
+    vi.spyOn(db.emailIngestionAttempt, 'update')
+      .mockRejectedValueOnce(new Error('Injected logging failure'));
+
+    const result = await service.ingest(undefined, false);
+
+    expect(result.ingested).toBe(1);
+    expect(result.failed).toBe(0);
+    expect(await db.incomingEmail.findUnique({
+      where: { messageId: 'msg-post-commit-log-failure' },
+    })).toMatchObject({ status: 'processed' });
+    expect(await db.sighting.count({
+      where: { incomingEmail: { messageId: 'msg-post-commit-log-failure' } },
+    })).toBe(1);
   });
 });

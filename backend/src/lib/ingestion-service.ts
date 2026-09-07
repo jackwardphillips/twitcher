@@ -1,7 +1,7 @@
 import { ImapClient } from './imap-client.js';
 import { db } from './db.js';
 import { parseEBirdAlert } from './ebird-parser.js';
-import { saveSightings } from './sighting-service.js';
+import { enrichRecentSightings, saveSightings } from './sighting-service.js';
 import { AlertTargetService } from './alert-target-service.js';
 import { EbirdClient } from './ebird-client.js';
 import {
@@ -259,31 +259,55 @@ export class IngestionService {
           if (!claimed) {
             continue;
           }
+          if (savedId === undefined) {
+            throw new Error('Claimed email is missing its database identity');
+          }
 
           // Auto-parse immediately
           try {
-            await this.alertTargetService.upsertTargetsFromEmail(email.rawBody, savedId, email.date ?? new Date());
             const sightings = writeParsedSightings ? parseEBirdAlert(email.rawBody, email.date) : [];
-            if (writeParsedSightings && sightings.length > 0) {
-              const enrichment = await saveSightings(sightings, enrich, { ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
-              if (enrichment) {
-                enrichmentAttempted += enrichment.attempted;
-                enrichmentSucceeded += enrichment.succeeded;
-                enrichmentFailed += enrichment.failed;
+            await db.$transaction(async (tx) => {
+              await this.alertTargetService.upsertTargetsFromEmail(
+                email.rawBody,
+                savedId,
+                email.date ?? new Date(),
+                tx,
+              );
+              if (writeParsedSightings && sightings.length > 0) {
+                await saveSightings(
+                  sightings,
+                  false,
+                  { ingestionRunId: run.id, emailAttemptId: emailAttempt.id },
+                  tx,
+                  savedId,
+                );
               }
-            }
-            
-            await db.incomingEmail.update({
-              where: { id: savedId },
-              data: { status: 'processed' },
-            });
-            await finishEmailAttempt(emailAttempt.id, {
-              status: 'processed',
-              incomingEmailId: savedId,
-              parsedSightings: sightings.length,
-              parsedSummary: summarizeParsedSightings(sightings),
-            });
+
+              await tx.incomingEmail.update({
+                where: { id: savedId },
+                data: { status: 'processed' },
+              });
+            }, { isolationLevel: 'Serializable' });
+
             ingested++;
+
+            if (enrich && sightings.length > 0) {
+              const enrichment = await enrichRecentSightings({ ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
+              enrichmentAttempted += enrichment.attempted;
+              enrichmentSucceeded += enrichment.succeeded;
+              enrichmentFailed += enrichment.failed;
+            }
+
+            try {
+              await finishEmailAttempt(emailAttempt.id, {
+                status: 'processed',
+                incomingEmailId: savedId,
+                parsedSightings: sightings.length,
+                parsedSummary: summarizeParsedSightings(sightings),
+              });
+            } catch (attemptError) {
+              console.error(`Failed to finish ingestion log for ${email.messageId}:`, sanitizeLogError(attemptError));
+            }
           } catch (parseError) {
             console.error(`Failed to parse/save email ${email.messageId}:`, parseError);
             await db.incomingEmail.update({

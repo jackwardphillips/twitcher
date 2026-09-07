@@ -79,12 +79,17 @@ export class AlertTargetService {
       .filter((target): target is AlertTargetDraft => !!target.regionCode);
   }
 
-  async upsertTargetsFromEmail(content: string, sourceEmailId?: number | null, emailDate: Date = new Date()): Promise<AlertTarget[]> {
+  async upsertTargetsFromEmail(
+    content: string,
+    sourceEmailId?: number | null,
+    emailDate: Date = new Date(),
+    client: Prisma.TransactionClient = prisma,
+  ): Promise<AlertTarget[]> {
     const targets = this.parseTargetsFromEmail(content);
     const saved: AlertTarget[] = [];
 
     for (const target of targets) {
-      saved.push(await prisma.alertTarget.upsert({
+      saved.push(await client.alertTarget.upsert({
         where: {
           speciesName_regionCode: {
             speciesName: target.speciesName,

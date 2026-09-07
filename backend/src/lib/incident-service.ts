@@ -2,6 +2,19 @@ import { PrismaClient, IncidentStatus } from '@prisma/client';
 import type { Incident, Prisma, Sighting } from '@prisma/client';
 import { calculateDistance } from './geo-utils.js';
 
+type IncidentDbClient = PrismaClient | Prisma.TransactionClient;
+
+async function withTransaction<T>(
+  client: IncidentDbClient,
+  operation: (tx: Prisma.TransactionClient) => Promise<T>,
+  options?: { isolationLevel?: Prisma.TransactionIsolationLevel },
+): Promise<T> {
+  if ('$transaction' in client) {
+    return client.$transaction(operation, options);
+  }
+  return operation(client);
+}
+
 const REGION_NAMES = new Set([
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
   'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
@@ -146,7 +159,7 @@ export function normalizeScientificName(raw: string, commonName?: string): strin
  * Default radius is 25km.
  */
 export async function findMatchingIncident(
-  prisma: PrismaClient,
+  prisma: IncidentDbClient,
   scientificName: string,
   latitude: number,
   longitude: number,
@@ -204,7 +217,7 @@ export async function findMatchingIncident(
  * Creates a new incident based on an initial sighting.
  */
 export async function createIncident(
-  prisma: PrismaClient,
+  prisma: IncidentDbClient,
   sighting: Sighting,
   pollRegion?: { name: string; code: string },
 ): Promise<Incident> {
@@ -252,12 +265,12 @@ export async function createIncident(
  * The survivor's metadata is updated to reflect the combined bounds and dates.
  */
 export async function mergeIncidents(
-  prisma: PrismaClient,
+  prisma: IncidentDbClient,
   incidentIds: string[]
 ): Promise<Incident> {
   if (incidentIds.length === 0) throw new Error('No incident IDs provided for merge');
   
-  return await prisma.$transaction(async (tx) => {
+  return await withTransaction(prisma, async (tx) => {
     // Find all incidents to be merged INSIDE transaction
     const incidents = await tx.incident.findMany({
       where: { id: { in: incidentIds } },
@@ -325,7 +338,7 @@ export async function mergeIncidents(
  * Adds a sighting to an existing incident (or merges multiple incidents and adds to the result).
  */
 export async function addSightingToIncident(
-  prisma: PrismaClient,
+  prisma: IncidentDbClient,
   incidentOrIncidents: Incident | Incident[],
   sighting: Sighting,
   pollRegion?: { name: string; code: string },
@@ -346,7 +359,7 @@ export async function addSightingToIncident(
     incidentId = incidentOrIncidents.id;
   }
 
-  const updateIncident = () => prisma.$transaction(async (tx) => {
+  const updateIncident = (): Promise<Incident> => withTransaction(prisma, async (tx) => {
     // Fetch the latest incident state to avoid race conditions with stale data
     const latestIncident = await tx.incident.findUnique({
       where: { id: incidentId }
