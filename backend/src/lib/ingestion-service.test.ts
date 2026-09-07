@@ -185,6 +185,9 @@ describe('IngestionService Integration', () => {
     mockImapClient.fetchRecentAlerts.mockResolvedValue([]);
     const result = await service.ingest();
     expect(result.status).toBe('no_new_emails');
+    expect(enrichRecentSightings).toHaveBeenCalledWith({
+      ingestionRunId: expect.any(String),
+    });
   });
 
   it('should skip already processed emails', async () => {

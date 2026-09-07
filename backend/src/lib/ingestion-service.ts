@@ -120,7 +120,23 @@ export class IngestionService {
       let enrichmentFailed = 0;
 
       if (newEmails.length === 0 && pendingEmails.length === 0) {
-        const result: IngestionResult = { emailsFound: 0, ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
+        let enrichmentStatus: IngestionResult['enrichmentStatus'] = 'not_requested';
+        if (enrich) {
+          const enrichment = await enrichRecentSightings({ ingestionRunId: run.id });
+          enrichmentStatus = enrichment.failed === 0
+            ? 'success'
+            : enrichment.succeeded === 0
+              ? 'failed'
+              : 'partial_failure';
+        }
+        const result: IngestionResult = {
+          emailsFound: 0,
+          ingested,
+          skipped,
+          failed,
+          status: 'no_new_emails',
+          enrichmentStatus,
+        };
         await finishRun(result);
         return result;
       }
