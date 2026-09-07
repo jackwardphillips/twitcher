@@ -221,6 +221,9 @@ describe('IngestionService Integration', () => {
       where: { messageId: 'msg-skip' }
     });
     expect(emailAttempt?.status).toBe('skipped_processed');
+    expect(enrichRecentSightings).toHaveBeenCalledWith({
+      ingestionRunId: expect.any(String),
+    });
   });
 
   it('should mark email as failed if saveSightings throws', async () => {

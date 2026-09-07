@@ -118,6 +118,7 @@ export class IngestionService {
       let enrichmentAttempted = 0;
       let enrichmentSucceeded = 0;
       let enrichmentFailed = 0;
+      let enrichmentRan = false;
 
       if (newEmails.length === 0 && pendingEmails.length === 0) {
         let enrichmentStatus: IngestionResult['enrichmentStatus'] = 'not_requested';
@@ -315,6 +316,7 @@ export class IngestionService {
 
             if (enrich && sightings.length > 0) {
               const enrichment = await enrichRecentSightings({ ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
+              enrichmentRan = true;
               enrichmentAttempted += enrichment.attempted;
               enrichmentSucceeded += enrichment.succeeded;
               enrichmentFailed += enrichment.failed;
@@ -352,6 +354,13 @@ export class IngestionService {
           });
           failed++;
         }
+      }
+
+      if (enrich && !enrichmentRan) {
+        const enrichment = await enrichRecentSightings({ ingestionRunId: run.id });
+        enrichmentAttempted += enrichment.attempted;
+        enrichmentSucceeded += enrichment.succeeded;
+        enrichmentFailed += enrichment.failed;
       }
 
       let enrichmentStatus: IngestionResult['enrichmentStatus'] = 'not_requested';
