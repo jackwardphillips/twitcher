@@ -102,6 +102,7 @@ describe('Ingestion orchestration with mocked boundaries', () => {
       },
       expect.objectContaining({ incomingEmail: expect.any(Object) }),
       1,
+      false,
     );
     expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
       isolationLevel: 'Serializable',

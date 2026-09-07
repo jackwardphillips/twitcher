@@ -72,6 +72,7 @@ export async function saveSightings(
   context?: EnrichmentLoggingContext,
   client: Prisma.TransactionClient = prisma,
   incomingEmailId?: number,
+  adoptLegacySightings = false,
 ): Promise<EnrichmentResult | null> {
   // Fetch rarity codes for all species in this batch
   const uniqueScientificNames = [...new Set(sightings.map(s => s.scientificName))].filter(Boolean) as string[];
@@ -92,7 +93,7 @@ export async function saveSightings(
         continue;
       }
 
-      const legacySighting = await client.sighting.findFirst({
+      const legacySighting = adoptLegacySightings ? await client.sighting.findFirst({
         where: {
           incomingEmailId: null,
           species: sightingData.species,
@@ -104,7 +105,7 @@ export async function saveSightings(
           mapUrl: sightingData.mapUrl ?? null,
           checklistUrl: sightingData.checklistUrl ?? null,
         },
-      });
+      }) : null;
       if (legacySighting) {
         await client.sighting.update({
           where: { id: legacySighting.id },
@@ -113,6 +114,33 @@ export async function saveSightings(
         if (legacySighting.incidentId !== null) {
           continue;
         }
+
+        if (legacySighting.latitude !== null && legacySighting.longitude !== null) {
+          const orphanIncident = await client.incident.findFirst({
+            where: {
+              scientificName: normalizeScientificName(
+                legacySighting.scientificName || '',
+                legacySighting.species,
+              ),
+              sightingCount: 1,
+              minLat: legacySighting.latitude,
+              maxLat: legacySighting.latitude,
+              minLng: legacySighting.longitude,
+              maxLng: legacySighting.longitude,
+              firstSeen: legacySighting.date,
+              lastSeen: legacySighting.date,
+              sightings: { none: {} },
+            },
+          });
+          if (orphanIncident) {
+            await client.sighting.update({
+              where: { id: legacySighting.id },
+              data: { incidentId: orphanIncident.id },
+            });
+            continue;
+          }
+        }
+
         await assignSightingToIncident(client, legacySighting);
         continue;
       }

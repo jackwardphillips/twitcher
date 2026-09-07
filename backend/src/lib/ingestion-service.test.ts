@@ -300,7 +300,7 @@ describe('IngestionService Integration', () => {
       : null;
     await db.sighting.update({
       where: { id: persistedSighting.id },
-      data: { incomingEmailId: null, sourceIndex: null },
+      data: { incomingEmailId: null, sourceIndex: null, incidentId: null },
     });
     await db.incomingEmail.update({
       where: { messageId: 'msg-idempotent-retry' },
@@ -320,11 +320,54 @@ describe('IngestionService Integration', () => {
       },
     })).toBe(1);
     await expect(db.sighting.findUniqueOrThrow({ where: { id: persistedSighting.id } }))
-      .resolves.toMatchObject({ sourceIndex: 0 });
+      .resolves.toMatchObject({
+        sourceIndex: 0,
+        incidentId: originalIncident?.id ?? null,
+      });
     if (originalIncident) {
       await expect(db.incident.findUniqueOrThrow({ where: { id: originalIncident.id } }))
         .resolves.toMatchObject({ sightingCount: originalIncident.sightingCount });
     }
+  });
+
+  it('should not adopt an unowned legacy sighting for a newly fetched email', async () => {
+    const date = getRecentDate();
+    const rawBody = getRawBody(date);
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'msg-original-sighting',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody,
+    }]);
+    await service.ingest(undefined, false);
+
+    const originalSighting = await db.sighting.findFirstOrThrow({
+      where: { incomingEmail: { messageId: 'msg-original-sighting' } },
+    });
+    await db.sighting.update({
+      where: { id: originalSighting.id },
+      data: { incomingEmailId: null, sourceIndex: null },
+    });
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'msg-new-repeated-sighting',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody,
+    }]);
+
+    const result = await service.ingest(undefined, false);
+
+    expect(result.ingested).toBe(1);
+    expect(await db.sighting.count({
+      where: {
+        OR: [
+          { id: originalSighting.id },
+          { incomingEmail: { messageId: 'msg-new-repeated-sighting' } },
+        ],
+      },
+    })).toBe(2);
   });
 
   it('should classify an enrichment failure even when the query attempted no sightings', async () => {

@@ -282,6 +282,7 @@ export class IngestionService {
                   { ingestionRunId: run.id, emailAttemptId: emailAttempt.id },
                   tx,
                   savedId,
+                  email.isRetry,
                 );
               }
 
