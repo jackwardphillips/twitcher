@@ -156,6 +156,7 @@ export class IngestionService {
           from: email.from,
           date: email.date,
           rawBody: email.rawBody,
+          legacyRetryEligible: email.legacyRetryEligible,
           isRetry: true
         });
       }
@@ -299,13 +300,13 @@ export class IngestionService {
                   { ingestionRunId: run.id, emailAttemptId: emailAttempt.id },
                   tx,
                   savedId,
-                  email.isRetry,
+                  email.legacyRetryEligible === true,
                 );
               }
 
               await tx.incomingEmail.update({
                 where: { id: savedId },
-                data: { status: 'processed' },
+                data: { status: 'processed', legacyRetryEligible: false },
               });
             }, {
               isolationLevel: 'Serializable',

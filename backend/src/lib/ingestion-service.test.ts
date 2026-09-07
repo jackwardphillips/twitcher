@@ -310,7 +310,7 @@ describe('IngestionService Integration', () => {
     });
     await db.incomingEmail.update({
       where: { messageId: 'msg-idempotent-retry' },
-      data: { status: 'failed' },
+      data: { status: 'failed', legacyRetryEligible: true },
     });
     mockImapClient.fetchRecentAlerts.mockResolvedValue([]);
     const second = await service.ingest(undefined, false);
@@ -371,6 +371,50 @@ describe('IngestionService Integration', () => {
         OR: [
           { id: originalSighting.id },
           { incomingEmail: { messageId: 'msg-new-repeated-sighting' } },
+        ],
+      },
+    })).toBe(2);
+  });
+
+  it('should not adopt an unowned legacy sighting after a new atomic email fails', async () => {
+    const date = getRecentDate();
+    const rawBody = getRawBody(date);
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'msg-preexisting-unowned-sighting',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody,
+    }]);
+    await service.ingest(undefined, false);
+
+    const originalSighting = await db.sighting.findFirstOrThrow({
+      where: { incomingEmail: { messageId: 'msg-preexisting-unowned-sighting' } },
+    });
+    await db.sighting.update({
+      where: { id: originalSighting.id },
+      data: { incomingEmailId: null, sourceIndex: null },
+    });
+    await db.incomingEmail.create({
+      data: {
+        messageId: 'msg-new-atomic-retry',
+        subject: 'Alert',
+        from: 'ebird-alert@birds.cornell.edu',
+        date,
+        rawBody,
+        status: 'failed',
+      },
+    });
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([]);
+
+    const result = await service.ingest(undefined, false);
+
+    expect(result.ingested).toBe(1);
+    expect(await db.sighting.count({
+      where: {
+        OR: [
+          { id: originalSighting.id },
+          { incomingEmail: { messageId: 'msg-new-atomic-retry' } },
         ],
       },
     })).toBe(2);

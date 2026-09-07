@@ -24,6 +24,7 @@ describe('Prisma Schema Updates', () => {
     expect(emailFields).toContain('messageId');
     expect(emailFields).toContain('rawBody');
     expect(emailFields).toContain('status');
+    expect(emailFields).toContain('legacyRetryEligible');
   });
 
   it('tracks whether an email has been consumed by a successful poll plan', () => {
