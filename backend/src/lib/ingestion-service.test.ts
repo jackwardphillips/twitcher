@@ -298,6 +298,10 @@ describe('IngestionService Integration', () => {
     const originalIncident = persistedSighting.incidentId
       ? await db.incident.findUniqueOrThrow({ where: { id: persistedSighting.incidentId } })
       : null;
+    await db.sighting.update({
+      where: { id: persistedSighting.id },
+      data: { incomingEmailId: null, sourceIndex: null },
+    });
     await db.incomingEmail.update({
       where: { messageId: 'msg-idempotent-retry' },
       data: { status: 'failed' },
@@ -308,8 +312,15 @@ describe('IngestionService Integration', () => {
     expect(first.ingested).toBe(1);
     expect(second.ingested).toBe(1);
     expect(await db.sighting.count({
-      where: { incomingEmail: { messageId: 'msg-idempotent-retry' } },
+      where: {
+        OR: [
+          { id: persistedSighting.id },
+          { incomingEmail: { messageId: 'msg-idempotent-retry' } },
+        ],
+      },
     })).toBe(1);
+    await expect(db.sighting.findUniqueOrThrow({ where: { id: persistedSighting.id } }))
+      .resolves.toMatchObject({ sourceIndex: 0 });
     if (originalIncident) {
       await expect(db.incident.findUniqueOrThrow({ where: { id: originalIncident.id } }))
         .resolves.toMatchObject({ sightingCount: originalIncident.sightingCount });
