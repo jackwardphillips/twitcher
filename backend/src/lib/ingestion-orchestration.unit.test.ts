@@ -103,7 +103,10 @@ describe('Ingestion orchestration with mocked boundaries', () => {
       expect.objectContaining({ incomingEmail: expect.any(Object) }),
       1,
     );
-    expect(db.$transaction).toHaveBeenCalled();
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: 'Serializable',
+      timeout: 120_000,
+    });
     expect(sightingService.enrichRecentSightings).toHaveBeenCalledWith({
       ingestionRunId: 'run-1',
       emailAttemptId: 'email-attempt-1',

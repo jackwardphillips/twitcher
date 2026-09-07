@@ -22,6 +22,7 @@ export interface EnrichmentResult {
 }
 
 export async function enrichRecentSightings(context?: EnrichmentLoggingContext): Promise<EnrichmentResult> {
+  let attempted = 0;
   try {
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
@@ -32,6 +33,7 @@ export async function enrichRecentSightings(context?: EnrichmentLoggingContext):
         date: { gte: threeDaysAgo },
       },
     });
+    attempted = recentUnenriched.length;
 
     return await enrichmentService.enrichSightings(
       recentUnenriched,
@@ -39,7 +41,7 @@ export async function enrichRecentSightings(context?: EnrichmentLoggingContext):
     );
   } catch (err) {
     console.error('Background enrichment failed:', err);
-    return { attempted: 0, succeeded: 0, failed: 1 };
+    return { attempted, succeeded: 0, failed: Math.max(attempted, 1) };
   }
 }
 
@@ -59,6 +61,17 @@ export async function saveSightings(
   const rarityMap = new Map(rarityRecords.map(r => [r.scientificName, r.abaCode]));
 
   for (const [sourceIndex, sightingData] of sightings.entries()) {
+    if (incomingEmailId !== undefined) {
+      const existingSighting = await client.sighting.findUnique({
+        where: {
+          incomingEmailId_sourceIndex: { incomingEmailId, sourceIndex },
+        },
+      });
+      if (existingSighting) {
+        continue;
+      }
+    }
+
     const rarity = sightingData.scientificName ? (rarityMap.get(sightingData.scientificName) ?? 0) : 0;
 
     // Parse coordinates from mapUrl if available (eBird alerts usually have this)

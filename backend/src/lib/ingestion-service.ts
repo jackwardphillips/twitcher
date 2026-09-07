@@ -26,6 +26,8 @@ export interface IngestionOptions {
   writeParsedSightings?: boolean;
 }
 
+const CORE_INGESTION_TRANSACTION_TIMEOUT_MS = 120_000;
+
 function sanitizeIngestionError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (/DATABASE_URL|postgresql:\/\/|password|secret|Prisma| at /i.test(message)) {
@@ -287,7 +289,10 @@ export class IngestionService {
                 where: { id: savedId },
                 data: { status: 'processed' },
               });
-            }, { isolationLevel: 'Serializable' });
+            }, {
+              isolationLevel: 'Serializable',
+              timeout: CORE_INGESTION_TRANSACTION_TIMEOUT_MS,
+            });
 
             ingested++;
 
@@ -336,7 +341,7 @@ export class IngestionService {
       if (enrich) {
         if (enrichmentFailed === 0) {
           enrichmentStatus = 'success';
-        } else if (enrichmentSucceeded === 0 && enrichmentAttempted > 0) {
+        } else if (enrichmentSucceeded === 0) {
           enrichmentStatus = 'failed';
         } else {
           enrichmentStatus = 'partial_failure';

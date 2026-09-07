@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IngestionService } from './ingestion-service.js';
 import { ImapClient } from './imap-client.js';
-import { saveSightings } from './sighting-service.js';
+import { enrichRecentSightings, saveSightings } from './sighting-service.js';
 import { AlertTargetService } from './alert-target-service.js';
 import { db } from './db.js';
 import { http, HttpResponse } from 'msw';
@@ -14,6 +14,7 @@ vi.mock('./sighting-service.js', async () => {
   const actual = await vi.importActual('./sighting-service.js') as any;
   return {
     ...actual,
+    enrichRecentSightings: vi.fn(actual.enrichRecentSightings),
     saveSightings: vi.fn(actual.saveSightings),
   };
 });
@@ -291,13 +292,48 @@ describe('IngestionService Integration', () => {
     mockImapClient.fetchRecentAlerts.mockResolvedValue([mockEmail]);
 
     const first = await service.ingest(undefined, false);
+    const persistedSighting = await db.sighting.findFirstOrThrow({
+      where: { incomingEmail: { messageId: 'msg-idempotent-retry' } },
+    });
+    const originalIncident = persistedSighting.incidentId
+      ? await db.incident.findUniqueOrThrow({ where: { id: persistedSighting.incidentId } })
+      : null;
+    await db.incomingEmail.update({
+      where: { messageId: 'msg-idempotent-retry' },
+      data: { status: 'failed' },
+    });
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([]);
     const second = await service.ingest(undefined, false);
 
     expect(first.ingested).toBe(1);
-    expect(second.ingested).toBe(0);
+    expect(second.ingested).toBe(1);
     expect(await db.sighting.count({
       where: { incomingEmail: { messageId: 'msg-idempotent-retry' } },
     })).toBe(1);
+    if (originalIncident) {
+      await expect(db.incident.findUniqueOrThrow({ where: { id: originalIncident.id } }))
+        .resolves.toMatchObject({ sightingCount: originalIncident.sightingCount });
+    }
+  });
+
+  it('should classify an enrichment failure even when the query attempted no sightings', async () => {
+    const date = getRecentDate();
+    mockImapClient.fetchRecentAlerts.mockResolvedValue([{
+      messageId: 'msg-enrichment-query-failure',
+      subject: 'Alert',
+      from: 'ebird-alert@birds.cornell.edu',
+      date,
+      rawBody: getRawBody(date),
+    }]);
+    vi.mocked(enrichRecentSightings).mockResolvedValueOnce({
+      attempted: 0,
+      succeeded: 0,
+      failed: 1,
+    });
+
+    const result = await service.ingest(undefined, true);
+
+    expect(result.enrichmentStatus).toBe('failed');
   });
 
   it('should not retry committed core writes when attempt logging fails afterward', async () => {
