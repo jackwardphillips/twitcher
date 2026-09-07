@@ -1,4 +1,5 @@
 import { ImapFlow } from 'imapflow';
+import { createHash } from 'node:crypto';
 
 export interface ImapConfig {
   host: string;
@@ -14,6 +15,11 @@ export interface IngestedEmail {
   from: string;
   date: Date;
   rawBody: string;
+}
+
+export function getEmailIdentity(messageId: string | undefined, rawBody: Buffer): string {
+  if (messageId) return messageId;
+  return `content-sha256:${createHash('sha256').update(rawBody).digest('hex')}`;
 }
 
 export class ImapClient {
@@ -60,7 +66,7 @@ export class ImapClient {
         // Filter by sender and ABA Rarities subject
         if (from === 'ebird-alert@birds.cornell.edu' && subject.includes('ABA Rarities')) {
           emails.push({
-            messageId: message.envelope.messageId || 'unknown',
+            messageId: getEmailIdentity(message.envelope.messageId, message.source),
             subject: subject,
             from: from,
             date: message.envelope.date || new Date(),

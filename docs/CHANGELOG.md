@@ -4,6 +4,11 @@
 
 ### Backend
 
+- Made email ingestion atomic and retry-safe: parsed sightings now have a
+  database-enforced source identity, core email/target/sighting/incident writes
+  commit together at serializable isolation, and provider enrichment runs only
+  after that commit. Missing Message-IDs now use a stable content hash instead
+  of sharing the `unknown` identity.
 - Removed the unused streak-service implementation and its isolated tests; the
   production sighting streak calculation remains covered at the API boundary.
 - Clear stale incident summary text when a provider successfully reports no

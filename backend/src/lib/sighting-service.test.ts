@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { saveSightings } from './sighting-service';
+import { enrichRecentSightings, saveSightings } from './sighting-service';
 import { prisma } from './db';
+
+const enrichSightingsMock = vi.hoisted(() => vi.fn());
 
 vi.mock('./db', () => ({
   prisma: {
@@ -19,7 +21,7 @@ vi.mock('./enrichment-service', () => {
     EnrichmentService: class {
       enrichAllUnenriched = vi.fn().mockResolvedValue(undefined);
       enrichSighting = vi.fn().mockResolvedValue(undefined);
-      enrichSightings = vi.fn().mockResolvedValue(undefined);
+      enrichSightings = enrichSightingsMock;
     },
   };
 });
@@ -39,6 +41,7 @@ vi.mock('./region-service', () => ({
 describe('Sighting Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    enrichSightingsMock.mockResolvedValue({ attempted: 0, succeeded: 0, failed: 0 });
   });
 
   it('should save multiple sightings to the database', async () => {
@@ -88,6 +91,17 @@ describe('Sighting Service', () => {
         species: 'Common Bird',
         rarity: 0
       }),
+    });
+  });
+
+  it('should preserve the selected batch count when enrichment fails', async () => {
+    (prisma.sighting.findMany as any).mockResolvedValue([{ id: 1 }, { id: 2 }]);
+    enrichSightingsMock.mockRejectedValueOnce(new Error('Enrichment failed'));
+
+    await expect(enrichRecentSightings()).resolves.toEqual({
+      attempted: 2,
+      succeeded: 0,
+      failed: 2,
     });
   });
 });

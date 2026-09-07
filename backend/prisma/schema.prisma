@@ -42,12 +42,16 @@ model Sighting {
   removedAt                DateTime?
   incidentId               String?
   incident                 Incident?           @relation(fields: [incidentId], references: [id])
+  incomingEmailId          Int?
+  sourceIndex              Int?
+  incomingEmail            IncomingEmail?       @relation(fields: [incomingEmailId], references: [id], onDelete: SetNull)
   enrichmentAttempts       EnrichmentAttempt[]
   createdAt                DateTime            @default(now())
   updatedAt                DateTime            @updatedAt
 
   @@index([status])
   @@index([removedAt])
+  @@unique([incomingEmailId, sourceIndex])
 }
 
 model Incident {
@@ -91,11 +95,13 @@ model IncomingEmail {
   date         DateTime?
   rawBody      String
   status       String                  @default("new") // new, processed, failed, processing
+  legacyRetryEligible Boolean          @default(false)
   pollTargetsHandledAt DateTime?
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @default(now()) @updatedAt
   attempts     EmailIngestionAttempt[]
   alertTargets AlertTarget[]
+  sightings    Sighting[]
 
   @@index([pollTargetsHandledAt])
 }

@@ -1,4 +1,5 @@
 import type { Sighting as SightingData } from './ebird-parser.js';
+import type { Prisma, Sighting } from '@prisma/client';
 import { prisma } from './db.js';
 import { EbirdClient } from './ebird-client.js';
 import { MatchEngine } from './match-engine.js';
@@ -20,16 +21,131 @@ export interface EnrichmentResult {
   failed: number;
 }
 
-export async function saveSightings(sightings: SightingData[], enrich = true, context?: EnrichmentLoggingContext): Promise<EnrichmentResult | null> {
+export async function enrichRecentSightings(context?: EnrichmentLoggingContext): Promise<EnrichmentResult> {
+  let attempted = 0;
+  try {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    const recentUnenriched = await prisma.sighting.findMany({
+      where: {
+        subId: null,
+        date: { gte: threeDaysAgo },
+      },
+    });
+    attempted = recentUnenriched.length;
+
+    return await enrichmentService.enrichSightings(
+      recentUnenriched,
+      context?.ingestionRunId ? { ingestionRunId: context.ingestionRunId } : undefined,
+    );
+  } catch (err) {
+    console.error('Background enrichment failed:', err);
+    return { attempted, succeeded: 0, failed: Math.max(attempted, 1) };
+  }
+}
+
+async function assignSightingToIncident(client: Prisma.TransactionClient, sighting: Sighting): Promise<void> {
+  if (sighting.latitude === null || sighting.longitude === null) {
+    return;
+  }
+
+  const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
+  const matchingIncidents = await findMatchingIncident(
+    client,
+    normScientific,
+    sighting.latitude,
+    sighting.longitude,
+    sighting.date,
+  );
+
+  if (matchingIncidents.length > 0) {
+    await addSightingToIncident(client, matchingIncidents, sighting);
+  } else {
+    await createIncident(client, sighting);
+  }
+}
+
+export async function saveSightings(
+  sightings: SightingData[],
+  enrich = true,
+  context?: EnrichmentLoggingContext,
+  client: Prisma.TransactionClient = prisma,
+  incomingEmailId?: number,
+  adoptLegacySightings = false,
+): Promise<EnrichmentResult | null> {
   // Fetch rarity codes for all species in this batch
   const uniqueScientificNames = [...new Set(sightings.map(s => s.scientificName))].filter(Boolean) as string[];
-  const rarityRecords = await prisma.rarityCode.findMany({
+  const rarityRecords = await client.rarityCode.findMany({
     where: { scientificName: { in: uniqueScientificNames } },
   });
 
   const rarityMap = new Map(rarityRecords.map(r => [r.scientificName, r.abaCode]));
 
-  for (const sightingData of sightings) {
+  for (const [sourceIndex, sightingData] of sightings.entries()) {
+    if (incomingEmailId !== undefined) {
+      const existingSighting = await client.sighting.findUnique({
+        where: {
+          incomingEmailId_sourceIndex: { incomingEmailId, sourceIndex },
+        },
+      });
+      if (existingSighting) {
+        continue;
+      }
+
+      const legacySighting = adoptLegacySightings ? await client.sighting.findFirst({
+        where: {
+          incomingEmailId: null,
+          species: sightingData.species,
+          scientificName: sightingData.scientificName ?? null,
+          location: sightingData.location,
+          date: sightingData.date,
+          observer: sightingData.observer,
+          details: sightingData.comments ?? null,
+          mapUrl: sightingData.mapUrl ?? null,
+          checklistUrl: sightingData.checklistUrl ?? null,
+        },
+      }) : null;
+      if (legacySighting) {
+        await client.sighting.update({
+          where: { id: legacySighting.id },
+          data: { incomingEmailId, sourceIndex },
+        });
+        if (legacySighting.incidentId !== null) {
+          continue;
+        }
+
+        if (legacySighting.latitude !== null && legacySighting.longitude !== null) {
+          const orphanIncident = await client.incident.findFirst({
+            where: {
+              scientificName: normalizeScientificName(
+                legacySighting.scientificName || '',
+                legacySighting.species,
+              ),
+              sightingCount: 1,
+              minLat: legacySighting.latitude,
+              maxLat: legacySighting.latitude,
+              minLng: legacySighting.longitude,
+              maxLng: legacySighting.longitude,
+              firstSeen: legacySighting.date,
+              lastSeen: legacySighting.date,
+              sightings: { none: {} },
+            },
+          });
+          if (orphanIncident) {
+            await client.sighting.update({
+              where: { id: legacySighting.id },
+              data: { incidentId: orphanIncident.id },
+            });
+            continue;
+          }
+        }
+
+        await assignSightingToIncident(client, legacySighting);
+        continue;
+      }
+    }
+
     const rarity = sightingData.scientificName ? (rarityMap.get(sightingData.scientificName) ?? 0) : 0;
 
     // Parse coordinates from mapUrl if available (eBird alerts usually have this)
@@ -43,7 +159,7 @@ export async function saveSightings(sightings: SightingData[], enrich = true, co
       }
     }
 
-    const sighting = await prisma.sighting.create({
+    const sighting = await client.sighting.create({
       data: {
         species: sightingData.species,
         scientificName: sightingData.scientificName,
@@ -56,43 +172,17 @@ export async function saveSightings(sightings: SightingData[], enrich = true, co
         checklistUrl: sightingData.checklistUrl ?? null,
         latitude,
         longitude,
+        incomingEmailId: incomingEmailId ?? null,
+        sourceIndex: incomingEmailId === undefined ? null : sourceIndex,
       },
     });
 
-    // Clustering Logic
-    if (sighting.latitude !== null && sighting.longitude !== null) {
-      const normScientific = normalizeScientificName(sighting.scientificName || '', sighting.species);
-      const matchingIncidents = await findMatchingIncident(prisma, normScientific, sighting.latitude, sighting.longitude, sighting.date);
-      
-      if (matchingIncidents.length > 0) {
-        await addSightingToIncident(prisma, matchingIncidents, sighting);
-      } else {
-        await createIncident(prisma, sighting);
-      }
-    }
+    await assignSightingToIncident(client, sighting);
   }
 
   // Automatically trigger background enrichment for all unenriched sightings in the last 3 days
   if (enrich) {
-    const threeDaysAgo = new Date();
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-    
-    const recentUnenriched = await prisma.sighting.findMany({
-      where: {
-        subId: null,
-        date: { gte: threeDaysAgo },
-      },
-    });
-
-    try {
-      return await enrichmentService.enrichSightings(
-        recentUnenriched,
-        context?.ingestionRunId ? { ingestionRunId: context.ingestionRunId } : undefined
-      );
-    } catch (err) {
-      console.error('Background enrichment failed:', err);
-      return { attempted: recentUnenriched.length, succeeded: 0, failed: recentUnenriched.length };
-    }
+    return enrichRecentSightings(context);
   }
 
   return null;

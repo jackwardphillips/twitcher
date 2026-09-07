@@ -32,6 +32,10 @@ vi.mock('./db.js', () => ({
       update: vi.fn(),
       findMany: vi.fn().mockResolvedValue([]),
     },
+    $transaction: vi.fn(async (operation) => operation({
+      alertTarget: { upsert: vi.fn() },
+      incomingEmail: { update: vi.fn() },
+    })),
   },
   prisma: {
     ebirdApiCallLog: {
@@ -91,15 +95,22 @@ describe('Ingestion orchestration with mocked boundaries', () => {
           observer: 'John Doe',
         })
       ]),
-      true,
+      false,
       {
         ingestionRunId: 'run-1',
         emailAttemptId: 'email-attempt-1',
       },
+      expect.objectContaining({ incomingEmail: expect.any(Object) }),
+      1,
+      false,
     );
-    expect(db.incomingEmail.update).toHaveBeenCalledWith({
-      where: { id: 1 },
-      data: { status: 'processed' },
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: 'Serializable',
+      timeout: 120_000,
+    });
+    expect(sightingService.enrichRecentSightings).toHaveBeenCalledWith({
+      ingestionRunId: 'run-1',
+      emailAttemptId: 'email-attempt-1',
     });
   });
 });

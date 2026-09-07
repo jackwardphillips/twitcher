@@ -26,18 +26,6 @@ the changelog.
 
 ## P0 — Data Integrity and Security
 
-### A01 — Make email ingestion atomic and retry-safe
-
-**Evidence:** Email identity, parsed-sighting writes, incident assignment, and
-email completion span multiple operations. The schema does not enforce a durable
-pre-enrichment sighting identity, and missing Message-ID handling needs an
-explicit fallback.
-
-**Done when:** A failure cannot leave an email permanently skipped with partial
-writes; retries are idempotent; concurrent ingestion cannot duplicate a parsed
-sighting or corrupt incident aggregates; regression and concurrency tests cover
-those guarantees.
-
 ### A02 — Authenticate and constrain mutating and operational APIs
 
 **Evidence:** Ingestion and operational endpoints need a documented trusted-caller

@@ -12,6 +12,8 @@ describe('Prisma Schema Updates', () => {
     expect(sightingFields).toContain('locId');
     expect(sightingFields).toContain('speciesCode');
     expect(sightingFields).toContain('howMany');
+    expect(sightingFields).toContain('incomingEmailId');
+    expect(sightingFields).toContain('sourceIndex');
   });
 
   it('should have the IncomingEmail model in the Prisma client', () => {
@@ -22,6 +24,7 @@ describe('Prisma Schema Updates', () => {
     expect(emailFields).toContain('messageId');
     expect(emailFields).toContain('rawBody');
     expect(emailFields).toContain('status');
+    expect(emailFields).toContain('legacyRetryEligible');
   });
 
   it('tracks whether an email has been consumed by a successful poll plan', () => {

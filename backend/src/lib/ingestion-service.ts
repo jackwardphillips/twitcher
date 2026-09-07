@@ -1,7 +1,7 @@
 import { ImapClient } from './imap-client.js';
 import { db } from './db.js';
 import { parseEBirdAlert } from './ebird-parser.js';
-import { saveSightings } from './sighting-service.js';
+import { enrichRecentSightings, saveSightings } from './sighting-service.js';
 import { AlertTargetService } from './alert-target-service.js';
 import { EbirdClient } from './ebird-client.js';
 import {
@@ -25,6 +25,8 @@ export interface IngestionResult {
 export interface IngestionOptions {
   writeParsedSightings?: boolean;
 }
+
+const CORE_INGESTION_TRANSACTION_TIMEOUT_MS = 120_000;
 
 function sanitizeIngestionError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -116,9 +118,26 @@ export class IngestionService {
       let enrichmentAttempted = 0;
       let enrichmentSucceeded = 0;
       let enrichmentFailed = 0;
+      let enrichmentRan = false;
 
       if (newEmails.length === 0 && pendingEmails.length === 0) {
-        const result: IngestionResult = { emailsFound: 0, ingested, skipped, failed, status: 'no_new_emails', enrichmentStatus: enrich ? 'success' : 'not_requested' };
+        let enrichmentStatus: IngestionResult['enrichmentStatus'] = 'not_requested';
+        if (enrich) {
+          const enrichment = await enrichRecentSightings({ ingestionRunId: run.id });
+          enrichmentStatus = enrichment.failed === 0
+            ? 'success'
+            : enrichment.succeeded === 0
+              ? 'failed'
+              : 'partial_failure';
+        }
+        const result: IngestionResult = {
+          emailsFound: 0,
+          ingested,
+          skipped,
+          failed,
+          status: 'no_new_emails',
+          enrichmentStatus,
+        };
         await finishRun(result);
         return result;
       }
@@ -137,6 +156,7 @@ export class IngestionService {
           from: email.from,
           date: email.date,
           rawBody: email.rawBody,
+          legacyRetryEligible: email.legacyRetryEligible,
           isRetry: true
         });
       }
@@ -259,31 +279,60 @@ export class IngestionService {
           if (!claimed) {
             continue;
           }
+          if (savedId === undefined) {
+            throw new Error('Claimed email is missing its database identity');
+          }
 
           // Auto-parse immediately
           try {
-            await this.alertTargetService.upsertTargetsFromEmail(email.rawBody, savedId, email.date ?? new Date());
             const sightings = writeParsedSightings ? parseEBirdAlert(email.rawBody, email.date) : [];
-            if (writeParsedSightings && sightings.length > 0) {
-              const enrichment = await saveSightings(sightings, enrich, { ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
-              if (enrichment) {
-                enrichmentAttempted += enrichment.attempted;
-                enrichmentSucceeded += enrichment.succeeded;
-                enrichmentFailed += enrichment.failed;
+            await db.$transaction(async (tx) => {
+              await this.alertTargetService.upsertTargetsFromEmail(
+                email.rawBody,
+                savedId,
+                email.date ?? new Date(),
+                tx,
+              );
+              if (writeParsedSightings && sightings.length > 0) {
+                await saveSightings(
+                  sightings,
+                  false,
+                  { ingestionRunId: run.id, emailAttemptId: emailAttempt.id },
+                  tx,
+                  savedId,
+                  email.legacyRetryEligible === true,
+                );
               }
-            }
-            
-            await db.incomingEmail.update({
-              where: { id: savedId },
-              data: { status: 'processed' },
+
+              await tx.incomingEmail.update({
+                where: { id: savedId },
+                data: { status: 'processed', legacyRetryEligible: false },
+              });
+            }, {
+              isolationLevel: 'Serializable',
+              timeout: CORE_INGESTION_TRANSACTION_TIMEOUT_MS,
             });
-            await finishEmailAttempt(emailAttempt.id, {
-              status: 'processed',
-              incomingEmailId: savedId,
-              parsedSightings: sightings.length,
-              parsedSummary: summarizeParsedSightings(sightings),
-            });
+
             ingested++;
+
+            if (enrich && sightings.length > 0) {
+              const enrichment = await enrichRecentSightings({ ingestionRunId: run.id, emailAttemptId: emailAttempt.id });
+              enrichmentRan = true;
+              enrichmentAttempted += enrichment.attempted;
+              enrichmentSucceeded += enrichment.succeeded;
+              enrichmentFailed += enrichment.failed;
+            }
+
+            try {
+              await finishEmailAttempt(emailAttempt.id, {
+                status: 'processed',
+                incomingEmailId: savedId,
+                parsedSightings: sightings.length,
+                parsedSummary: summarizeParsedSightings(sightings),
+              });
+            } catch (attemptError) {
+              console.error(`Failed to finish ingestion log for ${email.messageId}:`, sanitizeLogError(attemptError));
+            }
           } catch (parseError) {
             console.error(`Failed to parse/save email ${email.messageId}:`, parseError);
             await db.incomingEmail.update({
@@ -308,11 +357,18 @@ export class IngestionService {
         }
       }
 
+      if (enrich && !enrichmentRan) {
+        const enrichment = await enrichRecentSightings({ ingestionRunId: run.id });
+        enrichmentAttempted += enrichment.attempted;
+        enrichmentSucceeded += enrichment.succeeded;
+        enrichmentFailed += enrichment.failed;
+      }
+
       let enrichmentStatus: IngestionResult['enrichmentStatus'] = 'not_requested';
       if (enrich) {
         if (enrichmentFailed === 0) {
           enrichmentStatus = 'success';
-        } else if (enrichmentSucceeded === 0 && enrichmentAttempted > 0) {
+        } else if (enrichmentSucceeded === 0) {
           enrichmentStatus = 'failed';
         } else {
           enrichmentStatus = 'partial_failure';
