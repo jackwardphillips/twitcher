@@ -31,9 +31,10 @@
 
 ### Deployment
 
-- Runs committed Prisma migrations before Vercel builds and publishes application
-  code, preventing deployments from referencing schema columns that production
-  does not have yet.
+- Runs committed Prisma migrations before Vercel production builds and publishes
+  application code, preventing deployments from referencing schema columns that
+  production does not have yet. Preview builds do not mutate the production
+  database.
 
 ## 2026-07-30
 
