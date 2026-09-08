@@ -29,6 +29,12 @@
   `docs/ops/`. The remaining `conductor/archive/` is temporary legacy history;
   useful details will move here before it is removed.
 
+### Deployment
+
+- Runs committed Prisma migrations before Vercel builds and publishes application
+  code, preventing deployments from referencing schema columns that production
+  does not have yet.
+
 ## 2026-07-30
 
 ### Backend
