@@ -7,14 +7,13 @@ import { EbirdClient } from '../lib/ebird-client.js';
 import { AlertTargetService } from '../lib/alert-target-service.js';
 import { ImapClient } from '../lib/imap-client.js';
 import { IngestionService } from '../lib/ingestion-service.js';
-import { hydrateSpeciesPhotos, validateProductionPollerEnvironment } from '../lib/poller-runtime.js';
+import { hydrateSpeciesPhotos } from '../lib/poller-runtime.js';
 import {
   commitCatchupEmailBatch,
   dedupePollTargetDrafts,
   getCatchupEmailBatch,
   getOpenIncidentTargetDrafts,
 } from '../lib/poller-target-selection.js';
-import { runSummarizationCycle } from '../lib/summarization-service.js';
 import { closeInactiveIncidents } from '../lib/incident-service.js';
 import { PhotoService } from '../lib/photo-service.js';
 
@@ -100,7 +99,6 @@ async function main() {
   if (writeSightings && !writeShadow) {
     throw new Error('--write-sightings requires --write-shadow');
   }
-  validateProductionPollerEnvironment(writeSightings);
 
   const service = new AlertTargetService(new EbirdClient(process.env.EBIRD_API_KEY || ''));
   const selectionTime = new Date();
@@ -249,9 +247,8 @@ async function main() {
       )
     : { checked: 0, refreshed: 0, failed: 0 };
 
-  const summarization = writeSightings
-    ? await runSummarizationCycle(prisma)
-    : { eligible: 0, updated: 0, skipped: 0, failed: 0 };
+  // AI summaries are retired; retain zero counts for poller-history compatibility.
+  const summarization = { eligible: 0, updated: 0, skipped: 0, failed: 0 };
   const apiCounts = pollRunId
     ? {
         attempts: await prisma.ebirdApiCallLog.count({ where: { alertPollRunId: pollRunId } }),
@@ -263,7 +260,7 @@ async function main() {
         }),
       }
     : { attempts: 0, failures: 0 };
-  const partialFailure = totals.failed > 0 || summarization.failed > 0;
+  const partialFailure = totals.failed > 0;
 
   if (pollRunId) {
     await commitCatchupEmailBatch(prisma, emailBatch.observedIds, !partialFailure);
@@ -295,7 +292,7 @@ async function main() {
     targets: { attempted: results.length, failed: totals.failed },
     ebirdHttp: apiCounts,
     summarization: {
-      status: summarization.failed > 0 ? 'partial_failure' : 'success',
+      status: 'disabled',
       ...summarization,
     },
     photoHydration,

@@ -228,3 +228,5 @@ Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider t
 - `docs/ops/` contains operational runbooks and provider-safety notes.
 - `conductor/archive/` is legacy history, not a current backlog. Useful details
   will move to the changelog before the archive is removed.
+
+Scheduled production polling does not generate AI summaries or require AI provider credentials.
