@@ -26,7 +26,6 @@ const aboutCardExamples: Record<RarityCode, {
   commonName: string
   scientificName: string
   locationName: string
-  description: string
   firstSeen: string
   lastSeen: string
   sightingCount: number
@@ -39,7 +38,6 @@ const aboutCardExamples: Record<RarityCode, {
     commonName: 'American Robin',
     scientificName: 'Turdus migratorius',
     locationName: 'Williamsburg, Virginia',
-    description: 'The park is lousy with them!',
     firstSeen: '2026-05-01',
     lastSeen: '2026-05-25',
     sightingCount: 308,
@@ -55,7 +53,6 @@ const aboutCardExamples: Record<RarityCode, {
     commonName: 'Cerulean Warbler',
     scientificName: 'Setophaga cerulea',
     locationName: 'Rockland, New York',
-    description: 'On the road to Doodletown, seen with Golden-winged warblers.',
     firstSeen: '2026-05-03',
     lastSeen: '2026-05-25',
     sightingCount: 46,
@@ -74,7 +71,6 @@ const aboutCardExamples: Record<RarityCode, {
     commonName: 'Sharp-tailed Sandpiper',
     scientificName: 'Calidris acuminata',
     locationName: 'Marquette, Michigan',
-    description: 'Seen in the marsh overlook with a slight limp.',
     firstSeen: '2026-05-01',
     lastSeen: '2026-05-25',
     sightingCount: 63,
@@ -93,7 +89,6 @@ const aboutCardExamples: Record<RarityCode, {
     commonName: 'Bananaquit',
     scientificName: 'Coereba flaveola',
     locationName: 'Barnstable, Massachusetts',
-    description: 'Came to my feeder in my backyard!',
     firstSeen: '2026-05-04',
     lastSeen: '2026-05-24',
     sightingCount: 17,
@@ -114,7 +109,6 @@ const aboutCardExamples: Record<RarityCode, {
     commonName: 'Yellow-headed Caracara',
     scientificName: 'Daptrius chimachima',
     locationName: 'Wilmington, Delaware',
-    description: 'Seen near the meat-packing plant. He must smell food.',
     firstSeen: '2026-05-11',
     lastSeen: '2026-05-25',
     sightingCount: 9,
@@ -135,7 +129,6 @@ const aboutCardExamples: Record<RarityCode, {
     commonName: 'Ivory-billed Woodpecker',
     scientificName: 'Campephilus principalis',
     locationName: 'Point Coupee, Louisiana',
-    description: 'I swear I saw it!',
     firstSeen: '1944-04-20',
     lastSeen: '1944-04-20',
     sightingCount: 1,
@@ -361,15 +354,6 @@ const AboutPage = ({ onNavigate = () => {} }: AboutPageProps) => {
                     </div>
 
                   </div>
-
-                  <AboutTooltip tooltip="An AI-generated summary of location and behavior from eBird comments.">
-                    <blockquote
-                      className="gemini-summary"
-                      style={{ borderLeftColor: rarityColor }}
-                    >
-                      {selectedExample.description}
-                    </blockquote>
-                  </AboutTooltip>
 
                   <div className="card-middle-row">
                     <AboutTooltip className="stat-item" tooltip="How many times the bird has been reported on eBird.">

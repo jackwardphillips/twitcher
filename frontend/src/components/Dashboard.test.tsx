@@ -7,8 +7,8 @@ describe('Dashboard', () => {
     vi.stubGlobal('fetch', vi.fn());
   });
 
-  it('renders geminiSummary when present in incident data', async () => {
-    const mockIncident: Incident = {
+  it('ignores stored AI summaries in incident data', async () => {
+    const mockIncident = {
       id: 'inc-1',
       scientificName: 'Turdus migratorius',
       commonName: 'American Robin',
@@ -40,13 +40,10 @@ describe('Dashboard', () => {
 
     render(<Dashboard />);
 
-    const summaryElement = await screen.findByText(/This bird is often found near lawns and gardens/);
-    const blockquote = summaryElement.closest('blockquote');
-    expect(blockquote).toBeInTheDocument();
-    expect(blockquote?.className).toContain('gemini-summary');
-    
-    const card = summaryElement.closest('.sighting-card');
-    expect(card?.className).toContain('sighting-card-horizontal');
+    const heading = await screen.findByText('American Robin');
+    expect(screen.queryByText('This bird is often found near lawns and gardens.')).not.toBeInTheDocument();
+    expect(document.querySelector('.gemini-summary')).toBeNull();
+    expect(heading.closest('.sighting-card')?.className).toContain('sighting-card-horizontal');
   });
 
   it('does not render geminiSummary when absent', async () => {
@@ -64,7 +61,6 @@ describe('Dashboard', () => {
       activeDays: 1,
       latestMapUrl: null,
       latestChecklistUrl: null,
-      geminiSummary: null,
       dailyCounts: [],
       photo: null
     };
@@ -87,77 +83,4 @@ describe('Dashboard', () => {
     expect(summaries.length).toBe(0);
   });
 
-  it('does not render geminiSummary when shorter than five trimmed characters', async () => {
-    const mockIncident: Incident = {
-      id: 'inc-1',
-      scientificName: 'Turdus migratorius',
-      commonName: 'American Robin',
-      abaCode: 4,
-      centroidLat: 40.0,
-      centroidLng: -75.0,
-      locationName: 'PA, US',
-      firstSeen: new Date().toISOString(),
-      lastSeen: new Date().toISOString(),
-      sightingCount: 1,
-      activeDays: 1,
-      latestMapUrl: null,
-      latestChecklistUrl: null,
-      geminiSummary: '  abcd  ',
-      dailyCounts: [],
-      photo: null
-    };
-
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => [mockIncident]
-    });
-
-    // Mock ingestion status
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({})
-    });
-
-    render(<Dashboard />);
-
-    await screen.findByText('American Robin');
-    expect(document.querySelectorAll('.gemini-summary').length).toBe(0);
-  });
-
-  it('does not render geminiSummary when it contains no useful', async () => {
-    const mockIncident: Incident = {
-      id: 'inc-1',
-      scientificName: 'Turdus migratorius',
-      commonName: 'American Robin',
-      abaCode: 4,
-      centroidLat: 40.0,
-      centroidLng: -75.0,
-      locationName: 'PA, US',
-      firstSeen: new Date().toISOString(),
-      lastSeen: new Date().toISOString(),
-      sightingCount: 1,
-      activeDays: 1,
-      latestMapUrl: null,
-      latestChecklistUrl: null,
-      geminiSummary: 'No useful field notes were available.',
-      dailyCounts: [],
-      photo: null
-    };
-
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => [mockIncident]
-    });
-
-    // Mock ingestion status
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({})
-    });
-
-    render(<Dashboard />);
-
-    await screen.findByText('American Robin');
-    expect(document.querySelectorAll('.gemini-summary').length).toBe(0);
-  });
 });

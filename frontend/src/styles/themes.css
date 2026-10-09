@@ -463,11 +463,6 @@
     linear-gradient(135deg, color-mix(in srgb, var(--surface), var(--border) 50%), var(--bg));
 }
 
-.gemini-summary {
-  background: color-mix(in srgb, var(--accent), transparent 94%);
-  border-radius: calc(var(--radius) * 0.75);
-}
-
 .card-middle-row {
   border-top-color: color-mix(in srgb, var(--border), transparent 35%);
 }

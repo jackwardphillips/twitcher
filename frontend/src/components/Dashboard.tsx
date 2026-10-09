@@ -17,11 +17,6 @@ const rangerStationLabels = {
   lastSeen: 'Last Seen',
 }
 
-const shouldShowSummary = (summary?: string | null) => {
-  const trimmedSummary = summary?.trim()
-  return Boolean(trimmedSummary && trimmedSummary.length >= 5 && !trimmedSummary.toLowerCase().includes('no useful'))
-}
-
 export interface Incident {
   id: string
   scientificName: string
@@ -36,7 +31,6 @@ export interface Incident {
   activeDays: number
   latestMapUrl: string | null
   latestChecklistUrl: string | null
-  geminiSummary?: string | null
   dailyCounts: { date: string; count: number }[]
   photo: { url: string; attribution: string; sourceUrl?: string | null } | null
 }
@@ -131,21 +125,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
       return dist <= 50
     })
 
-  const layoutIncidents = displayedIncidents
-    .map((incident, index) => ({
-      incident,
-      hasSummary: shouldShowSummary(incident.geminiSummary),
-      index,
-    }))
-    .sort((a, b) => {
-      if (a.hasSummary !== b.hasSummary) {
-        return Number(b.hasSummary) - Number(a.hasSummary)
-      }
-
-      return a.index - b.index
-    })
-    .map(({ incident }) => incident)
-
   return (
     <div className="dashboard" data-theme="ranger-station" data-preview="minimal-header">
       <div className="notebook-top-shell">
@@ -179,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
           <SightingMap incidents={displayedIncidents} />
 
           <div className="sightings-list">
-            {layoutIncidents.map((incident) => (
+            {displayedIncidents.map((incident) => (
               <div
                 key={incident.id}
                 className="sighting-card sighting-card-horizontal"
@@ -204,15 +183,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
                       </div>
                     </div>
                   </div>
-
-                  {shouldShowSummary(incident.geminiSummary) && (
-                    <blockquote
-                      className="gemini-summary"
-                      style={{ borderLeftColor: getRarityColor(incident) }}
-                    >
-                      {incident.geminiSummary}
-                    </blockquote>
-                  )}
 
                   <div className="card-middle-row">
                     <div className="stat-item">

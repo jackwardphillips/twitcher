@@ -109,7 +109,7 @@ describe('Dashboard Presentation Behavioral Tests', () => {
     expect(positions).toContainEqual([42.1, -71.1]);
   });
 
-  it('groups cards without summaries together in the layout order', async () => {
+  it('preserves API order regardless of stored summaries', async () => {
     const mixedIncidents = [
       {
         id: 'incident-1',
@@ -203,10 +203,10 @@ describe('Dashboard Presentation Behavioral Tests', () => {
     );
 
     expect(orderedHeadings).toEqual([
-      'With Summary A',
-      'With Summary B',
       'No Summary A',
-      'No Summary B'
+      'With Summary A',
+      'No Summary B',
+      'With Summary B'
     ]);
   });
 });
