@@ -318,24 +318,6 @@ body {
   margin: 0;
 }
 
-.gemini-summary {
-  color: var(--text-muted);
-  display: flex;
-  flex: 1 1 auto;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-style: italic;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.5;
-  margin: 0;
-  padding: 0.75rem 1.25rem;
-  border-left: 3px solid var(--clr-gold); /* Fallback color */
-  background: rgba(212, 196, 168, 0.05);
-  max-width: 95%;
-  text-align: left;
-}
-
 .streak-badge {
   background: color-mix(in srgb, var(--rarity-color, var(--clr-gold)), transparent 95%);
   border: 1px solid var(--rarity-color, var(--clr-gold));
@@ -972,7 +954,6 @@ body {
 .about-demo-photo .photo-slot,
 .about-demo-photo .photo-slot img,
 .about-demo-card .attribution-overlay,
-.about-demo-card .gemini-summary,
 .about-demo-card .streak-badge,
 .about-demo-card .stat-item,
 .about-demo-card .location-container {
@@ -1535,13 +1516,6 @@ body {
   .location-info {
     overflow-wrap: anywhere;
     text-align: left;
-  }
-
-  .gemini-summary {
-    box-sizing: border-box;
-    max-width: none;
-    padding: 0.7rem 0.85rem;
-    width: 100%;
   }
 
   .card-middle-row {
