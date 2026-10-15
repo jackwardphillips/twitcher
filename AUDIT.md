@@ -15,6 +15,10 @@ Only actionable work belongs here. Add evidence and a verifiable completion
 condition to new entries. Remove completed entries after recording the change in
 the changelog.
 
+The dashboard and map intentionally treat missing or zero ABA rarity codes as
+Code 5 for display and filtering. A11 is excluded from cleanup at the owner’s
+direction; changing that fallback requires a separate product decision.
+
 ## Priorities
 
 - **P0:** Active data-integrity or security risk.

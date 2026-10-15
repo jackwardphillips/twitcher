@@ -35,16 +35,12 @@ behavior, which later changes may supersede.
   local caller, while production web APIs run as Vercel functions. Narrowed A02
   to remaining public-query limits and validation.
 
-### Reliability and rarity correctness
+### Provider reliability
 
 - Added 30-second request deadlines to eBird, iNaturalist, and reverse-geocoding
   HTTP calls. eBird timeouts use the existing bounded retry policy. Configured
   IMAP connection, greeting, and inactivity timeouts and close connections even
   when connecting, acquiring a mailbox, fetching, or logging out fails.
-- Resolved A11: unknown ABA rarity no longer inherits Code 5 filtering or color.
-  Added a separate, opt-in Unknown filter and label, with neutral card and map
-  colors. Default selection remains codes 3–6; the API already preserves null
-  rarity values.
 - Refreshed the audit for the Vercel/Neon/Mac-poller topology, existing migration
   and image-build automation, retired production summaries, and removed docs.
 
