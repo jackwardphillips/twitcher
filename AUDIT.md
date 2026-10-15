@@ -24,19 +24,20 @@ the changelog.
 
 ## P1 — Security and API Boundaries
 
-### A02 — Authenticate and constrain mutating and operational APIs
+### A02 — Bound public API workloads and preserve the local development boundary
 
-**Evidence:** `backend/src/index.ts` exposes unauthenticated GET/POST ingestion
-and diagnostic routes when the Express server is run. Current Vercel functions
-under `api/` expose only incident and statistics reads, with generic error
-responses. The Express mutation surface is therefore a conditional deployment
-risk, not a confirmed public production exposure. Public statistics requests
-still need workload limits and stricter parameter validation.
+**Evidence:** Express is retained for local development and now binds explicitly
+to `127.0.0.1`; its ingestion and diagnostic routes assume a trusted local caller.
+The boundary is documented in `AGENTS.md`. Production Vercel functions under
+`api/` expose only incident and statistics reads, with generic error responses.
+Public statistics requests still need workload limits and stricter parameter
+validation.
 
-**Done when:** The supported Express deployment boundary is explicit; any exposed
-mutating/diagnostic routes require authentication; ingestion has rate limits and
-cross-process exclusion where needed; public query work is bounded; tests cover
-unauthorized, malformed, and throttled requests. CORS is not authentication.
+**Done when:** Public query work is bounded and tests cover malformed and
+throttled requests. Any future remote exposure of Express requires a separate
+review of authentication, rate limits, and cross-process ingestion exclusion;
+CORS alone is not authentication. Localhost binding does not protect routes
+that are deliberately forwarded or proxied.
 
 ## P1 — Reliability, Compliance, and Operations
 

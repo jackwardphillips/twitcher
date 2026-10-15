@@ -7,6 +7,13 @@ behavior, which later changes may supersede.
 
 ## 2026-10-15
 
+### Local development API boundary
+
+- Retained Express for local development and bound its listener explicitly to
+  `127.0.0.1`. Documented that ingestion and diagnostic routes assume a trusted
+  local caller, while production web APIs run as Vercel functions. Narrowed A02
+  to remaining public-query limits and validation.
+
 ### Reliability and rarity correctness
 
 - Added 30-second request deadlines to eBird, iNaturalist, and reverse-geocoding

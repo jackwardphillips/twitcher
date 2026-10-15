@@ -14,7 +14,9 @@ import { getRarityStatsOptions, getStateRarityStats } from './lib/statistics-ser
 import 'dotenv/config';
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT || 3001);
+// Development-only API; operational routes must stay on the local machine.
+const host = '127.0.0.1';
 const externalSideEffectsDisabled = process.env.DISABLE_EXTERNAL_SIDE_EFFECTS === 'true';
 
 const allowedOrigins = [
@@ -522,8 +524,8 @@ app.get('/api/statistics/state-rarities/options', async (req: Request, res: Resp
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  app.listen(port, async () => {
-    console.log(`Server is running on port ${port}`);
+  app.listen(port, host, async () => {
+    console.log(`Development API is running at http://${host}:${port}`);
 
     if (process.env.RUN_STARTUP_INGESTION === 'true' && !externalSideEffectsDisabled) {
       console.log('Running startup email ingestion...');

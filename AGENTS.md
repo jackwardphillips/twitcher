@@ -74,5 +74,9 @@ Local development runs on Linux/WSL using Bash.
 - Prefer `rg` and `rg --files` for searching text and listing files.
 - Run npm commands directly (for example, `npm run dev`); do not use Windows
   `npm.cmd` or PowerShell-specific syntax.
+- Express (`backend/src/index.ts`) is the local development API and binds to
+  `127.0.0.1`. Production web requests use Vercel functions in `api/`. Its ingestion
+  and diagnostic routes assume a trusted local caller; do not expose or forward
+  this server publicly without a separate authentication/security review.
 - The Mac checkout supports scheduled production polling. Local development
   changes do not authorize changes to that checkout or its running services.
