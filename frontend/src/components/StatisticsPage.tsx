@@ -39,7 +39,8 @@ interface StatisticsPageProps {
 const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
   const [rankingMode, setRankingMode] = useState<RankingMode>('state')
   const [selectedState, setSelectedState] = useState('')
-  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()))
+  const [selectedYear, setSelectedYear] = useState('')
+  const [filtersReady, setFiltersReady] = useState(false)
   const [options, setOptions] = useState<RarityStatsOptions>({ states: [], years: [] })
   const [stateStats, setStateStats] = useState<StateRarityStat[]>([])
   const [expandedRegion, setExpandedRegion] = useState<string | null>(null)
@@ -47,20 +48,33 @@ const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let ignore = false
     fetch(`${API_URL}/api/statistics/state-rarities/options`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch statistic filters')
         return res.json()
       })
       .then((data: RarityStatsOptions) => {
+        if (ignore) return
         setOptions(data)
+        const currentYear = new Date().getFullYear()
+        const defaultYear = data.years.includes(currentYear)
+          ? currentYear
+          : data.years.length ? Math.max(...data.years) : null
+        setSelectedYear(defaultYear === null ? '' : String(defaultYear))
+        setFiltersReady(true)
       })
       .catch(() => {
+        if (ignore) return
         setOptions({ states: [], years: [] })
+        setFiltersReady(true)
       })
+    return () => { ignore = true }
   }, [])
 
   useEffect(() => {
+    if (!filtersReady) return
+    let ignore = false
     // Loading and error state belong to the request started by this dependency change.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
@@ -76,15 +90,18 @@ const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
         return res.json()
       })
       .then((data: StateRarityStat[]) => {
+        if (ignore) return
         setStateStats(data)
         setExpandedRegion(null)
         setLoading(false)
       })
       .catch((err) => {
+        if (ignore) return
         setError(err.message)
         setLoading(false)
       })
-  }, [rankingMode, selectedState, selectedYear])
+    return () => { ignore = true }
+  }, [rankingMode, selectedState, selectedYear, filtersReady])
 
   const maxTotal = Math.max(...stateStats.map((stat) => stat.total), 0)
   const title = rankingMode === 'county' ? 'Counties with the Most Rarities' : 'States with the Most Rarities'
@@ -99,7 +116,7 @@ const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
             <div className="statistics-filters statistics-header-filters">
               <label>
                 <span>State/Province</span>
-                <select value={selectedState} onChange={(event) => setSelectedState(event.target.value)}>
+                <select disabled={!filtersReady} value={selectedState} onChange={(event) => setSelectedState(event.target.value)}>
                   <option value="">All</option>
                   {options.states.map((state) => (
                     <option key={state} value={state}>{state}</option>
@@ -108,7 +125,7 @@ const StatisticsPage = ({ onNavigate = () => {} }: StatisticsPageProps) => {
               </label>
               <label>
                 <span>Year</span>
-                <select value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)}>
+                <select disabled={!filtersReady} value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)}>
                   <option value="">All</option>
                   <option value="active">Active</option>
                   {options.years.map((year) => (

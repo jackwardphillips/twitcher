@@ -7,6 +7,17 @@ behavior, which later changes may supersede.
 
 ## 2026-10-15
 
+### Statistics filter correctness
+
+- Ignore obsolete statistics responses and errors after a filter change or page
+  unmount, preventing old results from overwriting the current selection.
+- Wait for filter options before the first statistics request. Default to the
+  current year when available, otherwise the latest available year, and All
+  when year options are empty or fail to load. Keep selectors disabled while
+  options load so the initial choice matches the request.
+- Added controlled out-of-order response/failure tests and coverage for current,
+  missing, empty, and failed year options; updated A12/A13 remaining scope.
+
 ### Statistics query validation
 
 - Validate statistics query parameters consistently in Vercel and local Express:

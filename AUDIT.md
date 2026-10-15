@@ -137,22 +137,24 @@ expose confidence/failure, and edge cases have regression tests. Persisted
 coordinates are already preferred to string parsing and covered by a regression
 test.
 
-### A12 — Validate frontend API contracts and request races
+### A12 — Validate frontend API contracts
 
-**Evidence:** Frontend consumers trust response shapes and can allow older
-requests to replace newer state.
+**Evidence:** Frontend consumers still trust response shapes. Statistics request
+races are fixed: obsolete successes and failures cannot update current state,
+with controlled out-of-order regression tests.
 
-**Done when:** Runtime response validation exists at the API boundary, stale
-requests cannot win, failures are recoverable, and tests cover malformed and
-out-of-order responses.
+**Done when:** Runtime response validation exists at the API boundary, failures
+are recoverable, and tests cover malformed responses.
 
 ### A13 — Reconcile visible dashboard/statistics semantics
 
-**Evidence:** Labels, time windows, counts, and default-year selection need a
-contract-level comparison between backend derivation and UI wording.
+**Evidence:** Labels, time windows, and counts still need a contract-level
+comparison between backend derivation and UI wording. Statistics default-year
+selection is fixed: use the current year when available, otherwise the latest
+available year, or All when year options are empty or fail to load.
 
-**Done when:** Each visible metric has one documented definition, empty-year
-selection is valid, and API/UI tests assert the same semantics.
+**Done when:** Each visible metric has one documented definition and API/UI
+tests assert the same semantics.
 
 ### A14 — Improve test signal
 
