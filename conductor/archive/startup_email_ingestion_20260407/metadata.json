@@ -1,8 +1,0 @@
-{
-  "track_id": "startup_email_ingestion_20260407",
-  "type": "feature",
-  "status": "new",
-  "created_at": "2026-04-07T10:00:00Z",
-  "updated_at": "2026-04-07T10:00:00Z",
-  "description": "Add email extractor to startup and backfill data from 2026-01-01."
-}

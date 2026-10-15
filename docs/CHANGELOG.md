@@ -1,5 +1,10 @@
 # Changelog
 
+Entries migrated from Conductor below use the track’s archive date from Git
+history, rather than its creation date. Archive commit references preserve access
+to the original specifications and plans; these entries describe historical
+behavior, which later changes may supersede.
+
 ## 2026-08-13
 
 ### Backend
@@ -25,9 +30,9 @@
 
 - Replaced the 81-finding cleanup audit and overlapping status, review, TODO,
   and active-track documents with one prioritized engineering backlog.
-- Retained shipped history in this changelog and operational guidance in
-  `docs/ops/`. The remaining `conductor/archive/` is temporary legacy history;
-  useful details will move here before it is removed.
+- Retained shipped history in this changelog and, at the time, operational
+  guidance in `docs/ops/`. Historical Conductor track summaries are now
+  consolidated below under their archive dates.
 
 ### Deployment
 
@@ -159,3 +164,159 @@
   assertion-fidelity work under F025/S20.
 - Updated `AUDIT.md` to close F006, S17/F027, S04/F007-F008, and S19/F029 while
   preserving hosted-CI and supply-chain follow-up under S44/F069.
+
+## 2026-05-21
+
+### Test suite modernization
+
+- Replaced shallow and secret-dependent tests with database-backed ingestion and sighting-to-incident coverage, MSW provider mocks, and explicit retry, timeout, database-failure, and HTTP error-contract assertions.
+- Made root and backend test entrypoints work on Windows without PowerShell shim workarounds; strengthened incident response-shape assertions and removed misleading full-flow mocks and debug output.
+- Added controlled-overlap regression coverage and fixes for email claims and crash recovery, concurrent incident aggregates and coordinate bounds, duplicate background summaries and photo refreshes, and background failure containment.
+- Added dashboard behavior coverage for geolocation, combined rarity/proximity filters, empty and failure states, histograms, maps, photos, API hardening, and an ingest-to-dashboard smoke flow.
+
+Archived track: `test_suite_modernization` (commit `101f4db`).
+
+## 2026-04-26
+
+### iNaturalist photo integration
+
+- Added lazily fetched representative species photos from iNaturalist, persisted in a SpeciesPhoto cache with attribution, 30-day expiry, and negative caching for missing photos.
+- Returned cached photos immediately from the incidents API while refreshing missing or stale entries in the background; displayed photos with attribution and a blank placeholder when unavailable.
+
+Archived track: `inaturalist_photo_integration_20260426` (commit `9024c22`).
+
+### Summarization efficiency
+
+- Filtered summary work to incidents with new sightings since the last generation or no existing generation timestamp, and checked for new observer comments before calling an AI provider.
+- Updated generation timestamps on success and added regression coverage for skipped redundant calls.
+
+Archived track: `bug_summarization_efficiency` (commit `99ec4b6`).
+
+## 2026-04-24
+
+### Incident clustering fixes
+
+- Expanded clustering from a fixed 10 km radius to a 25 km base, adding 50 km per hour of separation for sightings less than 24 hours apart, capped at 200 km.
+- Merged every incident matched by a bridging sighting into the oldest incident, reassigned sightings, and recomputed dates and coordinate bounds. Updated reclustering and simulation scripts; verified the eight April 22 Cook’s Petrel incidents consolidated into one.
+
+Archived track: `bug_clustering_logic_20260424` (commit `8352c14`).
+
+## 2026-04-22
+
+### Incident dates and histogram alignment
+
+- Corrected alert date parsing and derived incident first/last seen dates from actual sighting dates, including out-of-order reports.
+- Aligned daily histogram counts and tooltips with calendar dates and serialized API date fields as YYYY-MM-DD strings to avoid timezone shifts; added parser, incident, and dashboard regression coverage.
+
+Archived track: `bug_incident_dates_histogram_20260422` (commit `7a6bf8e`).
+
+## 2026-04-19
+
+### Incident card redesign
+
+- Replaced vertical incident cards with a horizontal photo slot and species/metadata layout, preserving rarity accents and action links.
+- Added 21-day daily sighting counts to the incidents API and a rarity-colored histogram with date/count hover tooltips. Added photo placeholders and attribution overlays, component tests, and visual verification.
+
+Archived track: `incident_card_redesign_20260419` (commit `9502a95`).
+
+### Chase intel summarization
+
+- Added stored incident summaries and generation timestamps, background summarization of recent observer comments through Groq or Gemini, conditional card display, and a backfill script.
+- Tuned prompts to retain useful location and behavior information while ignoring content-free comments; isolated missing credentials and provider failures from ingestion.
+- Removed the same-day regeneration guard so new data could update a summary, limited triggering to newly ingested email, and standardized Gemini response parsing.
+
+Archived track: `chase_intel_summarization_20260416` (commit `0cfde84`).
+
+## 2026-04-16
+
+### Incident model and clustering
+
+- Introduced incidents linked to sightings, normalized scientific names, cached sighting counts, first/last seen dates, geographic bounds, primary regions, and covered states.
+- Implemented the original 10 km same-species clustering, open/closed/permanently closed lifecycle, five-day inactivity closure, and reopening within four months of the latest closure.
+- Integrated clustering and lifecycle checks with ingestion and added a chronological historical-sighting migration without wiping data.
+
+Archived track: `incident_clustering_20260413` (commit `dde2ec8`).
+
+### Incident dashboard wiring
+
+- Added GET /api/incidents for open incidents with ABA rarity codes, geographic centroids, region labels, active-day counts, and latest map/checklist links.
+- Switched dashboard cards and map pins from individual sightings to incidents, added fallback map positions, and applied rarity and proximity filters to incident data.
+
+Archived track: `incident_dashboard_wiring_20260416` (commit `dde2ec8`).
+
+## 2026-04-12
+
+### Rarity code filtering
+
+- Added multi-select ABA code 1–6 controls, defaulting to codes 3–6 and requiring at least one selection. Applied the same selection to cards and map pins alongside proximity filtering.
+- Added rarity-colored desktop toggles and the original compact mobile dropdown, with interaction tests and styling refinements.
+
+Archived track: `rarity_code_filter_20260412` (commit `4241321`).
+
+## 2026-04-10
+
+### Enrichment and parser safety
+
+- Replaced loose enrichment types with concrete eBird observation types and caught individual provider failures so remaining sightings continued processing.
+- Replaced parser non-null assertions with explicit required-field checks and date validation, skipping malformed bird records with warnings instead of crashing. Added failure and malformed-input tests.
+
+Archived track: `safety_type_fixes_20260410` (commit `7bd397e`).
+
+## 2026-04-09
+
+### Database-driven rarity colors
+
+- Joined sightings with ABA rarity data in the API and replaced species-keyword color guesses with a shared frontend ABA-code color mapping and neutral fallback. Added lookup and rendering coverage.
+
+Archived track: `rarity_color_20260408` (commit `33a0c1b`).
+
+## 2026-04-07
+
+### Startup email ingestion and backfill
+
+- Added a manual email backfill from January 1, 2026, reusing Message-ID deduplication and configurable IMAP date searches.
+- Integrated ingestion with backend startup, distinguished success, no-new-email, and IMAP-error outcomes, and exposed ingestion status and latest email date to the dashboard with failure indication and tests.
+
+Archived track: `startup_email_ingestion_20260407` (commit `713076b`).
+
+## 2026-04-06
+
+### Automated email ingestion
+
+- Added IMAP fetching of eBird alert email from the preceding 24 hours, including read messages, without moving, deleting, or marking source mail read.
+- Persisted raw email and processing status in IncomingEmail, deduplicated by Message-ID, automatically parsed alerts into sightings, and added POST /api/ingest with mocked and integration coverage.
+
+Archived track: `automated_email_ingestion_20260404` (commit `45e422d`).
+
+## 2026-04-04
+
+### ABA checklist integration
+
+- Parsed and seeded the committed ABA checklist CSV into the original SQLite/Prisma database, storing all rarity codes 1–6 and exposing species-name rarity lookups with tests.
+
+Archived track: `aba_checklist_integration_20260403` (commit `f48ec5a`).
+
+### Project root quick start
+
+- Added a root package.json with concurrently, npm start to launch frontend and backend together, and dependency-install/setup convenience scripts; verified startup, frontend/backend communication, and child-process shutdown.
+
+Archived track: `root_quick_start_20260404` (commit `1ca58e0`).
+
+## 2026-04-03
+
+### eBird enrichment and geospatial dashboard
+
+- Added an eBird API client, species/date/location matching, cached regional requests, and background enrichment with coordinates, checklist links, location identifiers, and observation metadata.
+- Added a React-Leaflet dashboard map, a browser-geolocation Near Me filter within 50 km, and consecutive-day sighting streaks.
+- Introduced the Field Journal interface with parchment backgrounds, rust/sage colors, serif typography, vertically stacked cards, and responsive layout.
+
+Archived track: `ebird_enrichment_20260331` (commit `54997ee`).
+
+## 2026-03-31
+
+### Initial rarity dashboard
+
+- Established the React/Vite frontend, Express/TypeScript backend, and original SQLite/Prisma sighting database.
+- Implemented eBird alert email parsing and sighting storage, a dashboard list with sighting details and Discord links, and initial parser, persistence, and UI tests.
+
+Archived track: `rarity_dashboard_20260325` (commit `8cc23e7`).
