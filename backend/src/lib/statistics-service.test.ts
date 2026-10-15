@@ -283,6 +283,9 @@ describe('getStateRarityStats', () => {
     };
 
     const stats = await getStateRarityStats(prismaMock as any, 'county', { state: 'PA', year: 2026 });
+    expect(prismaMock.incident.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { firstSeen: { gte: new Date(2026, 0, 1), lt: new Date(2027, 0, 1) } },
+    }));
 
     expect(stats.map(({ region, total, counts }) => ({ region, total, counts }))).toEqual([
       {
@@ -328,6 +331,7 @@ describe('getStateRarityStats', () => {
     };
 
     const stats = await getStateRarityStats(prismaMock as any, 'county', { active: true });
+    expect(prismaMock.incident.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { status: 'OPEN' } }));
 
     expect(stats.map(({ region, total, counts }) => ({ region, total, counts }))).toEqual([
       {

@@ -1,7 +1,0 @@
-{
-  "id": "bug_incident_dates_histogram",
-  "name": "Bug: Incident Dates & Histogram Mismatch",
-  "description": "Fix incorrect first/last seen dates (ingestion vs sighting dates) and mislabeled histogram days.",
-  "status": "queued",
-  "created_at": "2026-04-20"
-}

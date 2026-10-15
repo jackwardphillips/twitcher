@@ -68,14 +68,15 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 # Project-Specific Guidelines
 
-This project is developed on Windows using PowerShell.
+Local development runs on Linux/WSL using Bash.
 
-Do not use Linux/bash commands unless explicitly asked.
-Use PowerShell equivalents:
-- list files: Get-ChildItem
-- remove files: Remove-Item
-- copy files: Copy-Item
-- set env var: $env:NAME="value"
-- run scripts: npm run test, npm run build, etc.
-
-Do not use rm, ls -la, grep, sed, cat, export, chmod, or bash-specific syntax.
+- Use Linux paths and shell commands.
+- Prefer `rg` and `rg --files` for searching text and listing files.
+- Run npm commands directly (for example, `npm run dev`); do not use Windows
+  `npm.cmd` or PowerShell-specific syntax.
+- Express (`backend/src/index.ts`) is the local development API and binds to
+  `127.0.0.1`. Production web requests use Vercel functions in `api/`. Its ingestion
+  and diagnostic routes assume a trusted local caller; do not expose or forward
+  this server publicly without a separate authentication/security review.
+- The Mac checkout supports scheduled production polling. Local development
+  changes do not authorize changes to that checkout or its running services.

@@ -11,10 +11,13 @@ import { closeInactiveIncidents, getOpenIncidents, formatDate } from './lib/inci
 import { runSummarizationCycle } from './lib/summarization-service.js';
 import { PhotoService } from './lib/photo-service.js';
 import { getRarityStatsOptions, getStateRarityStats } from './lib/statistics-service.js';
+import { parseStatisticsQuery, StatisticsQueryError } from './lib/statistics-query.js';
 import 'dotenv/config';
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT || 3001);
+// Development-only API; operational routes must stay on the local machine.
+const host = '127.0.0.1';
 const externalSideEffectsDisabled = process.env.DISABLE_EXTERNAL_SIDE_EFFECTS === 'true';
 
 const allowedOrigins = [
@@ -493,19 +496,13 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
 
 app.get('/api/statistics/state-rarities', async (req: Request, res: Response) => {
   try {
-    const groupBy = req.query.groupBy === 'state' ? 'state' : 'county';
-    const state = typeof req.query.state === 'string' && req.query.state.trim() ? req.query.state.trim() : undefined;
-    const active = req.query.year === 'active';
-    const requestedYear = Number.parseInt(String(req.query.year ?? ''), 10);
-    const year = !active && Number.isFinite(requestedYear) ? requestedYear : undefined;
-    const filters = {
-      ...(state ? { state } : {}),
-      ...(year ? { year } : {}),
-      ...(active ? { active } : {}),
-    };
+    const { groupBy, filters } = parseStatisticsQuery(new URL(req.originalUrl, 'http://localhost').searchParams);
     const stats = await getStateRarityStats(prisma, groupBy, filters);
     res.json(stats);
   } catch (error) {
+    if (error instanceof StatisticsQueryError) {
+      return res.status(400).json({ error: error.message });
+    }
     console.error('Failed to fetch state rarity statistics:', error);
     res.status(500).json({ error: 'Failed to fetch state rarity statistics' });
   }
@@ -522,8 +519,8 @@ app.get('/api/statistics/state-rarities/options', async (req: Request, res: Resp
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  app.listen(port, async () => {
-    console.log(`Server is running on port ${port}`);
+  app.listen(port, host, async () => {
+    console.log(`Development API is running at http://${host}:${port}`);
 
     if (process.env.RUN_STARTUP_INGESTION === 'true' && !externalSideEffectsDisabled) {
       console.log('Running startup email ingestion...');

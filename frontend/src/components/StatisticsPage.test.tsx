@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StatisticsPage } from './StatisticsPage.js';
 
 describe('StatisticsPage', () => {
-  const currentYear = String(new Date().getFullYear());
+  const defaultYear = [2026, 2025].includes(new Date().getFullYear()) ? new Date().getFullYear() : 2026;
 
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn((url: string) => {
@@ -82,7 +82,7 @@ describe('StatisticsPage', () => {
     expect(await screen.findByRole('heading', { name: /counties with the most rarities/i })).toBeInTheDocument();
     expect(screen.getByText('Allegheny, PA')).toBeInTheDocument();
     expect(screen.queryByLabelText('PA: 5 total rarities')).not.toBeInTheDocument();
-    expect(global.fetch).toHaveBeenLastCalledWith(`/api/statistics/state-rarities?groupBy=county&year=${currentYear}`);
+    expect(global.fetch).toHaveBeenLastCalledWith(`/api/statistics/state-rarities?groupBy=county&year=${defaultYear}`);
   });
 
   it('expands a ranking row to show referenced birds', async () => {
@@ -122,4 +122,58 @@ describe('StatisticsPage', () => {
 
     expect(global.fetch).toHaveBeenLastCalledWith('/api/statistics/state-rarities?groupBy=state&year=active');
   });
+  it.each(['success', 'failure'])('ignores an older request finishing with %s after a newer filter request', async (outcome) => {
+    let resolveOld!: (response: unknown) => void;
+    let rejectOld!: (error: Error) => void;
+    const oldRequest = new Promise((resolve, reject) => { resolveOld = resolve; rejectOld = reject; });
+    const row = (region: string) => [{ region, total: 1, counts: { 3: 1, 4: 0, 5: 0, 6: 0 }, birds: [] }];
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      if (url.includes('/options')) return Promise.resolve({ ok: true, json: async () => ({ states: ['Maine', 'Ohio'], years: [2026] }) });
+      if (url.includes('state=Maine')) return oldRequest;
+      return Promise.resolve({ ok: true, json: async () => row(url.includes('state=Ohio') ? 'Ohio' : 'Initial') });
+    }));
+    render(<StatisticsPage />);
+    await screen.findByText('Initial');
+    fireEvent.change(screen.getByLabelText('State/Province'), { target: { value: 'Maine' } });
+    fireEvent.change(screen.getByLabelText('State/Province'), { target: { value: 'Ohio' } });
+    await screen.findByLabelText('Ohio: 1 total rarities');
+    await act(async () => {
+      if (outcome === 'failure') rejectOld(new Error('Old request failed'));
+      else resolveOld({ ok: true, json: async () => row('Maine') });
+    });
+    expect(screen.getByLabelText('State/Province')).toHaveValue('Ohio');
+    expect(screen.getByLabelText('Ohio: 1 total rarities')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Maine: 1 total rarities')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Old request failed/)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { years: [2024, 2025], expected: '2025' },
+    { years: [], expected: '' },
+    { years: [new Date().getFullYear() + 1, new Date().getFullYear()], expected: String(new Date().getFullYear()) },
+  ])('selects an available default from $years', async ({ years, expected }) => {
+    vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve({
+      ok: true,
+      json: async () => url.includes('/options') ? { states: [], years } : [],
+    })));
+    render(<StatisticsPage />);
+    await waitFor(() => expect(screen.getByLabelText('Year')).toBeEnabled());
+    expect(screen.getByLabelText('Year')).toHaveValue(expected);
+    expect(global.fetch).toHaveBeenLastCalledWith('/api/statistics/state-rarities?groupBy=state' + (expected ? `&year=${expected}` : ''));
+  });
+
+  it('waits for options and falls back to All when options fail', async () => {
+    let failOptions!: (error: Error) => void;
+    const optionsRequest = new Promise((_resolve, reject) => { failOptions = reject; });
+    vi.stubGlobal('fetch', vi.fn((url: string) => url.includes('/options')
+      ? optionsRequest : Promise.resolve({ ok: true, json: async () => [] })));
+    render(<StatisticsPage />);
+    expect(screen.getByLabelText('Year')).toBeDisabled();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    await act(async () => { failOptions(new Error('Options unavailable')); });
+    expect(screen.getByLabelText('Year')).toBeEnabled();
+    expect(screen.getByLabelText('Year')).toHaveValue('');
+    expect(global.fetch).toHaveBeenLastCalledWith('/api/statistics/state-rarities?groupBy=state');
+  });
+
 });

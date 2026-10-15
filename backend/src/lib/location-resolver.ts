@@ -111,6 +111,7 @@ export class LocationResolver {
       url.searchParams.set('lon', String(observation.lng));
 
       const response = await fetch(url, {
+        signal: AbortSignal.timeout(30_000),
         headers: {
           'User-Agent': 'twitcher-rare-bird-dashboard/1.0',
           'Accept': 'application/json',

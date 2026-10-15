@@ -225,8 +225,7 @@ Set `BACKEND_URL` and `FRONTEND_URL` before checking production. Keep provider t
 
 - `AUDIT.md` is the current engineering backlog and risk register.
 - `docs/CHANGELOG.md` records shipped changes.
-- `docs/ops/` contains operational runbooks and provider-safety notes.
-- `conductor/archive/` is legacy history, not a current backlog. Useful details
-  will move to the changelog before the archive is removed.
+- Completed Conductor tracks are summarized in `docs/CHANGELOG.md` under their
+  archive dates, with commit references to the original plans and specifications.
 
 Scheduled production polling does not generate AI summaries or require AI provider credentials.

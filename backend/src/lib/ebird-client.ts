@@ -122,6 +122,7 @@ export class EbirdClient {
       const started = Date.now();
       try {
         const response = await fetch(url.toString(), {
+          signal: AbortSignal.timeout(30_000),
           headers: {
             'x-ebirdapitoken': this.apiKey,
           },
@@ -155,7 +156,7 @@ export class EbirdClient {
       } catch (error) {
         const isLastRetry = i === retries - 1;
         const isRetryableError = (error instanceof Error && 
-          (error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'))) ||
+          (error.name === 'TimeoutError' || error.name === 'TypeError' || error.message.includes('getaddrinfo') || error.message.includes('ENOTFOUND'))) ||
           (error instanceof Error && error.message.startsWith('eBird API error 5')) ||
           (error instanceof Error && error.message.startsWith('eBird API error 429'));
         

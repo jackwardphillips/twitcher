@@ -39,46 +39,54 @@ export class ImapClient {
         pass: this.config.pass,
       },
       logger: false,
+      connectionTimeout: 30_000,
+      greetingTimeout: 30_000,
+      socketTimeout: 30_000,
     });
 
-    await client.connect();
-
-    const emails: IngestedEmail[] = [];
-    const searchDate = since || new Date();
-    if (!since) {
-      searchDate.setDate(searchDate.getDate() - 1);
-    }
-
-    const lock = await client.getMailboxLock('INBOX');
     try {
-      const searchCriteria = {
-        since: searchDate,
-        from: 'ebird-alert@birds.cornell.edu',
-        subject: 'ABA Rarities',
-      };
+      await client.connect();
 
-      for await (const message of client.fetch(searchCriteria, { envelope: true, source: true })) {
-        if (!message.envelope || !message.source) continue;
-
-        const from = message.envelope.from?.[0]?.address || 'unknown';
-        const subject = message.envelope.subject || '';
-        
-        // Filter by sender and ABA Rarities subject
-        if (from === 'ebird-alert@birds.cornell.edu' && subject.includes('ABA Rarities')) {
-          emails.push({
-            messageId: getEmailIdentity(message.envelope.messageId, message.source),
-            subject: subject,
-            from: from,
-            date: message.envelope.date || new Date(),
-            rawBody: message.source.toString(),
-          });
-        }
+      const emails: IngestedEmail[] = [];
+      const searchDate = since || new Date();
+      if (!since) {
+        searchDate.setDate(searchDate.getDate() - 1);
       }
-    } finally {
-      lock.release();
-    }
 
-    await client.logout();
-    return emails;
+      const lock = await client.getMailboxLock('INBOX');
+      try {
+        const searchCriteria = {
+          since: searchDate,
+          from: 'ebird-alert@birds.cornell.edu',
+          subject: 'ABA Rarities',
+        };
+
+        for await (const message of client.fetch(searchCriteria, { envelope: true, source: true })) {
+          if (!message.envelope || !message.source) continue;
+
+          const from = message.envelope.from?.[0]?.address || 'unknown';
+          const subject = message.envelope.subject || '';
+        
+          // Filter by sender and ABA Rarities subject
+          if (from === 'ebird-alert@birds.cornell.edu' && subject.includes('ABA Rarities')) {
+            emails.push({
+              messageId: getEmailIdentity(message.envelope.messageId, message.source),
+              subject: subject,
+              from: from,
+              date: message.envelope.date || new Date(),
+              rawBody: message.source.toString(),
+            });
+          }
+        }
+      } finally {
+        lock.release();
+      }
+
+      await client.logout();
+      return emails;
+    } finally {
+      // Close even when connect, mailbox acquisition, fetch, or logout fails.
+      client.close();
+    }
   }
 }

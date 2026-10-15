@@ -26,6 +26,7 @@ describe('EbirdClient', () => {
       expect.stringContaining('https://api.ebird.org/v2/data/obs/US-NY/recent/notable'),
       {
         headers: { 'x-ebirdapitoken': apiKey },
+        signal: expect.any(AbortSignal),
       }
     );
     expect(result).toEqual(mockData);
@@ -44,6 +45,7 @@ describe('EbirdClient', () => {
       expect.stringContaining('https://api.ebird.org/v2/product/checklist/view/S123'),
       {
         headers: { 'x-ebirdapitoken': apiKey },
+        signal: expect.any(AbortSignal),
       }
     );
     expect(result).toEqual(mockData);

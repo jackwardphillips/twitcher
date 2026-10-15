@@ -1,6 +1,6 @@
 # Twitcher Engineering Backlog
 
-Last reviewed: 2026-08-13
+Last reviewed: 2026-10-15 (targeted topology and code review; not a fresh dependency or provider-terms audit)
 
 ## Purpose
 
@@ -8,14 +8,16 @@ This is the single source of truth for engineering cleanup and risk work.
 
 - Product setup and current behavior belong in `README.md`.
 - Shipped changes belong in `docs/CHANGELOG.md`.
-- Operational runbooks belong in `docs/ops/`.
-- Useful implementation and operational history belongs in the changelog.
-  Legacy plans remain in `conductor/archive/` only until their durable details
-  are migrated and the archive can be removed.
+- Completed Conductor tracks are consolidated in `docs/CHANGELOG.md` under their
+  archive dates. The archive and obsolete `docs/ops/` notes have been removed.
 
 Only actionable work belongs here. Add evidence and a verifiable completion
 condition to new entries. Remove completed entries after recording the change in
 the changelog.
+
+The dashboard and map intentionally treat missing or zero ABA rarity codes as
+Code 5 for display and filtering. A11 is excluded from cleanup at the owner’s
+direction; changing that fallback requires a separate product decision.
 
 ## Priorities
 
@@ -24,25 +26,38 @@ the changelog.
 - **P2:** Correctness, maintainability, accessibility, or performance work.
 - **P3:** Product improvements that are safe to defer.
 
-## P0 — Data Integrity and Security
+## P1 — Security and API Boundaries
 
-### A02 — Authenticate and constrain mutating and operational APIs
+### A02 — Bound public API workloads and preserve the local development boundary
 
-**Evidence:** Ingestion and operational endpoints need a documented trusted-caller
-boundary. Expensive query parameters and repeated requests can amplify database
-or provider work.
+**Evidence:** Express is retained for local development and now binds explicitly
+to `127.0.0.1`; its ingestion and diagnostic routes assume a trusted local caller.
+The boundary is documented in `AGENTS.md`. Production Vercel functions under
+`api/` expose only incident and statistics reads, with generic error responses.
+Statistics routes now share strict query parsing and return 400 for malformed,
+repeated, or unsupported parameters. Active/year filters run in the database
+before aggregation. Public request-rate limits and bounds for all-year queries
+and the filter-options endpoint remain unimplemented.
 
-**Done when:** Mutating/diagnostic routes require authentication, ingestion is
-rate-limited and single-flight, public errors do not expose infrastructure
-details, and tests cover unauthorized and throttled requests.
+**Done when:** Public query work is bounded and tests cover malformed and
+throttled requests. Any future remote exposure of Express requires a separate
+review of authentication, rate limits, and cross-process ingestion exclusion;
+CORS alone is not authentication. Localhost binding does not protect routes
+that are deliberately forwarded or proxied.
 
 ## P1 — Reliability, Compliance, and Operations
 
 ### A03 — Bound and resume external-provider work
 
-**Evidence:** IMAP, eBird enrichment, summarization, photo lookup, and geocoding
-can run on request paths or repeat work after failures. Timeout, retry, locking,
-and backpressure behavior is not consistently defined.
+**Evidence:** Production polling uses IMAP, eBird, photo lookup, and geocoding;
+AI summaries were retired from the production poller. Vercel incident reads do
+not trigger provider fetches, while the legacy Express route still refreshes
+photos in the background. Photo fetches are coalesced within a process and poller
+photo hydration is sequential. Durable retries and cross-process coordination
+remain to be specified. HTTP provider calls now have 30-second deadlines,
+eBird retries timeouts within its existing three-attempt limit, and IMAP has
+explicit connection/greeting/socket timeouts with connection cleanup on failure.
+These are per-request/inactivity limits, not a deadline for the entire poller run.
 
 **Done when:** External calls have explicit timeouts; cleanup runs on failure;
 background work has bounded concurrency and durable retry state; duplicate work
@@ -82,9 +97,11 @@ removed, and the full relevant test suites pass.
 
 ### A07 — Make deployment and health behavior reproducible
 
-**Evidence:** Runtime topology, migration ownership, poller scheduling, provider
-configuration, readiness, and failure notification are partly inferred from
-hosting configuration rather than a single verified runbook.
+**Evidence:** Production serves frontend and read APIs on Vercel, uses Neon
+Postgres, and polls from the retained Mac checkout. `scripts/vercel-build.js`
+already deploys migrations before production builds. Express has health routes,
+but Vercel has no equivalent readiness endpoint. Scheduling, failure notification,
+and migration concurrency/rollback need one verified deployment contract.
 
 **Done when:** A clean deployment can be reproduced from committed instructions;
 migration ownership is explicit; health distinguishes liveness/readiness;
@@ -93,9 +110,11 @@ and tested.
 
 ### A08 — Harden the poller image and CI supply chain
 
-**Evidence:** The poller image/runtime and action provenance need runtime
-verification, non-root execution, immutable image selection, and architecture
-review.
+**Evidence:** `.github/workflows/poller-image.yml` already validates the backend
+and builds a Linux ARM64 image with revision tags and labels. It does not
+smoke-test the built container; actions use mutable major tags.
+`backend/Dockerfile.poller` uses `node:22-slim` without a digest or non-root USER.
+Live image selection still needs verification.
 
 **Done when:** CI builds and smoke-tests the production image, actions and base
 images are pinned appropriately, the container runs as non-root, and supported
@@ -122,30 +141,24 @@ expose confidence/failure, and edge cases have regression tests. Persisted
 coordinates are already preferred to string parsing and covered by a regression
 test.
 
-### A11 — Represent unknown rarity honestly
+### A12 — Validate frontend API contracts
 
-**Evidence:** Unknown rarity can be presented or filtered as ABA Code 5 even
-though “unknown” and “Code 5” have different meanings.
+**Evidence:** Frontend consumers still trust response shapes. Statistics request
+races are fixed: obsolete successes and failures cannot update current state,
+with controlled out-of-order regression tests.
 
-**Done when:** Unknown rarity is represented separately through the API and UI,
-with tests covering display and filtering behavior.
-
-### A12 — Validate frontend API contracts and request races
-
-**Evidence:** Frontend consumers trust response shapes and can allow older
-requests to replace newer state.
-
-**Done when:** Runtime response validation exists at the API boundary, stale
-requests cannot win, failures are recoverable, and tests cover malformed and
-out-of-order responses.
+**Done when:** Runtime response validation exists at the API boundary, failures
+are recoverable, and tests cover malformed responses.
 
 ### A13 — Reconcile visible dashboard/statistics semantics
 
-**Evidence:** Labels, time windows, counts, and default-year selection need a
-contract-level comparison between backend derivation and UI wording.
+**Evidence:** Labels, time windows, and counts still need a contract-level
+comparison between backend derivation and UI wording. Statistics default-year
+selection is fixed: use the current year when available, otherwise the latest
+available year, or All when year options are empty or fail to load.
 
-**Done when:** Each visible metric has one documented definition, empty-year
-selection is valid, and API/UI tests assert the same semantics.
+**Done when:** Each visible metric has one documented definition and API/UI
+tests assert the same semantics.
 
 ### A14 — Improve test signal
 
