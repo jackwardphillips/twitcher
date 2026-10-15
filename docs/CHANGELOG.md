@@ -7,6 +7,16 @@ behavior, which later changes may supersede.
 
 ## 2026-10-15
 
+### Statistics query validation
+
+- Validate statistics query parameters consistently in Vercel and local Express:
+  reject malformed years, invalid grouping, repeated/unsupported parameters,
+  and excessively long or control-character-containing state names with HTTP
+  400. Unknown well-formed state names still return empty results.
+- Apply active/year filters in the incident database query rather than loading
+  all incidents first; preserve existing calendar-year and ranking semantics.
+  Request-rate limits and all-year/options query bounds remain under A02.
+
 ### Local development API boundary
 
 - Retained Express for local development and bound its listener explicitly to

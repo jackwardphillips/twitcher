@@ -30,8 +30,10 @@ the changelog.
 to `127.0.0.1`; its ingestion and diagnostic routes assume a trusted local caller.
 The boundary is documented in `AGENTS.md`. Production Vercel functions under
 `api/` expose only incident and statistics reads, with generic error responses.
-Public statistics requests still need workload limits and stricter parameter
-validation.
+Statistics routes now share strict query parsing and return 400 for malformed,
+repeated, or unsupported parameters. Active/year filters run in the database
+before aggregation. Public request-rate limits and bounds for all-year queries
+and the filter-options endpoint remain unimplemented.
 
 **Done when:** Public query work is bounded and tests cover malformed and
 throttled requests. Any future remote exposure of Express requires a separate

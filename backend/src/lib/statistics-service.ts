@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { formatDate, normalizeScientificName } from './incident-service.js';
 
 type RarityBand = 3 | 4 | 5 | 6;
@@ -85,8 +85,18 @@ export async function getStateRarityStats(
   groupBy: RarityRegionGroup = 'county',
   filters: RarityStatsFilters = {}
 ): Promise<StateRarityStat[]> {
+  // Preserve the existing server-local calendar-year definition.
+  const where: Prisma.IncidentWhereInput = {};
+  if (filters.active) where.status = 'OPEN';
+  if (filters.year) {
+    where.firstSeen = {
+      gte: new Date(filters.year, 0, 1),
+      lt: new Date(filters.year + 1, 0, 1),
+    };
+  }
   const [incidents, rarityCodes] = await Promise.all([
     prisma.incident.findMany({
+      where,
       select: {
         id: true,
         scientificName: true,

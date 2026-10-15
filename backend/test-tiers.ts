@@ -12,6 +12,8 @@ export const unitTestFiles = [
   'src/lib/poller-runtime.test.ts',
   'src/lib/photo-policy.test.ts',
   'src/lib/provider-timeouts.test.ts',
+  'src/lib/statistics-query.test.ts',
+  'src/lib/statistics-service.test.ts',
   'src/lib/poller-target-selection.test.ts',
   'src/lib/rarity-seeder.test.ts',
   'src/lib/rarity-service.test.ts',

@@ -11,6 +11,7 @@ import { closeInactiveIncidents, getOpenIncidents, formatDate } from './lib/inci
 import { runSummarizationCycle } from './lib/summarization-service.js';
 import { PhotoService } from './lib/photo-service.js';
 import { getRarityStatsOptions, getStateRarityStats } from './lib/statistics-service.js';
+import { parseStatisticsQuery, StatisticsQueryError } from './lib/statistics-query.js';
 import 'dotenv/config';
 
 const app = express();
@@ -495,19 +496,13 @@ app.get('/api/incidents', async (req: Request, res: Response) => {
 
 app.get('/api/statistics/state-rarities', async (req: Request, res: Response) => {
   try {
-    const groupBy = req.query.groupBy === 'state' ? 'state' : 'county';
-    const state = typeof req.query.state === 'string' && req.query.state.trim() ? req.query.state.trim() : undefined;
-    const active = req.query.year === 'active';
-    const requestedYear = Number.parseInt(String(req.query.year ?? ''), 10);
-    const year = !active && Number.isFinite(requestedYear) ? requestedYear : undefined;
-    const filters = {
-      ...(state ? { state } : {}),
-      ...(year ? { year } : {}),
-      ...(active ? { active } : {}),
-    };
+    const { groupBy, filters } = parseStatisticsQuery(new URL(req.originalUrl, 'http://localhost').searchParams);
     const stats = await getStateRarityStats(prisma, groupBy, filters);
     res.json(stats);
   } catch (error) {
+    if (error instanceof StatisticsQueryError) {
+      return res.status(400).json({ error: error.message });
+    }
     console.error('Failed to fetch state rarity statistics:', error);
     res.status(500).json({ error: 'Failed to fetch state rarity statistics' });
   }
