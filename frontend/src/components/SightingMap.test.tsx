@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { SightingMap } from './SightingMap.js';
-import { RARITY_COLOR_MAP } from '../lib/rarity-utils.js';
+import { DEFAULT_RARITY_COLOR, RARITY_COLOR_MAP } from '../lib/rarity-utils.js';
 import '@testing-library/jest-dom';
 
 describe('SightingMap', () => {
@@ -51,7 +51,7 @@ describe('SightingMap', () => {
     const markers = document.querySelectorAll('.sighting-map-marker');
     expect(markers).toHaveLength(2);
     expect(markers[0]).toHaveStyle({ '--marker-color': RARITY_COLOR_MAP[4] });
-    expect(markers[1]).toHaveStyle({ '--marker-color': RARITY_COLOR_MAP[5] });
+    expect(markers[1]).toHaveStyle({ '--marker-color': DEFAULT_RARITY_COLOR });
   });
 
   it('toggles the expanded map state from the map control', () => {

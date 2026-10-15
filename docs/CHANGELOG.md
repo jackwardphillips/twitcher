@@ -5,6 +5,21 @@ history, rather than its creation date. Archive commit references preserve acces
 to the original specifications and plans; these entries describe historical
 behavior, which later changes may supersede.
 
+## 2026-10-15
+
+### Reliability and rarity correctness
+
+- Added 30-second request deadlines to eBird, iNaturalist, and reverse-geocoding
+  HTTP calls. eBird timeouts use the existing bounded retry policy. Configured
+  IMAP connection, greeting, and inactivity timeouts and close connections even
+  when connecting, acquiring a mailbox, fetching, or logging out fails.
+- Resolved A11: unknown ABA rarity no longer inherits Code 5 filtering or color.
+  Added a separate, opt-in Unknown filter and label, with neutral card and map
+  colors. Default selection remains codes 3–6; the API already preserves null
+  rarity values.
+- Refreshed the audit for the Vercel/Neon/Mac-poller topology, existing migration
+  and image-build automation, retired production summaries, and removed docs.
+
 ## 2026-08-13
 
 ### Backend

@@ -52,7 +52,7 @@ const buildMaptilerStyleUrl = () => {
 };
 
 const getIncidentRarity = (incident: Incident) => {
-  return incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode;
+  return incident.abaCode;
 };
 
 const escapeHtml = (value: string | number) => {

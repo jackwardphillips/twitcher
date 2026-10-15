@@ -81,7 +81,7 @@ export class PhotoService {
       url.searchParams.append('rank', 'species');
       url.searchParams.append('per_page', '1');
 
-      const response = await fetch(url.toString());
+      const response = await fetch(url.toString(), { signal: AbortSignal.timeout(30_000) });
       if (!response.ok) {
         throw new Error(`iNaturalist API error: ${response.status}`);
       }
@@ -101,7 +101,7 @@ export class PhotoService {
         observationsUrl.searchParams.append('order_by', 'votes');
         observationsUrl.searchParams.append('order', 'desc');
 
-        const observationsResponse = await fetch(observationsUrl.toString());
+        const observationsResponse = await fetch(observationsUrl.toString(), { signal: AbortSignal.timeout(30_000) });
         if (!observationsResponse.ok) {
           throw new Error(`iNaturalist API error: ${observationsResponse.status}`);
         }

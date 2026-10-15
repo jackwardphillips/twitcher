@@ -1,6 +1,6 @@
 # Twitcher Engineering Backlog
 
-Last reviewed: 2026-08-13
+Last reviewed: 2026-10-15 (targeted topology and code review; not a fresh dependency or provider-terms audit)
 
 ## Purpose
 
@@ -8,10 +8,8 @@ This is the single source of truth for engineering cleanup and risk work.
 
 - Product setup and current behavior belong in `README.md`.
 - Shipped changes belong in `docs/CHANGELOG.md`.
-- Operational runbooks belong in `docs/ops/`.
-- Useful implementation and operational history belongs in the changelog.
-  Legacy plans remain in `conductor/archive/` only until their durable details
-  are migrated and the archive can be removed.
+- Completed Conductor tracks are consolidated in `docs/CHANGELOG.md` under their
+  archive dates. The archive and obsolete `docs/ops/` notes have been removed.
 
 Only actionable work belongs here. Add evidence and a verifiable completion
 condition to new entries. Remove completed entries after recording the change in
@@ -24,25 +22,35 @@ the changelog.
 - **P2:** Correctness, maintainability, accessibility, or performance work.
 - **P3:** Product improvements that are safe to defer.
 
-## P0 — Data Integrity and Security
+## P1 — Security and API Boundaries
 
 ### A02 — Authenticate and constrain mutating and operational APIs
 
-**Evidence:** Ingestion and operational endpoints need a documented trusted-caller
-boundary. Expensive query parameters and repeated requests can amplify database
-or provider work.
+**Evidence:** `backend/src/index.ts` exposes unauthenticated GET/POST ingestion
+and diagnostic routes when the Express server is run. Current Vercel functions
+under `api/` expose only incident and statistics reads, with generic error
+responses. The Express mutation surface is therefore a conditional deployment
+risk, not a confirmed public production exposure. Public statistics requests
+still need workload limits and stricter parameter validation.
 
-**Done when:** Mutating/diagnostic routes require authentication, ingestion is
-rate-limited and single-flight, public errors do not expose infrastructure
-details, and tests cover unauthorized and throttled requests.
+**Done when:** The supported Express deployment boundary is explicit; any exposed
+mutating/diagnostic routes require authentication; ingestion has rate limits and
+cross-process exclusion where needed; public query work is bounded; tests cover
+unauthorized, malformed, and throttled requests. CORS is not authentication.
 
 ## P1 — Reliability, Compliance, and Operations
 
 ### A03 — Bound and resume external-provider work
 
-**Evidence:** IMAP, eBird enrichment, summarization, photo lookup, and geocoding
-can run on request paths or repeat work after failures. Timeout, retry, locking,
-and backpressure behavior is not consistently defined.
+**Evidence:** Production polling uses IMAP, eBird, photo lookup, and geocoding;
+AI summaries were retired from the production poller. Vercel incident reads do
+not trigger provider fetches, while the legacy Express route still refreshes
+photos in the background. Photo fetches are coalesced within a process and poller
+photo hydration is sequential. Durable retries and cross-process coordination
+remain to be specified. HTTP provider calls now have 30-second deadlines,
+eBird retries timeouts within its existing three-attempt limit, and IMAP has
+explicit connection/greeting/socket timeouts with connection cleanup on failure.
+These are per-request/inactivity limits, not a deadline for the entire poller run.
 
 **Done when:** External calls have explicit timeouts; cleanup runs on failure;
 background work has bounded concurrency and durable retry state; duplicate work
@@ -82,9 +90,11 @@ removed, and the full relevant test suites pass.
 
 ### A07 — Make deployment and health behavior reproducible
 
-**Evidence:** Runtime topology, migration ownership, poller scheduling, provider
-configuration, readiness, and failure notification are partly inferred from
-hosting configuration rather than a single verified runbook.
+**Evidence:** Production serves frontend and read APIs on Vercel, uses Neon
+Postgres, and polls from the retained Mac checkout. `scripts/vercel-build.js`
+already deploys migrations before production builds. Express has health routes,
+but Vercel has no equivalent readiness endpoint. Scheduling, failure notification,
+and migration concurrency/rollback need one verified deployment contract.
 
 **Done when:** A clean deployment can be reproduced from committed instructions;
 migration ownership is explicit; health distinguishes liveness/readiness;
@@ -93,9 +103,11 @@ and tested.
 
 ### A08 — Harden the poller image and CI supply chain
 
-**Evidence:** The poller image/runtime and action provenance need runtime
-verification, non-root execution, immutable image selection, and architecture
-review.
+**Evidence:** `.github/workflows/poller-image.yml` already validates the backend
+and builds a Linux ARM64 image with revision tags and labels. It does not
+smoke-test the built container; actions use mutable major tags.
+`backend/Dockerfile.poller` uses `node:22-slim` without a digest or non-root USER.
+Live image selection still needs verification.
 
 **Done when:** CI builds and smoke-tests the production image, actions and base
 images are pinned appropriately, the container runs as non-root, and supported
@@ -121,14 +133,6 @@ silently create plausible but incorrect records.
 expose confidence/failure, and edge cases have regression tests. Persisted
 coordinates are already preferred to string parsing and covered by a regression
 test.
-
-### A11 — Represent unknown rarity honestly
-
-**Evidence:** Unknown rarity can be presented or filtered as ABA Code 5 even
-though “unknown” and “Code 5” have different meanings.
-
-**Done when:** Unknown rarity is represented separately through the API and UI,
-with tests covering display and filtering behavior.
 
 ### A12 — Validate frontend API contracts and request races
 

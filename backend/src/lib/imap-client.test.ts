@@ -11,6 +11,7 @@ describe('ImapClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockImapFlow = {
+      close: vi.fn(),
       connect: vi.fn().mockResolvedValue(undefined),
       getMailboxLock: vi.fn().mockResolvedValue({ release: vi.fn() }),
       fetch: vi.fn(),
@@ -125,4 +126,20 @@ describe('ImapClient', () => {
 
     await expect(client.fetchRecentAlerts()).rejects.toThrow('Connection failed');
   });
+  it.each(['connect', 'getMailboxLock', 'logout'])('closes the connection when %s fails', async (operation) => {
+    mockImapFlow.fetch.mockReturnValue((async function* () {})());
+    mockImapFlow[operation].mockRejectedValue(new Error('IMAP failure'));
+    await expect(client.fetchRecentAlerts()).rejects.toThrow('IMAP failure');
+    expect(mockImapFlow.close).toHaveBeenCalledOnce();
+  });
+
+  it('releases the mailbox and closes the connection when fetching fails', async () => {
+    const release = vi.fn();
+    mockImapFlow.getMailboxLock.mockResolvedValue({ release });
+    mockImapFlow.fetch.mockReturnValue((async function* () { throw new Error('Fetch failed'); })());
+    await expect(client.fetchRecentAlerts()).rejects.toThrow('Fetch failed');
+    expect(release).toHaveBeenCalledOnce();
+    expect(mockImapFlow.close).toHaveBeenCalledOnce();
+  });
+
 });

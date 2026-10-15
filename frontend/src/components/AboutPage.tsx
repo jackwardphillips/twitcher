@@ -317,7 +317,8 @@ const AboutPage = ({ onNavigate = () => {} }: AboutPageProps) => {
             <div className="about-demo-controls">
               <RarityFilter
                 selectedRarities={[aboutCardRarity]}
-                onToggleRarity={setAboutCardRarity}
+                includeUnknown={false}
+                onToggleRarity={(rarity) => { if (rarity !== 'unknown') setAboutCardRarity(rarity) }}
               />
             </div>
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { SightingMap } from './SightingMap.js'
 import { calculateDistance } from '../lib/geo-utils.js'
-import { getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js'
-import { RarityFilter, type RarityCode } from './RarityFilter.js'
+import { getRaritySelection, getRarityColor as getRarityUtilityColor } from '../lib/rarity-utils.js'
+import { RarityFilter, type RaritySelection } from './RarityFilter.js'
 import { PhotoSlot } from './PhotoSlot.js'
 import { SightingHistogram } from './SightingHistogram.js'
 import { formatDayMonth } from '../lib/date-utils.js'
@@ -50,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
   const [geoError, setGeoError] = useState<string | null>(null)
 
   // Rarity Filter state
-  const [selectedRarities, setSelectedRarities] = useState<RarityCode[]>([3, 4, 5, 6])
+  const [selectedRarities, setSelectedRarities] = useState<RaritySelection[]>([3, 4, 5, 6])
 
   useEffect(() => {
     // Fetch incidents
@@ -95,7 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
     }
   }
 
-  const handleToggleRarity = (rarity: RarityCode) => {
+  const handleToggleRarity = (rarity: RaritySelection) => {
     setSelectedRarities((prev) => {
       if (prev.includes(rarity)) {
         // Empty-state guard: cannot deselect last code
@@ -108,17 +108,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
   }
 
   const getRarityColor = (incident: Incident) => {
-    // Fallback for missing abaCode to code 5
-    const rarity = incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode
-    return getRarityUtilityColor(rarity as RarityCode)
+    return getRarityUtilityColor(incident.abaCode)
   }
 
   const displayedIncidents = incidents
-    .filter((incident): incident is Incident & { abaCode: RarityCode } => {
-      // Fallback for missing abaCode to code 5
-      const rarity = (incident.abaCode === null || incident.abaCode === 0 ? 5 : incident.abaCode) as RarityCode
-      return selectedRarities.includes(rarity)
-    })
+    .filter((incident) => selectedRarities.includes(getRaritySelection(incident.abaCode)))
     .filter((incident) => {
       if (!nearMe || !userLocation) return true
       const dist = calculateDistance(userLocation.lat, userLocation.lng, incident.centroidLat, incident.centroidLng)
@@ -173,6 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate = () => {} }) => {
                   <div className="card-top-row">
                     <div className="species-info">
                       <h3>{incident.commonName}</h3>
+                      {getRaritySelection(incident.abaCode) === 'unknown' && <span>Unknown rarity</span>}
                       <p className="scientific-name">{incident.scientificName}</p>
                       <div className="location-container">
                         <svg className="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

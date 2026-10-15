@@ -109,6 +109,7 @@ body {
   align-items: center;
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .rarity-filter.inline-layout {
@@ -1709,4 +1710,10 @@ body {
   .attribution-overlay {
     opacity: 1;
   }
+}
+
+.dashboard .rarity-btn.rarity-btn-unknown {
+  flex-shrink: 0;
+  padding-inline: 0.5rem;
+  width: auto;
 }

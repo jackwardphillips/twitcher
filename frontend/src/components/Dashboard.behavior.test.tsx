@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { Dashboard } from './Dashboard.js'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import '@testing-library/jest-dom'
@@ -112,4 +112,24 @@ describe('Dashboard Behavioral Tests', () => {
     await screen.findByText('Rare Bird')
     expect(screen.queryByText('Common Bird')).not.toBeInTheDocument()
   })
+  it('keeps unknown rarity separate from Code 5 and uses a neutral color', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        ...mockIncidents,
+        ...[null, 0].map((abaCode, index) => ({ ...mockIncidents[0], id: `unknown-${index}`, commonName: `Unknown Bird ${index}`, abaCode })),
+      ],
+    })
+    render(<Dashboard />)
+    await screen.findByRole('heading', { name: 'Rare Bird' })
+    expect(screen.queryByText('Unknown Bird 0')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Unknown rarity' }))
+    const unknown = screen.getByRole('heading', { name: 'Unknown Bird 0' }).closest('.sighting-card')
+    expect(unknown).toHaveStyle({ '--rarity-color': '#9e9e9e' })
+    expect(screen.getByText('Unknown Bird 1')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '5' }))
+    expect(screen.queryByRole('heading', { name: 'Rare Bird' })).not.toBeInTheDocument()
+    expect(screen.getByText('Unknown Bird 0')).toBeInTheDocument()
+  })
+
 })
