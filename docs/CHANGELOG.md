@@ -5,6 +5,16 @@ history, rather than its creation date. Archive commit references preserve acces
 to the original specifications and plans; these entries describe historical
 behavior, which later changes may supersede.
 
+## 2026-11-06
+
+### Reject invalid eBird observation dates
+
+- Reject malformed dates and impossible calendar dates before writing a target's
+  observations, sightings, or lifecycle changes. Report the affected checklist
+  through the existing poll error handling instead of substituting today's date.
+- Cover invalid dates, calendar rollover, valid leap days, and supported date-only
+  and date/time values with regression tests.
+
 ## 2026-10-15
 
 ### Statistics filter correctness

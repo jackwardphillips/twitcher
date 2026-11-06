@@ -3,6 +3,7 @@ export const unitTestFiles = [
   'src/incident-summary-fields.test.ts',
   'src/lib/aba-parser.test.ts',
   'src/lib/alert-summary-parser.test.ts',
+  'src/lib/alert-target-service.test.ts',
   'src/lib/ebird-date-repro.test.ts',
   'src/lib/ebird-parser-robustness.test.ts',
   'src/lib/ebird-parser.test.ts',
