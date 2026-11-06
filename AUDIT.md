@@ -133,8 +133,11 @@ plans are checked against representative data.
 
 ### A10 — Reject or surface invalid provider data
 
-**Evidence:** Invalid provider dates and permissive parser/location heuristics can
-silently create plausible but incorrect records.
+**Evidence:** eBird target polling now rejects malformed and impossible calendar
+dates before observation/lifecycle writes and reports the affected checklist
+through the existing poll error result. It no longer substitutes the current
+time for an invalid observation date. Permissive email parser/location heuristics
+still need review.
 
 **Done when:** Invalid dates are quarantined or reported, probabilistic matches
 expose confidence/failure, and edge cases have regression tests. Persisted

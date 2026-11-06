@@ -54,7 +54,21 @@ function normalizeSpeciesName(name: string): string {
 
 function observationDate(obsDt: string): Date {
   const date = new Date(obsDt);
-  return isNaN(date.getTime()) ? new Date() : date;
+  const parts = typeof obsDt === 'string'
+    ? /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2}))?$/.exec(obsDt)
+    : null;
+  if (parts) {
+    const [, year, month, day, hour = '00', minute = '00'] = parts;
+    // Validate calendar fields independently of local DST transitions.
+    const calendar = new Date(`${year}-${month}-${day}T${hour}:${minute}:00Z`);
+    if (!isNaN(date.getTime()) &&
+        calendar.getUTCFullYear() === Number(year) &&
+        calendar.getUTCMonth() + 1 === Number(month) &&
+        calendar.getUTCDate() === Number(day) &&
+        calendar.getUTCHours() === Number(hour) &&
+        calendar.getUTCMinutes() === Number(minute)) return date;
+  }
+  throw new Error('Invalid eBird observation date');
 }
 
 function delay(ms: number): Promise<void> {
@@ -193,6 +207,14 @@ export class AlertTargetService {
 
       const observations = await this.ebirdClient.getSpeciesObservations(
         target.regionCode, speciesCode, options.back ?? 3, loggingContext);
+      // Reject before lifecycle writes: dropping bad records could mark them missing.
+      for (const observation of observations) {
+        try {
+          observationDate(observation.obsDt);
+        } catch {
+          throw new Error(`Invalid eBird observation date for checklist ${observation.subId}`);
+        }
+      }
       let shadowObservationsWritten = 0;
       let sightingsCreated = 0;
       let incidentsTouched = 0;
